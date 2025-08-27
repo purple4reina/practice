@@ -86,4 +86,8 @@ class WebAudioRecorderController {
   }
 }
 
-const webAudioController = new WebAudioRecorderController();
+// Initialize the controller when the page is completely loaded
+let webAudioController: WebAudioRecorderController;
+window.addEventListener("load", () => {
+  webAudioController = new WebAudioRecorderController();
+})
