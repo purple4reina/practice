@@ -1,1 +1,0 @@
-html,body{background-color:#a55dfc;padding:5%;height:100%}div{margin:2px}.bi{font-size:68px;padding:10px 30px;display:inline-block}.bi-record-circle{color:red}.bi-play-circle{color:green}.blinking{animation:blink 1s linear infinite}@keyframes blink{50%{opacity:.1}}.center{text-align:center}
