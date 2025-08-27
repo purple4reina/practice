@@ -1,0 +1,75 @@
+import { State } from "./state";
+
+export default class PlayRecordControls {
+  private recordIcon = document.getElementById("record");
+  private recordingIcon = document.getElementById("recording");
+  private playIcon = document.getElementById("play");
+  private playingIcon = document.getElementById("playing");
+
+  private state: State = State.STOPPED;
+  private nextState: State = State.RECORDING;
+
+  constructor() {
+    this.showControls([this.recordIcon]);
+  }
+
+  initializeEventListeners(callbacks: { record: () => void, stopRecording: () => void, play: () => void, stopPlaying: () => void }): void {
+    this.recordIcon?.addEventListener("click", callbacks.record.bind(this));
+    this.recordingIcon?.addEventListener("click", callbacks.stopRecording.bind(this));
+    this.playIcon?.addEventListener("click", callbacks.play.bind(this));
+    this.playingIcon?.addEventListener("click", callbacks.stopPlaying.bind(this));
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === " ") {
+        e.preventDefault();
+        if (this.state === State.RECORDING) {
+          callbacks.stopRecording();
+        } else if (this.state === State.PLAYING) {
+          callbacks.stopPlaying();
+        } else if (this.state === State.STOPPED) {
+          if (this.nextState === State.RECORDING) {
+            callbacks.record();
+          } else if (this.nextState === State.PLAYING) {
+            callbacks.play();
+          }
+        }
+      }
+    });
+  }
+
+  markRecording() {
+    this.setState(State.RECORDING);
+  }
+
+  markPlaying() {
+    this.setState(State.PLAYING);
+  }
+
+  markStopped() {
+    this.setState(State.STOPPED);
+  }
+
+  private setState(state: State) {
+    if (state === State.RECORDING) {
+      this.showControls([this.recordingIcon]);
+      this.state = State.RECORDING;
+      this.nextState = State.STOPPED;
+    } else if (state === State.STOPPED) {
+      this.nextState = this.state === State.RECORDING ? State.PLAYING : State.RECORDING;
+      this.showControls([this.playIcon, this.recordIcon]);
+      this.state = State.STOPPED;
+    } else if (state === State.PLAYING) {
+      this.showControls([this.playingIcon]);
+      this.state = State.PLAYING;
+      this.nextState = State.STOPPED;
+    }
+  }
+
+  private showControls(activeIcons: (HTMLElement | null)[]): void {
+    [this.recordIcon, this.recordingIcon, this.playIcon, this.playingIcon].forEach(icon => {
+      if (icon) {
+        icon.style.display = (activeIcons.includes(icon)) ? "inline-block" : "none";
+      }
+    });
+  }
+}

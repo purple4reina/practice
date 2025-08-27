@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Practice Recorder</title>
+
+    <link rel="icon" href="/assets/favicon.ico" />
+    <link rel="stylesheet" href="/assets/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  </head>
+  <body>
+    <div class="container center">
+      <h1>Practice Recorder</h1>
+      <div class="row">
+        <div class="col">
+          <i id="record" class="bi bi-record-circle" style="display:inline-block"></i>
+          <i id="recording" class="bi bi-record-circle blinking" style="display:none"></i>
+          <i id="play" class="bi bi-play-circle" style="display:none"></i>
+          <i id="playing" class="bi bi-play-circle blinking" style="display:none"></i>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          Playback Speed:
+        </div>
+        <div class="col input-group">
+          <button class="btn" id="playback-minus" type="button">-</button>
+          <input type="text" class="form-control" id="playback-numer" value="1" pattern="[0-9]*">
+          <span class="input-group-text">/</span>
+          <input type="text" class="form-control" id="playback-denom" value="4" pattern="[0-9]*">
+          <button class="btn" id="playback-plus" type="button">+</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          Metronome:
+        </div>
+        <div class="col input-group form-check form-switch">
+          <input class="form-check-input" id="click-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#clickTrack">
+        </div>
+        <div class="collapse" id="clickTrack">
+          <div class="card card-body">
+            <div class="row">
+              <div class="col-5">
+                BPM:
+              </div>
+              <div class="col input-group">
+                <button class="btn" id="bpm-minus" type="button">-</button>
+                <input type="text" class="form-control" id="bpm-val" value="60" pattern="[0-9]*">
+                <button class="btn" id="bpm-plus" type="button">+</button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-5">
+                Subdivisions:
+              </div>
+              <div class="col input-group">
+                <button class="btn" id="subdivisions-minus" type="button">-</button>
+                <input type="text" class="form-control" id="subdivisions-val" value="0" pattern="[0-9]*">
+                <button class="btn" id="subdivisions-plus" type="button">+</button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-5">
+                Latency Compensation:
+              </div>
+              <div class="col input-group">
+                <button class="btn" id="latency-minus" type="button">-</button>
+                <input type="text" class="form-control" id="latency-val" value="0" pattern="[0-9]*">
+                <button class="btn" id="latency-plus" type="button">+</button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-5">
+                Count Off:
+              </div>
+              <div class="col input-group">
+                <button class="btn" id="count-off-minus" type="button">-</button>
+                <input type="text" class="form-control" id="count-off-val" value="0" pattern="[0-9]*">
+                <button class="btn" id="count-off-plus" type="button">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+    <script src="src/main.ts" type="module"></script>
+  </body>
+</html>
