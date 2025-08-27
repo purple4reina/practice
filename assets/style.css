@@ -4,10 +4,6 @@ html, body {
   height: 100%;
 }
 
-body {
-  border-radius: 13px;
-}
-
 div {
   margin: 2px;
 }
