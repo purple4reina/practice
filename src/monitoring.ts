@@ -1,0 +1,18 @@
+import { datadogRum } from '@datadog/browser-rum';
+
+export default function initializeMonitoring() {
+  datadogRum.init({
+      applicationId: 'cf5b1a0f-eb93-4fa2-a37f-6a5f3b2f9a76',
+      clientToken: 'pub43c914b5be206019b947216e1f4b9d3c',
+      // `site` refers to the Datadog site parameter of your organization
+      // see https://docs.datadoghq.com/getting_started/site/
+      site: 'datadoghq.com',
+      service: 'practice-recorder',
+      env: 'prod',
+      // Specify a version number to identify the deployed version of your application in Datadog
+      // version: '1.0.0',
+      sessionSampleRate: 100,
+      sessionReplaySampleRate: 20,
+      defaultPrivacyLevel: 'mask-user-input',
+  });
+}

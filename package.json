@@ -11,6 +11,7 @@
     "vite": "^7.1.2"
   },
   "dependencies": {
+    "@datadog/browser-rum": "^6.18.1",
     "tone": "^15.1.22"
   }
 }
