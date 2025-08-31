@@ -5,7 +5,6 @@ import fractionControls from "./fraction-controls";
 import PlayRecordControls from "./play-record-controls";
 import initializeMonitoring from "./monitoring";
 
-console.log("window.location.hostname: ", window.location.hostname);
 if (window.location.hostname === "purple4reina.github.io") {
   initializeMonitoring();
 }
