@@ -1,0 +1,6 @@
+#!/bin/bash -e
+
+npm install
+rm -rf docs/
+npm run build
+git add docs/
