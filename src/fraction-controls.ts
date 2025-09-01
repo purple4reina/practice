@@ -25,12 +25,14 @@ class FractionControls {
 
     if (opts.arrowKeys) {
       document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowRight") {
-          e.preventDefault();
-          this.plus();
-        } else if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          this.minus();
+        if (document.activeElement?.tagName.toLowerCase() !== "input") {
+          if (e.key === "ArrowRight") {
+            e.preventDefault();
+            this.plus();
+          } else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            this.minus();
+          }
         }
       });
     }
