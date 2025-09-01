@@ -22,15 +22,13 @@ export default class Metronome {
   public enabled;
   public bpm;
   public subdivisions;
-  public countOff;
-  public latency;
+  public countOff = plusMinusControls("rec-count-off", { initial: 0, min: 0, max: 8 });
+  public latency = plusMinusControls("play-latency", { initial: -75, min: -500, max: 500 });
 
   constructor(prefix: string, audioContext: AudioContext) {
     this.enabled = boolSwitchControls(`${prefix}-metronome-enabled`);
     this.bpm = plusMinusControls(`${prefix}-bpm`, { initial: 60, min: 15, max: 300 });
     this.subdivisions = plusMinusControls(`${prefix}-subdivisions`, { initial: 1, min: 1, max: 16 });
-    this.countOff = plusMinusControls(`${prefix}-count-off`, { initial: 0, min: 0, max: 8 });
-    this.latency = plusMinusControls(`${prefix}-latency`, { initial: -75, min: -500, max: 500 });
 
     this.audioContext = audioContext;
   }
