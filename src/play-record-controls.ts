@@ -33,6 +33,8 @@ export default class PlayRecordControls {
             callbacks.play();
           }
         }
+      } else if (e.key === "Enter") {
+        (document.activeElement as HTMLElement).blur();
       }
     });
   }
