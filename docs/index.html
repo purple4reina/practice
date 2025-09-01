@@ -6,7 +6,7 @@
     <title>Practice Recorder</title>
 
     <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
-    <script type="module" crossorigin src="/practice/assets/index-DOCylyLy.js"></script>
+    <script type="module" crossorigin src="/practice/assets/index-BcN8Hc1T.js"></script>
     <link rel="stylesheet" crossorigin href="/practice/assets/index-B9XIQrEH.css">
   </head>
   <body>
@@ -40,18 +40,18 @@
               Recording Metronome:
             </div>
             <div class="col input-group form-check form-switch">
-              <input class="form-check-input" id="rec-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#recordingMetronome">
+              <input class="form-check-input" id="rec-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#recordingMetronome" checked>
             </div>
             <div class="col-4">
               Playback Metronome:
             </div>
             <div class="col input-group form-check form-switch">
-              <input class="form-check-input" id="play-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#playbackMetronome">
+              <input class="form-check-input" id="play-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#playbackMetronome" checked>
             </div>
           </div>
           <div class="row">
             <div class="col">
-              <div class="collapse" id="recordingMetronome">
+              <div class="collapse show" id="recordingMetronome">
                 <div class="card card-body">
                   <div class="container">
                     <div class="row">
@@ -70,7 +70,7 @@
                       </div>
                       <div class="col input-group">
                         <button class="btn" id="rec-subdivisions-minus" type="button" tabindex="-1">-</button>
-                        <input type="text" class="form-control" id="rec-subdivisions-val" value="0" pattern="[0-9]*" tabindex="5">
+                        <input type="text" class="form-control" id="rec-subdivisions-val" value="1" pattern="[0-9]*" tabindex="5">
                         <button class="btn" id="rec-subdivisions-plus" type="button" tabindex="-1">+</button>
                       </div>
                     </div>
@@ -89,7 +89,7 @@
               </div>
             </div>
             <div class="col">
-              <div class="collapse" id="playbackMetronome">
+              <div class="collapse show" id="playbackMetronome">
                 <div class="card card-body">
                   <div class="container">
                     <div class="row">
@@ -108,7 +108,7 @@
                       </div>
                       <div class="col input-group">
                         <button class="btn" id="play-subdivisions-minus" type="button" tabindex="-1">-</button>
-                        <input type="text" class="form-control" id="play-subdivisions-val" value="0" pattern="[0-9]*" tabindex="6">
+                        <input type="text" class="form-control" id="play-subdivisions-val" value="1" pattern="[0-9]*" tabindex="6">
                         <button class="btn" id="play-subdivisions-plus" type="button" tabindex="-1">+</button>
                       </div>
                     </div>
@@ -118,7 +118,7 @@
                       </div>
                       <div class="col input-group">
                         <button class="btn" id="play-latency-minus" type="button" tabindex="-1">-</button>
-                        <input type="text" class="form-control" id="play-latency-val" value="0" pattern="[0-9]*" tabindex="8">
+                        <input type="text" class="form-control" id="play-latency-val" value="-75" pattern="[0-9]*" tabindex="8">
                         <button class="btn" id="play-latency-plus" type="button" tabindex="-1">+</button>
                       </div>
                     </div>

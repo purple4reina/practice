@@ -34,7 +34,12 @@ export default class PlayRecordControls {
           }
         }
       } else if (e.key === "Enter") {
-        (document.activeElement as HTMLElement).blur();
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement.role === "switch") {
+          activeElement.click();
+        } else {
+          activeElement.blur();
+        }
       }
     });
   }
