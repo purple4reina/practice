@@ -31,25 +31,28 @@
           <button class="btn" id="playback-plus" type="button">+</button>
         </div>
       </div>
+
       <div class="row">
-        <div class="col-4">
-          Metronome:
-        </div>
-        <div class="col input-group form-check form-switch">
-          <input class="form-check-input" id="click-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#clickTrack">
-        </div>
-        <div class="collapse" id="clickTrack">
-          <div class="card card-body">
-            <div class="container">
-              <div class="row">
-                <!-- record -->
-                <div class="col">
+        <div class="container">
+          <div class="row">
+            <div class="col-4">
+              Recording Metronome:
+            </div>
+            <div class="col input-group form-check form-switch">
+              <input class="form-check-input" id="rec-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#recordingMetronome">
+            </div>
+            <div class="col-4">
+              Playback Metronome:
+            </div>
+            <div class="col input-group form-check form-switch">
+              <input class="form-check-input" id="play-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#playbackMetronome">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="collapse" id="recordingMetronome">
+                <div class="card card-body">
                   <div class="container">
-                    <div class="row">
-                      <div class="col">
-                        Recording Metronome:
-                      </div>
-                    </div>
                     <div class="row">
                       <div class="col-5">
                         BPM:
@@ -75,21 +78,19 @@
                         Count Off:
                       </div>
                       <div class="col input-group">
-                        <button class="btn" id="count-off-minus" type="button">-</button>
-                        <input type="text" class="form-control" id="count-off-val" value="0" pattern="[0-9]*">
-                        <button class="btn" id="count-off-plus" type="button">+</button>
+                        <button class="btn" id="rec-count-off-minus" type="button">-</button>
+                        <input type="text" class="form-control" id="rec-count-off-val" value="0" pattern="[0-9]*">
+                        <button class="btn" id="rec-count-off-plus" type="button">+</button>
                       </div>
                     </div>
                   </div>
                 </div>
-                <!-- play -->
-                <div class="col">
+              </div>
+            </div>
+            <div class="col">
+              <div class="collapse" id="playbackMetronome">
+                <div class="card card-body">
                   <div class="container">
-                    <div class="row">
-                      <div class="col">
-                        Playback Metronome:
-                      </div>
-                    </div>
                     <div class="row">
                       <div class="col-5">
                         BPM:
@@ -115,9 +116,9 @@
                         Latency Compensation:
                       </div>
                       <div class="col input-group">
-                        <button class="btn" id="latency-minus" type="button">-</button>
-                        <input type="text" class="form-control" id="latency-val" value="0" pattern="[0-9]*">
-                        <button class="btn" id="latency-plus" type="button">+</button>
+                        <button class="btn" id="play-latency-minus" type="button">-</button>
+                        <input type="text" class="form-control" id="play-latency-val" value="0" pattern="[0-9]*">
+                        <button class="btn" id="play-latency-plus" type="button">+</button>
                       </div>
                     </div>
                   </div>

@@ -13,23 +13,25 @@ export default class Metronome {
 
   private isPlaying: boolean = false;
   private tempo: number = 60;
-  private subdivisions: number = 1;
+  private _subdivisions: number = 1;
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
   private scheduleInterval: number = 25.0; // Schedule every 25ms
   private countOffAllowance: number = 100; // Allow 100ms before the first click
   private volume = 1.0;
 
-  public enabled = boolSwitchControls("click-enabled");
+  public enabled;
+  public bpm;
+  public subdivisions;
+  public countOff;
+  public latency;
 
-  public recordingBpm = plusMinusControls("rec-bpm", { initial: 60, min: 15, max: 300 });
-  public countOff = plusMinusControls("count-off", { initial: 0, min: 0, max: 8 });
-  public recordingSubdivisions = plusMinusControls("rec-subdivisions", { initial: 1, min: 1, max: 16 });
+  constructor(prefix: string, audioContext: AudioContext) {
+    this.enabled = boolSwitchControls(`${prefix}-metronome-enabled`);
+    this.bpm = plusMinusControls(`${prefix}-bpm`, { initial: 60, min: 15, max: 300 });
+    this.subdivisions = plusMinusControls(`${prefix}-subdivisions`, { initial: 1, min: 1, max: 16 });
+    this.countOff = plusMinusControls(`${prefix}-count-off`, { initial: 0, min: 0, max: 8 });
+    this.latency = plusMinusControls(`${prefix}-latency`, { initial: -75, min: -500, max: 500 });
 
-  public playingBpm = plusMinusControls("play-bpm", { initial: 60, min: 15, max: 300 });
-  public playingSubdivisions = plusMinusControls("play-subdivisions", { initial: 1, min: 1, max: 16 });
-  public latency = plusMinusControls("latency", { initial: -75, min: -500, max: 500 });
-
-  constructor(audioContext: AudioContext) {
     this.audioContext = audioContext;
   }
 
@@ -48,7 +50,7 @@ export default class Metronome {
     }
     // Calculate the count-off duration in milliseconds
     // Minus 100ms to ensure recording starts before the first click
-    return this.countOff() / this.recordingBpm() * 60 * 1000 - this.countOffAllowance;
+    return this.countOff() / this.bpm() * 60 * 1000 - this.countOffAllowance;
   }
 
   private createClickSound(when: number, clickHz: number): void {
@@ -73,7 +75,7 @@ export default class Metronome {
   private scheduler = (): void => {
     // Schedule clicks that fall within our lookahead window
     while (this.nextClickTime < this.audioContext.currentTime + (this.scheduleLookahead / 1000)) {
-      const clickHz = this.nextClickSubdivision % this.subdivisions === 0 ? this.clickHz : this.offbeatHz;
+      const clickHz = this.nextClickSubdivision % this._subdivisions === 0 ? this.clickHz : this.offbeatHz;
       this.createClickSound(this.nextClickTime, clickHz);
       this.nextClickTime += this.tempo;
       this.nextClickSubdivision++;
@@ -84,22 +86,14 @@ export default class Metronome {
     }
   };
 
-  recordingStart(startTime: number, playbackRate: number): void {
-    this.start(startTime, playbackRate, this.recordingBpm(), this.recordingSubdivisions());
-  }
-
-  playingStart(startTime: number, playbackRate: number): void {
-    this.start(startTime, playbackRate, this.playingBpm(), this.playingSubdivisions());
-  }
-
-  private start(startTime: number, playbackRate: number, bpm: number, subdivisions: number): void {
+  start(startTime: number, playbackRate: number): void {
     const delay = this.isPlaying ? this.tempo : 0;
     if (this.isPlaying) {
       this.stop();
     }
 
-    this.subdivisions = subdivisions;
-    this.tempo = 60 / (bpm * subdivisions * playbackRate);
+    this._subdivisions = this.subdivisions();
+    this.tempo = 60 / (this.bpm() * this._subdivisions * playbackRate);
     setTimeout(() => {
       this.isPlaying = true;
       this.nextClickTime = startTime;

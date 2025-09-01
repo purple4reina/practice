@@ -13,7 +13,8 @@ class WebAudioRecorderController {
   private audioContext = new AudioContext();
   private recorder = new RecorderDevice(this.audioContext);
   private player = new PlayerDevice(this.audioContext);
-  private metronome = new Metronome(this.audioContext);
+  private recordingMetronome = new Metronome("rec", this.audioContext);
+  private playbackMetronome = new Metronome("play", this.audioContext);
 
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
@@ -38,16 +39,16 @@ class WebAudioRecorderController {
       }
 
       await this.recorder.reset();
-      this.metronome.stop();
+      this.stopMetronomes();
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // Start metronome immediately if enabled (for count-off and recording)
-      if (this.metronome.enabled()) {
+      if (this.recordingMetronome.enabled()) {
         const startTime = this.audioContext.currentTime;
-        this.metronome.recordingStart(startTime, 1);
+        this.recordingMetronome.start(startTime, 1);
       }
 
-      setTimeout(() => this.recorder.start(), this.metronome.countOffMs());
+      setTimeout(() => this.recorder.start(), this.recordingMetronome.countOffMs());
       this.playRecordControls.markRecording();
     } catch (error) {
       console.error("Error starting recording:", error);
@@ -55,7 +56,7 @@ class WebAudioRecorderController {
   }
 
   stopRecording() {
-    this.metronome.stop();
+    this.stopMetronomes();
     this.recorder.stop();
     this.playRecordControls.markStopped();
   }
@@ -67,18 +68,17 @@ class WebAudioRecorderController {
       return;
     }
 
-    // Stop any ongoing metronome first
-    this.metronome.stop();
+    this.stopMetronomes();
 
     // Start playback and metronome at the same time
     const startTime = this.player.play(audioBuffer, this.playbackSpeed(), () => {
       this.stopPlaying();
     });
 
-    if (this.metronome.enabled()) {
+    if (this.playbackMetronome.enabled()) {
       // Apply latency compensation scaled by playback rate
-      const compensatedStartTime = this.metronome.getPlaybackStartTime(startTime, this.playbackSpeed());
-      this.metronome.playingStart(compensatedStartTime, this.playbackSpeed());
+      const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
+      this.playbackMetronome.start(compensatedStartTime, this.playbackSpeed());
     }
 
     this.playRecordControls.markPlaying();
@@ -86,8 +86,13 @@ class WebAudioRecorderController {
 
   stopPlaying(): void {
     this.player.stop();
-    this.metronome.stop();
+    this.stopMetronomes();
     this.playRecordControls.markStopped();
+  }
+
+  private stopMetronomes() {
+    this.recordingMetronome.stop();
+    this.playbackMetronome.stop();
   }
 }
 
