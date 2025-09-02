@@ -25,7 +25,8 @@ class FractionControls {
 
     if (opts.arrowKeys) {
       document.addEventListener("keydown", (e) => {
-        if (document.activeElement?.tagName.toLowerCase() !== "input") {
+        const activeElement = document.activeElement as HTMLInputElement;
+        if (activeElement.tagName !== "INPUT" || activeElement.role === "switch") {
           if (e.key === "ArrowRight") {
             e.preventDefault();
             this.plus();
