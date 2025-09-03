@@ -16,6 +16,19 @@ class SlideControls {
     this.slideInput?.addEventListener("change", this.setVal.bind(this));
 
     this.updateSlideInput();
+
+    this.slideInput?.addEventListener("keydown", (e) => {
+        const activeElement = document.activeElement as HTMLInputElement;
+        if (activeElement === this.slideInput) {
+          if (e.key === "ArrowRight") {
+            e.preventDefault();
+            this.plusVal();
+          } else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            this.minusVal();
+          }
+        }
+    });
   }
 
   public value(): number {
@@ -25,6 +38,16 @@ class SlideControls {
   private setVal(event: Event): void {
     const val = this.parseValue(event.target);
     this._value = val !== null ? val : this._value;
+    this.updateSlideInput();
+  }
+
+  private minusVal(): void {
+    this._value -= this.step;
+    this.updateSlideInput();
+  }
+
+  private plusVal(): void {
+    this._value += this.step;
     this.updateSlideInput();
   }
 
