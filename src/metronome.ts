@@ -1,5 +1,6 @@
 import boolSwitchControls from "./bool-switch-controls";
 import plusMinusControls from "./plus-minus-controls";
+import slideControls from "./slide-controls";
 
 export default class Metronome {
   private audioContext: AudioContext;
@@ -17,18 +18,19 @@ export default class Metronome {
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
   private scheduleInterval: number = 25.0; // Schedule every 25ms
   private countOffAllowance: number = 100; // Allow 100ms before the first click
-  private volume = 1.0;
 
   public enabled;
   public bpm;
   public subdivisions;
   public countOff = plusMinusControls("rec-count-off", { initial: 0, min: 0, max: 8 });
   public latency = plusMinusControls("play-latency", { initial: -75, min: -500, max: 500 });
+  public volume;
 
   constructor(prefix: string, audioContext: AudioContext) {
     this.enabled = boolSwitchControls(`${prefix}-metronome-enabled`, { initial: true });
     this.bpm = plusMinusControls(`${prefix}-bpm`, { initial: 60, min: 15, max: 300 });
     this.subdivisions = plusMinusControls(`${prefix}-subdivisions`, { initial: 1, min: 1, max: 16 });
+    this.volume = slideControls(`${prefix}-volume`, { initial: 1, min: 0, max: 10, step: 0.5 });
 
     this.audioContext = audioContext;
   }
@@ -52,6 +54,11 @@ export default class Metronome {
   }
 
   private createClickSound(when: number, clickHz: number): void {
+    const volume = this.volume();
+    if (volume <= 0) {
+      return;
+    }
+
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
 
@@ -60,7 +67,7 @@ export default class Metronome {
 
     // Create a sharp click envelope
     gainNode.gain.setValueAtTime(0, when);
-    gainNode.gain.linearRampToValueAtTime(this.volume, when + 0.001);
+    gainNode.gain.linearRampToValueAtTime(volume, when + 0.001);
     gainNode.gain.exponentialRampToValueAtTime(0.001, when + 0.05);
 
     oscillator.connect(gainNode);
