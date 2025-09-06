@@ -23,19 +23,6 @@ class SlideControls {
     this.plusButton?.addEventListener("click", this.plusVal.bind(this));
 
     this.updateSlideInput();
-
-    this.slideInput?.addEventListener("keydown", (e) => {
-        const activeElement = document.activeElement as HTMLInputElement;
-        if (activeElement === this.slideInput) {
-          if (e.key === "ArrowRight") {
-            e.preventDefault();
-            this.plusVal();
-          } else if (e.key === "ArrowLeft") {
-            e.preventDefault();
-            this.minusVal();
-          }
-        }
-    });
   }
 
   public value(): number {
@@ -72,7 +59,7 @@ class SlideControls {
     }
     const value = parseFloat(target.value.trim());
     if (isNaN(value)) {
-      console.error("Value must be a valid integer.");
+      console.error("Value must be a valid float.");
       return null;
     }
     return value;

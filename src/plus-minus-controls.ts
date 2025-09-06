@@ -21,6 +21,16 @@ class PlusMinusControls {
     this.minusButton?.addEventListener("click", this.minusVal.bind(this));
     this.plusButton?.addEventListener("click", this.plusVal.bind(this));
 
+    this.valueInput?.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        this.plusVal();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        this.minusVal();
+      }
+    });
+
     this.updateValueInputs();
   }
 
