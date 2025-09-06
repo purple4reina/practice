@@ -1,8 +1,9 @@
 import Metronome from "./metronome";
+import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
+import Tuner from "./tuner";
 import fractionControls from "./fraction-controls";
-import PlayRecordControls from "./play-record-controls";
 import initializeMonitoring from "./monitoring";
 
 if (window.location.hostname === "purple4reina.github.io") {
@@ -13,8 +14,10 @@ class WebAudioRecorderController {
   private audioContext = new AudioContext();
   private recorder = new RecorderDevice(this.audioContext);
   private player = new PlayerDevice(this.audioContext);
+
   private recordingMetronome = new Metronome("rec", this.audioContext);
   private playbackMetronome = new Metronome("play", this.audioContext);
+  private tuner = new Tuner(this.audioContext);
 
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
@@ -40,6 +43,7 @@ class WebAudioRecorderController {
 
       await this.recorder.reset();
       this.stopMetronomes();
+      this.tuner.reset();
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // Start metronome immediately if enabled (for count-off and recording)
@@ -55,10 +59,18 @@ class WebAudioRecorderController {
     }
   }
 
-  stopRecording() {
+  async stopRecording() {
     this.stopMetronomes();
     this.recorder.stop();
     this.playRecordControls.markStopped();
+
+    // Analyze recording for tuner if enabled
+    if (this.tuner.enabled()) {
+      const audioBuffer = this.recorder.getAudioBuffer();
+      if (audioBuffer) {
+        await this.tuner.analyze(audioBuffer);
+      }
+    }
   }
 
   play() {

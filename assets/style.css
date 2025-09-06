@@ -49,3 +49,15 @@ input[type=range] {
   height: auto;
   border: none;
 }
+
+#tuner .card-body {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#tuner canvas {
+  max-width: 100%;
+  height: auto;
+}
