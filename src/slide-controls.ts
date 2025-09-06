@@ -5,6 +5,8 @@ class SlideControls {
   private step: number = 0.5;
 
   private slideInput: HTMLInputElement | null = null;
+  private minusButton: HTMLButtonElement | null = null;
+  private plusButton: HTMLButtonElement | null = null;
 
   constructor(name: string, opts: { initial: number, min: number, max: number, step: number }) {
     this._value = opts.initial;
@@ -13,7 +15,12 @@ class SlideControls {
     this.step = opts.step;
 
     this.slideInput = document.getElementById(name) as HTMLInputElement | null;
+    this.minusButton = document.getElementById(`${name}-minus`) as HTMLButtonElement | null;
+    this.plusButton = document.getElementById(`${name}-plus`) as HTMLButtonElement | null;
+
     this.slideInput?.addEventListener("change", this.setVal.bind(this));
+    this.minusButton?.addEventListener("click", this.minusVal.bind(this));
+    this.plusButton?.addEventListener("click", this.plusVal.bind(this));
 
     this.updateSlideInput();
 
@@ -63,7 +70,7 @@ class SlideControls {
       console.error("Invalid target for input.");
       return null;
     }
-    const value = parseInt(target.value.trim(), 10);
+    const value = parseFloat(target.value.trim());
     if (isNaN(value)) {
       console.error("Value must be a valid integer.");
       return null;

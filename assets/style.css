@@ -44,3 +44,8 @@ div {
 .center {
   text-align: center;
 }
+
+input[type=range] {
+  height: auto;
+  border: none;
+}

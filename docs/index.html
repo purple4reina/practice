@@ -6,8 +6,8 @@
     <title>Practice Recorder</title>
 
     <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
-    <script type="module" crossorigin src="/practice/assets/index-DOfgA4Vr.js"></script>
-    <link rel="stylesheet" crossorigin href="/practice/assets/index-B9XIQrEH.css">
+    <script type="module" crossorigin src="/practice/assets/index-BK8sJT7p.js"></script>
+    <link rel="stylesheet" crossorigin href="/practice/assets/index-BiksP6Aq.css">
   </head>
   <body>
     <h1>Practice Recorder</h1>
@@ -89,7 +89,9 @@
                         Volume:
                       </div>
                       <div class="col input-group">
-                        <input type="range" class="form-range" id="rec-volume" min="0" max="10" value="1" step="0.5">
+                        <button class="btn" id="rec-volume-minus" type="button" tabindex="-1">-</button>
+                        <input type="range" class="form-range form-control" id="rec-volume" min="0" max="5" value="1" step="0.25">
+                        <button class="btn" id="rec-volume-plus" type="button" tabindex="-1">+</button>
                       </div>
                     </div>
                   </div>
@@ -135,7 +137,9 @@
                         Volume:
                       </div>
                       <div class="col input-group">
-                        <input type="range" class="form-range" id="play-volume" min="0" max="10" value="1" step="0.5">
+                        <button class="btn" id="play-volume-minus" type="button" tabindex="-1">-</button>
+                        <input type="range" class="form-range form-control" id="play-volume" min="0" max="5" value="1" step="0.25">
+                        <button class="btn" id="play-volume-plus" type="button" tabindex="-1">+</button>
                       </div>
                     </div>
                   </div>
