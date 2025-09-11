@@ -53,8 +53,8 @@ export default class TunerVisualization {
     // Find data ranges
     const maxTime = Math.max(...timeData);
     const minTime = Math.min(...timeData);
-    const maxCents = Math.max(50, Math.max(...centsData)); // At least ±50 cents range
-    const minCents = Math.min(-50, Math.min(...centsData));
+    const maxCents = Math.max(15, Math.max(...centsData)); // At least ±50 cents range
+    const minCents = Math.min(-15, Math.min(...centsData));
 
     // Draw grid and axes
     this.drawGrid(padding, graphWidth, graphHeight, minCents, maxCents);
@@ -68,13 +68,16 @@ export default class TunerVisualization {
   }
 
   private drawGrid(padding: number, graphWidth: number, graphHeight: number, minCents: number, maxCents: number): void {
-    this.ctx.strokeStyle = '#f0f0f0';
+    const majorStroke = '#adadad';
+    const minorStroke = '#f0f0f0';
     this.ctx.lineWidth = 1;
 
     // Horizontal grid lines for cents (every 25 cents)
     const centsRange = maxCents - minCents;
-    const centsStep = 25;
-    for (let cents = Math.ceil(minCents / centsStep) * centsStep; cents <= maxCents; cents += centsStep) {
+    const centsStepSm = 5;
+    const centsStepLg = 15;
+    for (let cents = Math.ceil(minCents / centsStepSm) * centsStepSm; cents <= maxCents; cents += centsStepSm) {
+      this.ctx.strokeStyle = (cents % centsStepLg) ? minorStroke : majorStroke;
       const y = padding + graphHeight - ((cents - minCents) / centsRange) * graphHeight;
       this.ctx.beginPath();
       this.ctx.moveTo(padding, y);
@@ -101,7 +104,7 @@ export default class TunerVisualization {
 
     // Y-axis labels (cents)
     const centsRange = maxCents - minCents;
-    const centsStep = 25;
+    const centsStep = 15;
     for (let cents = Math.ceil(minCents / centsStep) * centsStep; cents <= maxCents; cents += centsStep) {
       const y = padding + graphHeight - ((cents - minCents) / centsRange) * graphHeight;
       this.ctx.fillText(cents.toString(), 5, y + 4);
