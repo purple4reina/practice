@@ -4,7 +4,7 @@ export default class TunerVisualization {
   private containerElement: HTMLElement;
 
   private pitchColors: string[] = [
-    'red', 'orange', 'yellow', 'green', 'blue', 'purple',
+    'red', 'orange', 'gold', 'green', 'blue', 'purple',
   ];
 
   constructor(containerId: string) {
@@ -138,7 +138,6 @@ export default class TunerVisualization {
       return;
     }
 
-    this.ctx.strokeStyle = this.nextPitchColor();
     this.ctx.lineWidth = 1;
     this.ctx.beginPath();
 
