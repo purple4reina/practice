@@ -4,6 +4,8 @@ import RecorderDevice from "./recorder";
 import fractionControls from "./fraction-controls";
 import PlayRecordControls from "./play-record-controls";
 import initializeMonitoring from "./monitoring";
+import WaveformVisualizer, { MetronomeSettings } from "./waveform-visualizer";
+import AudioAnalyzer from "./audio-analyzer";
 
 if (window.location.hostname === "purple4reina.github.io") {
   initializeMonitoring();
@@ -15,11 +17,24 @@ class WebAudioRecorderController {
   private player = new PlayerDevice(this.audioContext);
   private recordingMetronome = new Metronome("rec", this.audioContext);
   private playbackMetronome = new Metronome("play", this.audioContext);
+  private waveformVisualizer: WaveformVisualizer;
 
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
 
   constructor() {
+    // Initialize waveform visualizer
+    const canvas = document.getElementById('waveform-canvas') as HTMLCanvasElement;
+    if (!canvas) {
+      throw new Error('Waveform canvas not found');
+    }
+    this.waveformVisualizer = new WaveformVisualizer(canvas, {
+      backgroundColor: '#f8f9fa',
+      waveformColor: '#a55dfc',
+      showGrid: true,
+      maxTime: 30000 // 30 seconds
+    });
+
     this.playRecordControls.initializeEventListeners({
       record: this.record.bind(this),
       stopRecording: this.stopRecording.bind(this),
@@ -40,6 +55,7 @@ class WebAudioRecorderController {
 
       await this.recorder.reset();
       this.stopMetronomes();
+      this.waveformVisualizer.clear(); // Clear visualization when starting new recording
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // Start metronome immediately if enabled (for count-off and recording)
@@ -58,6 +74,25 @@ class WebAudioRecorderController {
   stopRecording() {
     this.stopMetronomes();
     this.recorder.stop();
+
+    // Analyze the recorded audio buffer and show visualization
+    const audioBuffer = this.recorder.getAudioBuffer();
+    if (audioBuffer) {
+      const loudnessData = AudioAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
+      this.waveformVisualizer.setLoudnessData(loudnessData);
+
+      // Set metronome settings for beat markers (use playback metronome settings)
+      if (this.playbackMetronome.enabled()) {
+        const metronomeSettings: MetronomeSettings = {
+          bpm: this.playbackMetronome.bpm(),
+          subdivisions: this.playbackMetronome.subdivisions()
+        };
+        this.waveformVisualizer.setMetronomeSettings(metronomeSettings);
+      } else {
+        this.waveformVisualizer.setMetronomeSettings(null);
+      }
+    }
+
     this.playRecordControls.markStopped();
   }
 
@@ -81,12 +116,17 @@ class WebAudioRecorderController {
       this.playbackMetronome.start(compensatedStartTime, this.playbackSpeed());
     }
 
+    // The visualization already shows the recorded data from when recording stopped
+    // Start playback position animation
+    this.waveformVisualizer.startPlayback(this.playbackSpeed());
+
     this.playRecordControls.markPlaying();
   }
 
   stopPlaying(): void {
     this.player.stop();
     this.stopMetronomes();
+    this.waveformVisualizer.stopPlayback();
     this.playRecordControls.markStopped();
   }
 
