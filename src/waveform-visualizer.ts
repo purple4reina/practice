@@ -270,7 +270,7 @@ export default class WaveformVisualizer {
     this.ctx.strokeStyle = '#000000'; // Black color for beat markers
     this.ctx.lineWidth = 1;
 
-    let currentTime = 0;
+    let currentTime = 175;  // TODO: This needs to be dynamic!
     while (currentTime <= maxTimestamp) {
       const x = (currentTime / maxTimestamp) * width;
 
