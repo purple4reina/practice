@@ -1,3 +1,4 @@
+import audioBufferToWav from 'audiobuffer-to-wav';
 import { State } from "./state";
 
 export default class RecorderDevice {
@@ -14,6 +15,9 @@ export default class RecorderDevice {
   constructor(audioContext: AudioContext) {
     this.audioContext = audioContext;
     this.sampleRate = audioContext.sampleRate;
+
+    const downloadButton = document.getElementById('download') as HTMLElement;
+    downloadButton.addEventListener('click', this.download.bind(this));
   }
 
   async initialize(): Promise<void> {
@@ -201,6 +205,23 @@ export default class RecorderDevice {
 
   getAudioBuffer(): AudioBuffer | null {
     return this.recordedBuffer;
+  }
+
+  download() {
+    if (!this.recordedBuffer) {
+      console.error("No recorded buffer available for download");
+      return;
+    }
+    const wavArray = audioBufferToWav(this.recordedBuffer);
+    const wavBlob = new Blob([wavArray], { type: 'audio/wav' });
+    const url = URL.createObjectURL(wavBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.wav`;
+    a.click();
+
+    // Clean up
+    setTimeout(() => { URL.revokeObjectURL(url) }, 1000);
   }
 
   reset() {
