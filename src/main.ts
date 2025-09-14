@@ -8,6 +8,7 @@ import fractionControls from "./fraction-controls";
 import {
   initializeMonitoring,
   setMonitoredUser,
+  sendPlaybackEvent,
   sendRecordingEvent,
 } from "./monitoring";
 
@@ -135,6 +136,18 @@ class WebAudioRecorderController {
     // The visualization already shows the recorded data from when recording stopped
     // Start playback position animation
     this.waveformVisualizer.startPlayback(this.playbackSpeed());
+
+    sendPlaybackEvent({
+      duration: audioBuffer.duration,
+      metronome: !this.playbackMetronome.enabled() ? undefined : {
+        enabled: this.playbackMetronome.enabled(),
+        bpm: this.playbackMetronome.bpm(),
+        subdivisions: this.playbackMetronome.subdivisions(),
+        countOff: this.playbackMetronome.countOff(),
+        latency: this.playbackMetronome.latency(),
+        volume: this.playbackMetronome.volume(),
+      },
+    });
 
     this.playRecordControls.markPlaying();
   }

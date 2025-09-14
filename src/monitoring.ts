@@ -40,6 +40,15 @@ interface SendRecordingEventData {
   metronome?: MetronomeEventData;
 }
 
+interface SendPlaybackEventData {
+  duration: number;
+  metronome?: MetronomeEventData;
+}
+
 export function sendRecordingEvent(data: SendRecordingEventData) {
   datadogRum.addAction('Recording', data);
+}
+
+export function sendPlaybackEvent(data: SendPlaybackEventData) {
+  datadogRum.addAction('Playback', data);
 }
