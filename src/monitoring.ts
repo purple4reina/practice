@@ -17,7 +17,9 @@ export function initializeMonitoring() {
   });
 }
 
+let userEmail = "";
 export function setMonitoredUser(name: string, email: string, googleId: string) {
+  userEmail = email;
   datadogRum.setUser({
     id: email.replace('@', '_at_'),
     name: name,
@@ -36,20 +38,24 @@ interface MetronomeEventData {
 }
 
 interface SendRecordingEventData {
+  user?: string;
   duration: number;
   metronome?: MetronomeEventData;
 }
 
 interface SendPlaybackEventData {
+  user?: string;
   duration: number;
   playbackSpeed: number;
   metronome?: MetronomeEventData;
 }
 
 export function sendRecordingEvent(data: SendRecordingEventData) {
+  data.user = userEmail;
   datadogRum.addAction('Recording', data);
 }
 
 export function sendPlaybackEvent(data: SendPlaybackEventData) {
+  data.user = userEmail;
   datadogRum.addAction('Playback', data);
 }
