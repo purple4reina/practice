@@ -166,5 +166,5 @@ window.loginCallback = function(resp: any) {
   console.log("Image URL: " + data.picture);
   console.log("Email: " + data.email);
 
-  setMonitoredUser(`{data.given_name} {data.family_name}`.trim(), data.email);
+  setMonitoredUser(data.name, data.email, data.sub);
 }

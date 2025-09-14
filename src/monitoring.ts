@@ -17,10 +17,11 @@ export function initializeMonitoring() {
   });
 }
 
-export function setMonitoredUser(name: string, email: string) {
+export function setMonitoredUser(name: string, email: string, googleId: string) {
   datadogRum.setUser({
     id: email.replace('@', '_at_'),
     name: name,
     email: email,
+    googleId: googleId,
   });
 }
