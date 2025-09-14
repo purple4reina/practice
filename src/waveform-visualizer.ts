@@ -323,17 +323,10 @@ export default class WaveformVisualizer {
 
   private drawEmptyState(): void {
     const { width, height } = this.options;
-
     this.ctx.fillStyle = '#6c757d';
     this.ctx.font = '16px system-ui, -apple-system, sans-serif';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-
-    this.ctx.fillText(
-      'Audio visualization will appear here during recording/playback',
-      width / 2,
-      height / 2
-    );
   }
 
   // Update visualization options
