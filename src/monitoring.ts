@@ -1,6 +1,6 @@
 import { datadogRum } from '@datadog/browser-rum';
 
-export default function initializeMonitoring() {
+export function initializeMonitoring() {
   datadogRum.init({
       applicationId: 'cf5b1a0f-eb93-4fa2-a37f-6a5f3b2f9a76',
       clientToken: 'pub43c914b5be206019b947216e1f4b9d3c',
@@ -14,5 +14,13 @@ export default function initializeMonitoring() {
       sessionSampleRate: 100,
       sessionReplaySampleRate: 20,
       defaultPrivacyLevel: 'mask-user-input',
+  });
+}
+
+export function setMonitoredUser(name: string, email: string) {
+  datadogRum.setUser({
+    id: email.replace('@', '_at_'),
+    name: name,
+    email: email,
   });
 }

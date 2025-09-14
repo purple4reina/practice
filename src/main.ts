@@ -1,11 +1,11 @@
+import AudioAnalyzer from "./audio-analyzer";
 import Metronome from "./metronome";
+import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
-import fractionControls from "./fraction-controls";
-import PlayRecordControls from "./play-record-controls";
-import initializeMonitoring from "./monitoring";
 import WaveformVisualizer, { MetronomeSettings } from "./waveform-visualizer";
-import AudioAnalyzer from "./audio-analyzer";
+import fractionControls from "./fraction-controls";
+import { initializeMonitoring, setMonitoredUser } from "./monitoring";
 
 if (window.location.hostname === "purple4reina.github.io") {
   initializeMonitoring();
@@ -141,3 +141,30 @@ let webAudioController: WebAudioRecorderController;
 window.addEventListener("load", () => {
   webAudioController = new WebAudioRecorderController();
 })
+
+declare global {
+  interface Window {
+    loginCallback: (resp: any) => void;
+  }
+}
+
+window.loginCallback = function(resp: any) {
+  const decodeJwtResponse = function(token: any) {
+    let base64Url = token.split('.')[1];
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  }
+  const data = decodeJwtResponse(resp.credential);
+
+  console.log("ID: " + data.sub);
+  console.log('Full Name: ' + data.name);
+  console.log('Given Name: ' + data.given_name);
+  console.log('Family Name: ' + data.family_name);
+  console.log("Image URL: " + data.picture);
+  console.log("Email: " + data.email);
+
+  setMonitoredUser(`{data.given_name} {data.family_name}`.trim(), data.email);
+}
