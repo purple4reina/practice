@@ -5,7 +5,11 @@ import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
 import WaveformVisualizer, { MetronomeSettings } from "./waveform-visualizer";
 import fractionControls from "./fraction-controls";
-import { initializeMonitoring, setMonitoredUser } from "./monitoring";
+import {
+  initializeMonitoring,
+  setMonitoredUser,
+  sendRecordingEvent,
+} from "./monitoring";
 
 if (window.location.hostname === "purple4reina.github.io") {
   initializeMonitoring();
@@ -91,6 +95,18 @@ class WebAudioRecorderController {
       } else {
         this.waveformVisualizer.setMetronomeSettings(null);
       }
+
+      sendRecordingEvent({
+        duration: audioBuffer.duration,
+        metronome: !this.recordingMetronome.enabled() ? undefined : {
+          enabled: this.recordingMetronome.enabled(),
+          bpm: this.recordingMetronome.bpm(),
+          subdivisions: this.recordingMetronome.subdivisions(),
+          countOff: this.recordingMetronome.countOff(),
+          latency: this.recordingMetronome.latency(),
+          volume: this.recordingMetronome.volume(),
+        },
+      });
     }
 
     this.playRecordControls.markStopped();

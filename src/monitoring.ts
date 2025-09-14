@@ -25,3 +25,21 @@ export function setMonitoredUser(name: string, email: string, googleId: string) 
     googleId: googleId,
   });
 }
+
+interface MetronomeEventData {
+  enabled: boolean;
+  bpm: number;
+  subdivisions: number;
+  countOff: number;
+  latency: number;
+  volume: number;
+}
+
+interface SendRecordingEventData {
+  duration: number;
+  metronome?: MetronomeEventData;
+}
+
+export function sendRecordingEvent(data: SendRecordingEventData) {
+  datadogRum.addAction('Recording', data);
+}
