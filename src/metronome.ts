@@ -80,8 +80,13 @@ export default class Metronome {
   private scheduler = (): void => {
     // Schedule clicks that fall within our lookahead window
     while (this.nextClickTime < this.audioContext.currentTime + (this.scheduleLookahead / 1000)) {
-      const clickHz = this.nextClickSubdivision % this._subdivisions === 0 ? this.clickHz : this.offbeatHz;
-      this.createClickSound(this.nextClickTime, clickHz);
+      if (this.nextClickSubdivision % this._subdivisions === 0) {
+        // double the volume
+        this.createClickSound(this.nextClickTime, this.clickHz);
+        this.createClickSound(this.nextClickTime, this.clickHz);
+      } else {
+        this.createClickSound(this.nextClickTime, this.offbeatHz);
+      }
       this.nextClickTime += this.tempo;
       this.nextClickSubdivision++;
     }
