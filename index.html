@@ -31,7 +31,6 @@
           <button class="btn" id="playback-plus" type="button" tabindex="-1">+</button>
         </div>
       </div>
-
       <div class="row">
         <div class="container">
           <div class="row">
@@ -148,11 +147,21 @@
           </div>
         </div>
       </div>
-      <!-- Audio Visualization Section -->
-      <div class="row visualization-section">
-        <div class="col">
-          <h5 class="mb-3">Audio Visualization</h5>
-          <canvas id="waveform-canvas" width="800" height="200"></canvas>
+      <div class="row">
+        <div class="col-4">
+          Visualization
+        </div>
+        <div class="col input-group form-check form-switch">
+          <input class="form-check-input" id="visualization-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#visualization" tabindex="10" checked>
+        </div>
+      </div>
+      <div class="collapse show" id="visualization">
+        <div class="card card-body">
+          <div class="row">
+            <div class="col">
+              <canvas id="waveform-canvas" width="800" height="200"></canvas>
+            </div>
+          </div>
         </div>
       </div>
       <div>

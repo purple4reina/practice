@@ -50,7 +50,6 @@ input[type=range] {
   border: none;
 }
 
-/* Audio Visualization Styles */
 #waveform-canvas {
   width: 100%;
   max-width: 100%;
@@ -63,5 +62,4 @@ input[type=range] {
 .visualization-section {
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid #dee2e6;
 }

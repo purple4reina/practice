@@ -1,3 +1,4 @@
+import boolSwitchControls from "./bool-switch-controls";
 import type { LoudnessData } from './audio-analyzer';
 
 export interface WaveformVisualizerOptions {
@@ -25,6 +26,8 @@ export default class WaveformVisualizer {
   private playbackRate: number = 1;
   private isPlaybackActive: boolean = false;
   private animationFrameId: number | null = null;
+
+  private enabled = boolSwitchControls('visualization-enabled', { initial: true });
 
   constructor(canvas: HTMLCanvasElement, options: WaveformVisualizerOptions = {}) {
     this.canvas = canvas;
