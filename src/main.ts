@@ -149,6 +149,7 @@ declare global {
 }
 
 window.loginCallback = function(resp: any) {
+  // https://developers.google.com/identity/gsi/web/reference/js-reference#credential
   const decodeJwtResponse = function(token: any) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -158,13 +159,5 @@ window.loginCallback = function(resp: any) {
     return JSON.parse(jsonPayload);
   }
   const data = decodeJwtResponse(resp.credential);
-
-  console.log("ID: " + data.sub);
-  console.log('Full Name: ' + data.name);
-  console.log('Given Name: ' + data.given_name);
-  console.log('Family Name: ' + data.family_name);
-  console.log("Image URL: " + data.picture);
-  console.log("Email: " + data.email);
-
   setMonitoredUser(data.name, data.email, data.sub);
 }
