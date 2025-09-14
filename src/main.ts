@@ -139,6 +139,7 @@ class WebAudioRecorderController {
 
     sendPlaybackEvent({
       duration: audioBuffer.duration,
+      playbackSpeed: this.playbackSpeed(),
       metronome: !this.playbackMetronome.enabled() ? undefined : {
         enabled: this.playbackMetronome.enabled(),
         bpm: this.playbackMetronome.bpm(),

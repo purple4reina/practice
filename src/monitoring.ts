@@ -42,6 +42,7 @@ interface SendRecordingEventData {
 
 interface SendPlaybackEventData {
   duration: number;
+  playbackSpeed: number;
   metronome?: MetronomeEventData;
 }
 
