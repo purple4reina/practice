@@ -10,7 +10,7 @@ export function initializeMonitoring() {
       service: 'practice-recorder',
       env: 'prod',
       // Specify a version number to identify the deployed version of your application in Datadog
-      // version: '1.0.0',
+      version: import.meta.env.VITE_PRACTICE_VERSION || '1.0.0',
       sessionSampleRate: 100,
       sessionReplaySampleRate: 20,
       defaultPrivacyLevel: 'mask-user-input',
