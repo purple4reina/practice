@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-./scripts/get_next_version.sh
+source ./get_next_version.sh
 
 npm install
 rm -rf docs/
