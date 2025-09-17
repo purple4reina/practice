@@ -28,6 +28,7 @@ export default class WaveformVisualizer {
   private animationFrameId: number | null = null;
 
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
+  private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
   constructor(canvas: HTMLCanvasElement, options: WaveformVisualizerOptions = {}) {
     this.canvas = canvas;
@@ -90,6 +91,15 @@ export default class WaveformVisualizer {
     this.metronomeSettings = null;
     this.stopPlayback();
     this.draw();
+  }
+
+  private setStats(maxLoudness?: number) {
+    if (maxLoudness === undefined) {
+      this.statsDiv.innerText = "";
+    } else {
+      let value = (maxLoudness * 1000).toFixed(0);
+      this.statsDiv.innerText = `Max Vol: ${value}`;
+    }
   }
 
   private draw(): void {
@@ -180,6 +190,8 @@ export default class WaveformVisualizer {
     // Find maximum loudness for dynamic scaling
     const maxLoudness = Math.max(...data.map(d => d.loudness));
     if (maxLoudness === 0) return; // Avoid division by zero
+
+    this.setStats(maxLoudness);
 
     const centerY = height / 2;
     const maxAmplitude = height * 0.4; // Use 40% of height for each side (80% total)
@@ -327,6 +339,7 @@ export default class WaveformVisualizer {
     this.ctx.font = '16px system-ui, -apple-system, sans-serif';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
+    this.setStats();
   }
 
   // Update visualization options
