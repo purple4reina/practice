@@ -1,3 +1,5 @@
+import * as google from 'google';
+
 import AudioAnalyzer from "./audio-analyzer";
 import Metronome from "./metronome";
 import PlayRecordControls from "./play-record-controls";
@@ -178,6 +180,14 @@ declare global {
   }
 }
 
+document.getElementById('login-btn')?.addEventListener('click', () => {
+  google.accounts.id.initialize({
+    client_id: '1060381388264-frcdkvrnei1hv30mnbjdn0u0mm6mlaf2.apps.googleusercontent.com',
+    callback: window.loginCallback,
+  });
+  google.accounts.id.prompt();
+});
+
 window.loginCallback = function(resp: any) {
   // https://developers.google.com/identity/gsi/web/reference/js-reference#credential
   const decodeJwtResponse = function(token: any) {
@@ -190,4 +200,5 @@ window.loginCallback = function(resp: any) {
   }
   const data = decodeJwtResponse(resp.credential);
   setMonitoredUser(data.name, data.email, data.sub);
+  (document.getElementById('user') as HTMLElement).innerText = `Welcome ${data.given_name}`;
 }

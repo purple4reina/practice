@@ -45,6 +45,10 @@ div {
   text-align: center;
 }
 
+.text-right {
+  text-align: right;
+}
+
 input[type=range] {
   height: auto;
   border: none;
