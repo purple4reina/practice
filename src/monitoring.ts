@@ -1,6 +1,7 @@
 import { datadogRum } from '@datadog/browser-rum';
 
 export function initializeMonitoring() {
+  console.log(`practice-recorder ${import.meta.env.VITE_PRACTICE_VERSION}`);
   datadogRum.init({
       applicationId: 'cf5b1a0f-eb93-4fa2-a37f-6a5f3b2f9a76',
       clientToken: 'pub43c914b5be206019b947216e1f4b9d3c',
