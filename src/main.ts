@@ -1,5 +1,3 @@
-import * as google from 'google';
-
 import AudioAnalyzer from "./audio-analyzer";
 import Metronome from "./metronome";
 import PlayRecordControls from "./play-record-controls";
@@ -179,14 +177,6 @@ declare global {
     loginCallback: (resp: any) => void;
   }
 }
-
-document.getElementById('login-btn')?.addEventListener('click', () => {
-  google.accounts.id.initialize({
-    client_id: '1060381388264-frcdkvrnei1hv30mnbjdn0u0mm6mlaf2.apps.googleusercontent.com',
-    callback: window.loginCallback,
-  });
-  google.accounts.id.prompt();
-});
 
 window.loginCallback = function(resp: any) {
   // https://developers.google.com/identity/gsi/web/reference/js-reference#credential
