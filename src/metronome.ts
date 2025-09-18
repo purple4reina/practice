@@ -14,7 +14,10 @@ export default class Metronome {
 
   private isPlaying: boolean = false;
   private tempo: number = 60;
+  private countOffTempo: number = 60;
   private _subdivisions: number = 1;
+  private _countOffs: number = 1;
+  private _countOffSubs: number = 1;
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
   private scheduleInterval: number = 25.0; // Schedule every 25ms
   private countOffAllowance: number = 100; // Allow 100ms before the first click
@@ -23,13 +26,14 @@ export default class Metronome {
   public bpm;
   public subdivisions;
   public countOff = plusMinusControls("rec-count-off", { initial: 0, min: 0, max: 8 });
+  public countOffSub = plusMinusControls("rec-count-off-sub", { initial: 1, min: 1, max: 32 });
   public latency = plusMinusControls("play-latency", { initial: -75, min: -500, max: 500 });
   public volume;
 
   constructor(prefix: string, audioContext: AudioContext) {
     this.enabled = boolSwitchControls(`${prefix}-metronome-enabled`, { initial: true });
     this.bpm = plusMinusControls(`${prefix}-bpm`, { initial: 60, min: 15, max: 300 });
-    this.subdivisions = plusMinusControls(`${prefix}-subdivisions`, { initial: 1, min: 1, max: 16 });
+    this.subdivisions = plusMinusControls(`${prefix}-subdivisions`, { initial: 1, min: 1, max: 32 });
     this.volume = slideControls(`${prefix}-volume`, { initial: 1, min: 0, max: 5, step: 0.25 });
 
     this.audioContext = audioContext;
@@ -80,14 +84,25 @@ export default class Metronome {
   private scheduler = (): void => {
     // Schedule clicks that fall within our lookahead window
     while (this.nextClickTime < this.audioContext.currentTime + (this.scheduleLookahead / 1000)) {
-      if (this.nextClickSubdivision % this._subdivisions === 0) {
+      if (this._countOffs >= 0 && this.nextClickSubdivision % this._countOffSubs === 0) {
+        this._countOffs -= 1;
+        // double the volume
+        this.createClickSound(this.nextClickTime, this.clickHz);
+        this.createClickSound(this.nextClickTime, this.clickHz);
+      } else if (this._countOffs < 0 && this.nextClickSubdivision % this._subdivisions === 0) {
         // double the volume
         this.createClickSound(this.nextClickTime, this.clickHz);
         this.createClickSound(this.nextClickTime, this.clickHz);
       } else {
         this.createClickSound(this.nextClickTime, this.offbeatHz);
       }
-      this.nextClickTime += this.tempo;
+
+      if (this._countOffs < 0) {
+        this.nextClickTime += this.tempo;
+      } else {
+        this.nextClickTime += this.countOffTempo;
+      }
+
       this.nextClickSubdivision++;
     }
 
@@ -102,8 +117,11 @@ export default class Metronome {
       this.stop();
     }
 
+    this._countOffs = this.countOff();
     this._subdivisions = this.subdivisions();
+    this._countOffSubs = this.countOffSub();
     this.tempo = 60 / (this.bpm() * this._subdivisions * playbackRate);
+    this.countOffTempo = 60 / (this.bpm() * this.countOffSub() * playbackRate);
     setTimeout(() => {
       this.isPlaying = true;
       this.nextClickTime = startTime;
