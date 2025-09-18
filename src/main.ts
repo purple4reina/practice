@@ -66,7 +66,7 @@ class WebAudioRecorderController {
       // Start metronome immediately if enabled (for count-off and recording)
       if (this.recordingMetronome.enabled()) {
         const startTime = this.audioContext.currentTime;
-        this.recordingMetronome.start(startTime, 1);
+        this.recordingMetronome.start(startTime, 1, true);
       }
 
       setTimeout(() => this.recorder.start(), this.recordingMetronome.countOffMs());
@@ -130,7 +130,7 @@ class WebAudioRecorderController {
     if (this.playbackMetronome.enabled()) {
       // Apply latency compensation scaled by playback rate
       const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
-      this.playbackMetronome.start(compensatedStartTime, this.playbackSpeed());
+      this.playbackMetronome.start(compensatedStartTime, this.playbackSpeed(), false);
     }
 
     // The visualization already shows the recorded data from when recording stopped
