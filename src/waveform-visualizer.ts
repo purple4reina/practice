@@ -281,8 +281,12 @@ export default class WaveformVisualizer {
     const beatIntervalMs = (60 / bpm) * 1000; // Time between quarter note beats
     const subdivisionIntervalMs = beatIntervalMs / subdivisions; // Time between subdivisions
 
+    // colors
+    let strokesDrawn = 0;
+    const black = '#000000';
+    const blue = '#2905f5';
+
     // Draw beat markers
-    this.ctx.strokeStyle = '#000000'; // Black color for beat markers
     this.ctx.lineWidth = 1;
 
     let currentTime = 175;  // TODO: This needs to be dynamic!
@@ -291,6 +295,8 @@ export default class WaveformVisualizer {
 
       // Only draw if within canvas bounds
       if (x >= 0 && x <= width) {
+        this.ctx.strokeStyle = (strokesDrawn % subdivisions) === 0 ? blue : black;
+
         this.ctx.beginPath();
         this.ctx.moveTo(x, 0);
         this.ctx.lineTo(x, height);
@@ -298,6 +304,7 @@ export default class WaveformVisualizer {
       }
 
       currentTime += subdivisionIntervalMs;
+      strokesDrawn += 1;
     }
   }
 
