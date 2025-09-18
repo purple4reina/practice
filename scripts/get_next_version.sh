@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-LAST_TAG="$(git tag | tr '.' ' ' | sort -k 1 -k 2 | tr ' ' '.' | tail -n 1)"
+LAST_TAG="$(git tag | tr '.' ' ' | sort -k 1 -k 2 -h | tr ' ' '.' | tail -n 1)"
 CURRENT_VERSION="$(echo "$LAST_TAG" | tr '-' ' ' | awk '{print $1}')"
 echo "Old version: $CURRENT_VERSION"
 
