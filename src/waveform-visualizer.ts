@@ -43,7 +43,7 @@ export default class WaveformVisualizer {
       height: options.height || 200,
       backgroundColor: options.backgroundColor || '#f8f9fa',
       waveformColor: options.waveformColor || '#a55dfc',
-      gridColor: options.gridColor || '#e9ecef',
+      gridColor: options.gridColor || '#babcbf',
       showGrid: options.showGrid !== undefined ? options.showGrid : true,
       maxTime: options.maxTime || 30000, // 30 seconds default
     };
@@ -154,7 +154,6 @@ export default class WaveformVisualizer {
 
     // Horizontal grid lines (amplitude) - fewer lines since we have mirrored waveform
     const centerY = height / 2;
-    const amplitudeLines = 2; // Lines above and below center
 
     // Center line (emphasized)
     this.ctx.lineWidth = 1;
@@ -163,11 +162,19 @@ export default class WaveformVisualizer {
     this.ctx.lineTo(width, centerY);
     this.ctx.stroke();
 
+    const lineEveryLoudness = 50;
+    const maxLoudness = Math.max(...this.loudnessData.map(d => d.loudness)) * 1000;
+    const maxAmplitude = height * 0.4; // Use 40% of height for each side (80% total)
+    const offsetDistance = lineEveryLoudness * maxAmplitude / maxLoudness;
+
+    if (offsetDistance <= 0) {
+      return;
+    }
+
     // Amplitude grid lines
     this.ctx.lineWidth = 0.5;
-    for (let i = 1; i <= amplitudeLines; i++) {
-      const offset = (height / 2 / (amplitudeLines + 1)) * i;
-
+    let offset = 0;
+    while (offset < (height / 2)) {
       // Upper lines
       this.ctx.beginPath();
       this.ctx.moveTo(0, centerY - offset);
@@ -179,6 +186,8 @@ export default class WaveformVisualizer {
       this.ctx.moveTo(0, centerY + offset);
       this.ctx.lineTo(width, centerY + offset);
       this.ctx.stroke();
+
+      offset += offsetDistance;
     }
   }
 
