@@ -142,16 +142,6 @@ export default class WaveformVisualizer {
     this.ctx.strokeStyle = gridColor;
     this.ctx.lineWidth = 0.5;
 
-    // Vertical grid lines (time)
-    const timeInterval = 5000; // 5 second intervals
-    const timeStep = (width * timeInterval) / this.options.maxTime;
-    for (let x = 0; x <= width; x += timeStep) {
-      this.ctx.beginPath();
-      this.ctx.moveTo(x, 0);
-      this.ctx.lineTo(x, height);
-      this.ctx.stroke();
-    }
-
     // Horizontal grid lines (amplitude) - fewer lines since we have mirrored waveform
     const centerY = height / 2;
 
