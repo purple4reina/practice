@@ -3,6 +3,7 @@ import Metronome from "./metronome";
 import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
+import Tuner from "./tuner";
 import WaveformVisualizer, { MetronomeSettings } from "./waveform-visualizer";
 import fractionControls from "./fraction-controls";
 import {
@@ -23,6 +24,7 @@ class WebAudioRecorderController {
   private recordingMetronome = new Metronome("rec", this.audioContext);
   private playbackMetronome = new Metronome("play", this.audioContext);
   private waveformVisualizer: WaveformVisualizer;
+  private tuner = new Tuner(this.audioContext);
 
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
@@ -84,18 +86,18 @@ class WebAudioRecorderController {
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
       const loudnessData = AudioAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
-      this.waveformVisualizer.setLoudnessData(loudnessData);
+      const intonationData = this.tuner.analyze(audioBuffer);
 
       // Set metronome settings for beat markers (use playback metronome settings)
+      let metronomeSettings: MetronomeSettings | null = null;
       if (this.playbackMetronome.enabled()) {
-        const metronomeSettings: MetronomeSettings = {
+        metronomeSettings = {
           bpm: this.playbackMetronome.bpm(),
           subdivisions: this.playbackMetronome.subdivisions()
         };
-        this.waveformVisualizer.setMetronomeSettings(metronomeSettings);
-      } else {
-        this.waveformVisualizer.setMetronomeSettings(null);
       }
+
+      this.waveformVisualizer.drawVisualization(loudnessData, intonationData, metronomeSettings);
 
       sendRecordingEvent({
         duration: audioBuffer.duration,

@@ -1,5 +1,6 @@
 import boolSwitchControls from "./bool-switch-controls";
 import type { LoudnessData } from './audio-analyzer';
+import type { IntonationData } from './tuner';
 
 export interface WaveformVisualizerOptions {
   width?: number;
@@ -21,6 +22,7 @@ export default class WaveformVisualizer {
   private ctx: CanvasRenderingContext2D;
   private options: Required<WaveformVisualizerOptions>;
   private loudnessData: LoudnessData[] = [];
+  private intonationData: IntonationData | null = null;
   private metronomeSettings: MetronomeSettings | null = null;
   private playbackStartTime: number = 0;
   private playbackRate: number = 1;
@@ -70,6 +72,17 @@ export default class WaveformVisualizer {
     this.draw();
   }
 
+  drawVisualization(
+    loudnessData: LoudnessData[],
+    intonationData: IntonationData,
+    settings: MetronomeSettings | null,
+  ) {
+    this.loudnessData = [...loudnessData];
+    this.intonationData = intonationData;
+    this.metronomeSettings = settings;
+    this.draw();
+  }
+
   startPlayback(playbackRate: number = 1): void {
     this.playbackStartTime = Date.now();
     this.playbackRate = playbackRate;
@@ -88,6 +101,7 @@ export default class WaveformVisualizer {
 
   clear(): void {
     this.loudnessData = [];
+    this.intonationData = null;
     this.metronomeSettings = null;
     this.stopPlayback();
     this.draw();
@@ -129,6 +143,11 @@ export default class WaveformVisualizer {
     // Draw metronome beat markers on top
     if (this.metronomeSettings) {
       this.drawMetronomeBeats(maxTimestamp);
+    }
+
+    // Draw intonation line
+    if (this.intonationData) {
+      this.drawIntonation(maxTimestamp);
     }
 
     // Draw playback position indicator
@@ -288,7 +307,7 @@ export default class WaveformVisualizer {
     // Draw beat markers
     this.ctx.lineWidth = 1;
 
-    let currentTime = 175;  // TODO: This needs to be dynamic!
+    let currentTime = 175;  // XXX: TODO: This needs to be dynamic!
     while (currentTime <= maxTimestamp) {
       const x = (currentTime / maxTimestamp) * width;
 
@@ -305,6 +324,33 @@ export default class WaveformVisualizer {
       currentTime += subdivisionIntervalMs;
       strokesDrawn += 1;
     }
+  }
+
+  private drawIntonation(maxTimestamp: number): void {
+    if (!this.intonationData) return;
+
+    // Time between each intonation sample, in ms
+    const toneIntervalMs = (60 / this.intonationData.sampleRate) * 1000;
+    const { width, height } = this.options;
+    const y0 = height / 2;
+    let currentTime = 175;  // XXX: TODO: This needs to be dynamic!
+
+    this.ctx.lineWidth = 1;
+    this.ctx.strokeStyle = '#000000';
+    this.ctx.beginPath();
+
+    this.intonationData.points.forEach(point => {
+      if (point) {
+        const x = (currentTime / maxTimestamp) * width;
+        const y = y0 - (point.cents * height / 100);
+        this.ctx.lineTo(x, y);
+      } else {
+        this.ctx.stroke();
+        this.ctx.beginPath();
+      }
+      currentTime += toneIntervalMs;
+    });
+    this.ctx.stroke();
   }
 
   private drawPlaybackPosition(maxTimestamp: number): void {
