@@ -42,7 +42,7 @@ export default class WaveformVisualizer {
 
     this.options = {
       width: options.width || 800,
-      height: options.height || 200,
+      height: options.height || 300,
       backgroundColor: options.backgroundColor || '#f8f9fa',
       waveformColor: options.waveformColor || '#a55dfc',
       gridColor: options.gridColor || '#babcbf',
@@ -57,7 +57,7 @@ export default class WaveformVisualizer {
     this.canvas.width = this.options.width;
     this.canvas.height = this.options.height;
     this.canvas.style.width = '100%';
-    this.canvas.style.height = '200px';
+    this.canvas.style.height = '300px';
     this.canvas.style.border = '1px solid #dee2e6';
     this.canvas.style.borderRadius = '8px';
   }
