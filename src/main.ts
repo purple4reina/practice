@@ -81,6 +81,7 @@ class WebAudioRecorderController {
   stopRecording() {
     this.stopMetronomes();
     this.recorder.stop();
+    this.playRecordControls.markStopped();
 
     // Analyze the recorded audio buffer and show visualization
     const audioBuffer = this.recorder.getAudioBuffer();
@@ -111,8 +112,6 @@ class WebAudioRecorderController {
         },
       });
     }
-
-    this.playRecordControls.markStopped();
   }
 
   play() {
