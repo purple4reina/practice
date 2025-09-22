@@ -339,7 +339,7 @@ export default class WaveformVisualizer {
     // before the metronome.
     //let currentTime = 175;  // XXX: TODO: This needs to be dynamic!
 
-    this.ctx.lineWidth = 1;
+    this.ctx.lineWidth = 2;
     this.ctx.strokeStyle = '#29755c';
     this.ctx.beginPath();
 
