@@ -1,4 +1,5 @@
 import * as pitchfinder from "pitchfinder";
+import boolSwitchControls from "./bool-switch-controls";
 
 interface IntonationPoint {
   frequency: number;  // frequency of the actual pitch
@@ -17,6 +18,8 @@ export default class Tuner {
   private maxFrequencyTolerance = 3520;  // 3 octaves above A440
   private sampleRate = 60 * 100;  // every 10ms in bpm
 
+  public enabled = boolSwitchControls("tuner-enabled", { initial: true });
+
   constructor(audioContext: AudioContext) {
     this.detectors = [
       pitchfinder.YIN({ sampleRate: audioContext.sampleRate }),
@@ -24,14 +27,18 @@ export default class Tuner {
   }
 
   analyze(audioBuffer: AudioBuffer): IntonationData {
-    const float32Array = audioBuffer.getChannelData(0);
-    const pitches = pitchfinder.frequencies(
-      this.detectors, float32Array, { tempo: this.sampleRate, quantization: 1 }
-    )
-    return {
+    const data: IntonationData = {
       sampleRate: this.sampleRate,
-      points: pitches.map(f => this.frequencyToIntonationPoint(f)),
+      points: [],
     }
+    if (this.enabled()) {
+      const float32Array = audioBuffer.getChannelData(0);
+      const pitches = pitchfinder.frequencies(
+        this.detectors, float32Array, { tempo: this.sampleRate, quantization: 1 }
+      )
+      data.points = pitches.map(f => this.frequencyToIntonationPoint(f))
+    }
+    return data
   }
 
   private frequencyToIntonationPoint(frequency: number | null): IntonationPoint | null {
