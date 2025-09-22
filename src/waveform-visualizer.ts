@@ -333,7 +333,11 @@ export default class WaveformVisualizer {
     const toneIntervalMs = (60 / this.intonationData.sampleRate) * 1000;
     const { width, height } = this.options;
     const y0 = height / 2;
-    let currentTime = 175;  // XXX: TODO: This needs to be dynamic!
+    let currentTime = 0;
+
+    // this isn't needed here, like the waveform, the pitches actually start
+    // before the metronome.
+    //let currentTime = 175;  // XXX: TODO: This needs to be dynamic!
 
     this.ctx.lineWidth = 1;
     this.ctx.strokeStyle = '#29755c';
