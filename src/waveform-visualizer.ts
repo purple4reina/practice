@@ -336,7 +336,7 @@ export default class WaveformVisualizer {
     let currentTime = 175;  // XXX: TODO: This needs to be dynamic!
 
     this.ctx.lineWidth = 1;
-    this.ctx.strokeStyle = '#000000';
+    this.ctx.strokeStyle = '#29755c';
     this.ctx.beginPath();
 
     this.intonationData.points.forEach(point => {
