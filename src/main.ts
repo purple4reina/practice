@@ -3,6 +3,7 @@ import Metronome from "./metronome";
 import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
+import Tapper from "./tapper";
 import Tuner from "./tuner";
 import WaveformVisualizer, { MetronomeSettings } from "./waveform-visualizer";
 import fractionControls from "./fraction-controls";
@@ -169,8 +170,10 @@ class WebAudioRecorderController {
 
 // Initialize the controller when the page is completely loaded
 let webAudioController: WebAudioRecorderController;
+let tapper: Tapper;
 window.addEventListener("load", () => {
   webAudioController = new WebAudioRecorderController();
+  tapper = new Tapper();
 })
 
 declare global {

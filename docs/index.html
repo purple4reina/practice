@@ -6,16 +6,21 @@
     <title>Practice Recorder</title>
 
     <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
-    <script type="module" crossorigin src="/practice/assets/index-EXWk6OSb.js"></script>
-    <link rel="stylesheet" crossorigin href="/practice/assets/index-Bypa5W-c.css">
+    <script type="module" crossorigin src="/practice/assets/index-t9bNbVoD.js"></script>
+    <link rel="stylesheet" crossorigin href="/practice/assets/index-CE-hhAHw.css">
   </head>
   <body>
     <div class="container">
       <div class="row align-items-end">
-        <div class="col">
+        <div class="col-6">
           <h1>Practice Recorder</h1>
         </div>
         <div class="col text-right align-middle" id="user"></div>
+        <div class="col-1 text-right">
+          <button class="btn" type="button" id="hamburger" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+            <i class="bi bi-list bi-small" style="display:inline-block"></i>
+          </button>
+        </div>
       </div>
     <div class="container text-center" id="main">
       <div class="row">
@@ -192,6 +197,20 @@
         <button class="btn" id="download" type="button">Download</button>
       </div>
     </div>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasRightLabel">Welcome!</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <button id="tapper" class="btn">
+          Metronome Tapper
+          <span id="tapper-display" class="badge text-bg-secondary"></span>
+        </button>
+      </div>
+    </div>
+
     <div id="g_id_onload"
         data-client_id="1060381388264-frcdkvrnei1hv30mnbjdn0u0mm6mlaf2.apps.googleusercontent.com"
         data-context="signin"
