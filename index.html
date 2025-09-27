@@ -203,10 +203,36 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
+        <!-- tapper -->
         <button id="tapper" class="btn">
           Metronome Tapper
           <span id="tapper-display" class="badge text-bg-secondary"></span>
         </button>
+        <!-- drone -->
+        <div class="input-group">
+          <button class="btn" id="drone" type="button" tabindex="-1">Drone</button>
+          <select class="form-select" id="drone-pitch">
+            <option value="C">C</option>
+            <option value="Db">C#</option>
+            <option value="D">D</option>
+            <option value="Eb">D#</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="Gb">F#</option>
+            <option value="G">G</option>
+            <option value="Ab">G#</option>
+            <option value="A" selected>A</option>
+            <option value="Bb">Bb</option>
+          </select>
+          <select class="form-select" id="drone-octave">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+          </select>
+        </div>
       </div>
     </div>
 

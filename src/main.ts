@@ -1,4 +1,5 @@
 import AudioAnalyzer from "./audio-analyzer";
+import Drone from "./drone";
 import Metronome from "./metronome";
 import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
@@ -26,6 +27,8 @@ class WebAudioRecorderController {
   private playbackMetronome = new Metronome("play", this.audioContext);
   private waveformVisualizer: WaveformVisualizer;
   private tuner = new Tuner(this.audioContext);
+  private tapper = new Tapper();
+  private drone = new Drone(this.audioContext);
 
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
@@ -170,10 +173,8 @@ class WebAudioRecorderController {
 
 // Initialize the controller when the page is completely loaded
 let webAudioController: WebAudioRecorderController;
-let tapper: Tapper;
 window.addEventListener("load", () => {
   webAudioController = new WebAudioRecorderController();
-  tapper = new Tapper();
 })
 
 declare global {
