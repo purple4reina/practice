@@ -24,7 +24,7 @@ export default class Drone {
     { ratio: 16, volume: 0.005 },
   ];
 
-  constructor(audioContext: AudioContext, volume: number = 0.3) {
+  constructor(audioContext: AudioContext, volume: number = 0.25) {
     this.audioContext = audioContext;
 
     this.masterGain = audioContext.createGain();
