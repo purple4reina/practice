@@ -10,6 +10,8 @@ export interface WaveformVisualizerOptions {
   gridColor?: string;
   showGrid?: boolean;
   maxTime?: number; // Maximum time range in milliseconds
+  scrollThreshold?: number; // When recording is longer than this, enable scrolling (in ms)
+  viewportDuration?: number; // How much time to show in viewport when scrolling (in ms)
 }
 
 export interface MetronomeSettings {
@@ -28,6 +30,13 @@ export default class WaveformVisualizer {
   private playbackRate: number = 1;
   private isPlaybackActive: boolean = false;
   private animationFrameId: number | null = null;
+
+  // Viewport/scrolling properties
+  private isScrollingEnabled: boolean = false;
+  private viewStartTime: number = 0; // Start time of current viewport in ms
+  private viewDuration: number = 10000; // Duration of viewport in ms
+  private totalDuration: number = 0; // Total duration of the recording
+  private playbackMarkerPosition: number = 0.33; // Position where marker stops and scrolling begins (0-1)
 
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
@@ -48,8 +57,11 @@ export default class WaveformVisualizer {
       gridColor: options.gridColor || '#babcbf',
       showGrid: options.showGrid !== undefined ? options.showGrid : true,
       maxTime: options.maxTime || 30000, // 30 seconds default
+      scrollThreshold: options.scrollThreshold || 15000, // 15 seconds
+      viewportDuration: options.viewportDuration || 10000, // 10 seconds
     };
 
+    this.viewDuration = this.options.viewportDuration;
     this.setupCanvas();
   }
 
@@ -64,6 +76,7 @@ export default class WaveformVisualizer {
 
   setLoudnessData(data: LoudnessData[]): void {
     this.loudnessData = [...data];
+    this.updateScrollingState();
     this.draw();
   }
 
@@ -80,13 +93,39 @@ export default class WaveformVisualizer {
     this.loudnessData = [...loudnessData];
     this.intonationData = intonationData;
     this.metronomeSettings = settings;
+    this.updateScrollingState();
     this.draw();
+  }
+
+  private updateScrollingState(): void {
+    if (this.loudnessData.length === 0) {
+      this.totalDuration = 0;
+      this.isScrollingEnabled = false;
+      return;
+    }
+
+    this.totalDuration = this.loudnessData[this.loudnessData.length - 1].timestamp;
+    this.isScrollingEnabled = this.totalDuration > this.options.scrollThreshold;
+
+    if (!this.isScrollingEnabled) {
+      this.viewStartTime = 0;
+      this.viewDuration = this.totalDuration;
+    } else {
+      this.viewStartTime = 0;
+      this.viewDuration = this.options.viewportDuration;
+    }
   }
 
   startPlayback(playbackRate: number = 1): void {
     this.playbackStartTime = Date.now();
     this.playbackRate = playbackRate;
     this.isPlaybackActive = true;
+
+    // Reset viewport to beginning when starting playback
+    if (this.isScrollingEnabled) {
+      this.viewStartTime = 0;
+    }
+
     this.animatePlayback();
   }
 
@@ -103,6 +142,9 @@ export default class WaveformVisualizer {
     this.loudnessData = [];
     this.intonationData = null;
     this.metronomeSettings = null;
+    this.totalDuration = 0;
+    this.isScrollingEnabled = false;
+    this.viewStartTime = 0;
     this.stopPlayback();
     this.draw();
   }
@@ -112,12 +154,13 @@ export default class WaveformVisualizer {
       this.statsDiv.innerText = "";
     } else {
       let value = (maxLoudness * 1000).toFixed(0);
-      this.statsDiv.innerText = `Max Vol: ${value}`;
+      const scrollInfo = this.isScrollingEnabled ? " (Scrolling)" : "";
+      this.statsDiv.innerText = `Max Vol: ${value}${scrollInfo}`;
     }
   }
 
   private draw(): void {
-    const { width, height, backgroundColor, waveformColor, gridColor, showGrid, maxTime } = this.options;
+    const { width, height, backgroundColor, waveformColor, gridColor, showGrid } = this.options;
 
     // Clear canvas
     this.ctx.fillStyle = backgroundColor;
@@ -133,26 +176,21 @@ export default class WaveformVisualizer {
       return;
     }
 
-    // Determine time range
-    const maxTimestamp = this.loudnessData.length > 0
-      ? this.loudnessData[this.loudnessData.length - 1].timestamp
-      : maxTime;
-
-    this.drawWaveform(this.loudnessData, maxTimestamp);
+    this.drawWaveform(this.loudnessData);
 
     // Draw metronome beat markers on top
     if (this.metronomeSettings) {
-      this.drawMetronomeBeats(maxTimestamp);
+      this.drawMetronomeBeats();
     }
 
     // Draw intonation line
     if (this.intonationData) {
-      this.drawIntonation(maxTimestamp);
+      this.drawIntonation();
     }
 
     // Draw playback position indicator
     if (this.isPlaybackActive) {
-      this.drawPlaybackPosition(maxTimestamp);
+      this.drawPlaybackPosition();
     }
   }
 
@@ -198,12 +236,44 @@ export default class WaveformVisualizer {
 
       offset += offsetDistance;
     }
+
+    // Time grid lines (vertical) - more useful when scrolling
+    if (this.isScrollingEnabled) {
+      this.ctx.strokeStyle = gridColor + '80'; // More transparent
+      this.ctx.lineWidth = 0.5;
+
+      // Draw time markers every second
+      const secondInterval = 1000; // 1 second in ms
+      const startSecond = Math.floor(this.viewStartTime / secondInterval) * secondInterval;
+
+      for (let time = startSecond; time <= this.viewStartTime + this.viewDuration; time += secondInterval) {
+        if (time >= this.viewStartTime && time <= this.viewStartTime + this.viewDuration) {
+          const x = this.timeToX(time);
+          this.ctx.beginPath();
+          this.ctx.moveTo(x, 0);
+          this.ctx.lineTo(x, height);
+          this.ctx.stroke();
+        }
+      }
+    }
   }
 
-  private drawWaveform(data: LoudnessData[], maxTimestamp: number): void {
+  private timeToX(timestamp: number): number {
+    return ((timestamp - this.viewStartTime) / this.viewDuration) * this.options.width;
+  }
+
+  private drawWaveform(data: LoudnessData[]): void {
     if (data.length < 2) return;
 
     const { width, height, waveformColor } = this.options;
+
+    // Filter data to only include points in the current viewport
+    const visibleData = data.filter(point =>
+      point.timestamp >= this.viewStartTime &&
+      point.timestamp <= this.viewStartTime + this.viewDuration
+    );
+
+    if (visibleData.length === 0) return;
 
     // Find maximum loudness for dynamic scaling
     const maxLoudness = Math.max(...data.map(d => d.loudness));
@@ -222,8 +292,8 @@ export default class WaveformVisualizer {
     // Draw upper half
     this.ctx.beginPath();
     let firstPoint = true;
-    for (const point of data) {
-      const x = (point.timestamp / maxTimestamp) * width;
+    for (const point of visibleData) {
+      const x = this.timeToX(point.timestamp);
       const normalizedLoudness = point.loudness / maxLoudness; // Scale to 0-1
       const amplitude = normalizedLoudness * maxAmplitude;
       const y = centerY - amplitude; // Upper half
@@ -240,8 +310,8 @@ export default class WaveformVisualizer {
     // Draw lower half (mirrored)
     this.ctx.beginPath();
     firstPoint = true;
-    for (const point of data) {
-      const x = (point.timestamp / maxTimestamp) * width;
+    for (const point of visibleData) {
+      const x = this.timeToX(point.timestamp);
       const normalizedLoudness = point.loudness / maxLoudness; // Scale to 0-1
       const amplitude = normalizedLoudness * maxAmplitude;
       const y = centerY + amplitude; // Lower half
@@ -261,8 +331,8 @@ export default class WaveformVisualizer {
 
     // Upper path
     firstPoint = true;
-    for (const point of data) {
-      const x = (point.timestamp / maxTimestamp) * width;
+    for (const point of visibleData) {
+      const x = this.timeToX(point.timestamp);
       const normalizedLoudness = point.loudness / maxLoudness;
       const amplitude = normalizedLoudness * maxAmplitude;
       const y = centerY - amplitude;
@@ -276,9 +346,9 @@ export default class WaveformVisualizer {
     }
 
     // Lower path (in reverse)
-    for (let i = data.length - 1; i >= 0; i--) {
-      const point = data[i];
-      const x = (point.timestamp / maxTimestamp) * width;
+    for (let i = visibleData.length - 1; i >= 0; i--) {
+      const point = visibleData[i];
+      const x = this.timeToX(point.timestamp);
       const normalizedLoudness = point.loudness / maxLoudness;
       const amplitude = normalizedLoudness * maxAmplitude;
       const y = centerY + amplitude;
@@ -289,7 +359,7 @@ export default class WaveformVisualizer {
     this.ctx.fill();
   }
 
-  private drawMetronomeBeats(maxTimestamp: number): void {
+  private drawMetronomeBeats(): void {
     if (!this.metronomeSettings) return;
 
     const { width, height } = this.options;
@@ -307,9 +377,18 @@ export default class WaveformVisualizer {
     // Draw beat markers
     this.ctx.lineWidth = 1;
 
-    let currentTime = 175;  // XXX: TODO: This needs to be dynamic!
-    while (currentTime <= maxTimestamp) {
-      const x = (currentTime / maxTimestamp) * width;
+    // Start from the first beat that's visible in the viewport
+    let currentTime = 175; // XXX: TODO: This needs to be dynamic!
+
+    // Find the first beat in the viewport
+    while (currentTime < this.viewStartTime) {
+      currentTime += subdivisionIntervalMs;
+      strokesDrawn += 1;
+    }
+
+    // Draw beats within the viewport
+    while (currentTime <= this.viewStartTime + this.viewDuration && currentTime <= this.totalDuration) {
+      const x = this.timeToX(currentTime);
 
       // Only draw if within canvas bounds
       if (x >= 0 && x <= width) {
@@ -326,38 +405,67 @@ export default class WaveformVisualizer {
     }
   }
 
-  private drawIntonation(maxTimestamp: number): void {
+  private drawIntonation(): void {
     if (!this.intonationData) return;
 
     // Time between each intonation sample, in ms
     const toneIntervalMs = (60 / this.intonationData.sampleRate) * 1000;
-    const { width, height } = this.options;
+    const { height } = this.options;
     const y0 = height / 2;
     let currentTime = 0;
-
-    // this isn't needed here, like the waveform, the pitches actually start
-    // before the metronome.
-    //let currentTime = 175;  // XXX: TODO: This needs to be dynamic!
 
     this.ctx.lineWidth = 2;
     this.ctx.strokeStyle = '#29755c';
     this.ctx.beginPath();
 
+    let pathStarted = false;
+
     this.intonationData.points.forEach(point => {
-      if (point) {
-        const x = (currentTime / maxTimestamp) * width;
+      if (point && currentTime >= this.viewStartTime && currentTime <= this.viewStartTime + this.viewDuration) {
+        const x = this.timeToX(currentTime);
         const y = y0 - (point.cents * height / 100);
-        this.ctx.lineTo(x, y);
-      } else {
-        this.ctx.stroke();
-        this.ctx.beginPath();
+
+        if (!pathStarted) {
+          this.ctx.moveTo(x, y);
+          pathStarted = true;
+        } else {
+          this.ctx.lineTo(x, y);
+        }
+      } else if (!point) {
+        // Null point - break the line
+        if (pathStarted) {
+          this.ctx.stroke();
+          this.ctx.beginPath();
+          pathStarted = false;
+        }
       }
       currentTime += toneIntervalMs;
     });
-    this.ctx.stroke();
+
+    if (pathStarted) {
+      this.ctx.stroke();
+    }
   }
 
-  private drawPlaybackPosition(maxTimestamp: number): void {
+  private updateViewport(currentPlaybackTime: number): void {
+    if (!this.isScrollingEnabled) return;
+
+    const markerTimePosition = this.viewStartTime + (this.viewDuration * this.playbackMarkerPosition);
+
+    // If playback has reached the scroll threshold and we're not at the end
+    if (currentPlaybackTime >= markerTimePosition &&
+        this.viewStartTime + this.viewDuration < this.totalDuration) {
+
+      // Calculate new viewport start time to keep the playback marker at the threshold position
+      const newViewStartTime = currentPlaybackTime - (this.viewDuration * this.playbackMarkerPosition);
+
+      // Don't scroll past the end
+      const maxViewStartTime = this.totalDuration - this.viewDuration;
+      this.viewStartTime = Math.min(newViewStartTime, Math.max(0, maxViewStartTime));
+    }
+  }
+
+  private drawPlaybackPosition(): void {
     const { width, height } = this.options;
 
     // Calculate current playback position in milliseconds
@@ -365,13 +473,33 @@ export default class WaveformVisualizer {
     const elapsedTime = (currentTime - this.playbackStartTime) * this.playbackRate;
 
     // Don't draw if we're past the end of the recording
-    if (elapsedTime > maxTimestamp) {
+    if (elapsedTime > this.totalDuration) {
       this.stopPlayback();
       return;
     }
 
-    // Calculate x position
-    const x = (elapsedTime / maxTimestamp) * width;
+    // Update viewport if scrolling is enabled
+    this.updateViewport(elapsedTime);
+
+    // Calculate x position based on whether we're scrolling or not
+    let x: number;
+
+    if (this.isScrollingEnabled) {
+      // Check if we're in the scrolling region
+      const markerTimePosition = this.viewStartTime + (this.viewDuration * this.playbackMarkerPosition);
+      const viewEndTime = this.viewStartTime + this.viewDuration;
+
+      if (elapsedTime >= markerTimePosition && viewEndTime < this.totalDuration) {
+        // We're scrolling - keep marker at fixed position
+        x = width * this.playbackMarkerPosition;
+      } else {
+        // We're either before scrolling starts or after scrolling ends
+        x = this.timeToX(elapsedTime);
+      }
+    } else {
+      // No scrolling - normal behavior
+      x = this.timeToX(elapsedTime);
+    }
 
     // Draw the playback position line
     this.ctx.strokeStyle = '#FF0000'; // Red color for playback indicator
@@ -396,16 +524,5 @@ export default class WaveformVisualizer {
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     this.setStats();
-  }
-
-  // Update visualization options
-  updateOptions(newOptions: Partial<WaveformVisualizerOptions>): void {
-    Object.assign(this.options, newOptions);
-    this.setupCanvas();
-    this.draw();
-  }
-
-  destroy(): void {
-    this.stopPlayback();
   }
 }
