@@ -12,6 +12,8 @@ export interface WaveformVisualizerOptions {
   maxTime?: number; // Maximum time range in milliseconds
   scrollThreshold?: number; // When recording is longer than this, enable scrolling (in ms)
   viewportDuration?: number; // How much time to show in viewport when scrolling (in ms)
+  minZoomDuration?: number; // Minimum zoom duration in ms
+  maxZoomDuration?: number; // Maximum zoom duration in ms
 }
 
 export interface MetronomeSettings {
@@ -43,6 +45,13 @@ export default class WaveformVisualizer {
   private dragStartX: number = 0;
   private dragStartViewTime: number = 0;
 
+  // Zoom/pinch properties
+  private isZooming: boolean = false;
+  private lastPinchDistance: number = 0;
+  private pinchCenterX: number = 0;
+  private lastWheelTime: number = 0;
+  private isMouseOverCanvas: boolean = false;
+
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
@@ -64,6 +73,8 @@ export default class WaveformVisualizer {
       maxTime: options.maxTime || 30000, // 30 seconds default
       scrollThreshold: options.scrollThreshold || 15000, // 15 seconds
       viewportDuration: options.viewportDuration || 10000, // 10 seconds
+      minZoomDuration: options.minZoomDuration || 500, // 0.5 seconds minimum zoom
+      maxZoomDuration: options.maxZoomDuration || 30000, // 30 seconds maximum zoom
     };
 
     this.viewDuration = this.options.viewportDuration;
@@ -84,6 +95,17 @@ export default class WaveformVisualizer {
     // Set initial cursor style
     this.canvas.style.cursor = 'default';
 
+    // Track mouse enter/leave for zoom control
+    this.canvas.addEventListener('mouseenter', () => {
+      this.isMouseOverCanvas = true;
+    });
+
+    this.canvas.addEventListener('mouseleave', () => {
+      this.isMouseOverCanvas = false;
+      this.endDrag();
+    });
+
+    // Mouse events for dragging
     this.canvas.addEventListener('mousedown', (e) => {
       if (!this.isPlaybackActive && this.isScrollingEnabled && this.totalDuration > 0) {
         this.startDrag(e);
@@ -103,14 +125,44 @@ export default class WaveformVisualizer {
       this.endDrag();
     });
 
-    this.canvas.addEventListener('mouseleave', () => {
-      this.endDrag();
+    // Mouse wheel for zooming - only when mouse is over canvas
+    this.canvas.addEventListener('wheel', (e) => {
+      if (this.isMouseOverCanvas && !this.isPlaybackActive && this.totalDuration > 0) {
+        this.handleWheelZoom(e);
+      }
+    });
+
+    // Touch events for pinch-to-zoom
+    this.canvas.addEventListener('touchstart', (e) => {
+      if (!this.isPlaybackActive && this.totalDuration > 0) {
+        this.handleTouchStart(e);
+      }
+    });
+
+    this.canvas.addEventListener('touchmove', (e) => {
+      if (!this.isPlaybackActive && this.totalDuration > 0) {
+        this.handleTouchMove(e);
+      }
+    });
+
+    this.canvas.addEventListener('touchend', (e) => {
+      this.handleTouchEnd(e);
     });
 
     // Prevent default context menu on right click
     this.canvas.addEventListener('contextmenu', (e) => {
       e.preventDefault();
     });
+
+    // Keyboard shortcuts for zoom - only when canvas is focused
+    this.canvas.addEventListener('keydown', (e) => {
+      if (!this.isPlaybackActive && this.totalDuration > 0) {
+        this.handleKeyboardZoom(e);
+      }
+    });
+
+    // Make canvas focusable for keyboard events
+    this.canvas.tabIndex = 0;
   }
 
   private updateCursor(): void {
@@ -155,6 +207,188 @@ export default class WaveformVisualizer {
     }
   }
 
+  private handleWheelZoom(e: WheelEvent): void {
+    e.preventDefault();
+
+    // Throttle wheel events to prevent too rapid zooming
+    const now = Date.now();
+    if (now - this.lastWheelTime < 50) return;
+    this.lastWheelTime = now;
+
+    const zoomFactor = e.deltaY > 0 ? 1.2 : 0.8; // Zoom out or in (adjusted for better control)
+    const mouseX = e.offsetX;
+    this.zoom(zoomFactor, mouseX);
+  }
+
+  private handleTouchStart(e: TouchEvent): void {
+    e.preventDefault();
+
+    if (e.touches.length === 2) {
+      // Start pinch gesture
+      this.isZooming = true;
+      this.isDragging = false; // Cancel any drag operation
+
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+
+      this.lastPinchDistance = Math.hypot(
+        touch1.clientX - touch2.clientX,
+        touch1.clientY - touch2.clientY
+      );
+
+      // Calculate center point of pinch
+      const rect = this.canvas.getBoundingClientRect();
+      this.pinchCenterX = ((touch1.clientX + touch2.clientX) / 2) - rect.left;
+    } else if (e.touches.length === 1 && !this.isZooming) {
+      // Single touch - start drag
+      const touch = e.touches[0];
+      const rect = this.canvas.getBoundingClientRect();
+      const mouseEvent = new MouseEvent('mousedown', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
+      // Convert touch to mouse coordinates relative to canvas
+      const offsetX = touch.clientX - rect.left;
+      const offsetY = touch.clientY - rect.top;
+
+      if (this.isScrollingEnabled) {
+        this.isDragging = true;
+        this.dragStartX = offsetX;
+        this.dragStartViewTime = this.viewStartTime;
+        this.canvas.style.cursor = 'grabbing';
+      }
+    }
+  }
+
+  private handleTouchMove(e: TouchEvent): void {
+    e.preventDefault();
+
+    if (e.touches.length === 2 && this.isZooming) {
+      // Continue pinch gesture
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+
+      const currentDistance = Math.hypot(
+        touch1.clientX - touch2.clientX,
+        touch1.clientY - touch2.clientY
+      );
+
+      if (this.lastPinchDistance > 0) {
+        const zoomFactor = this.lastPinchDistance / currentDistance;
+        this.zoom(zoomFactor, this.pinchCenterX);
+      }
+
+      this.lastPinchDistance = currentDistance;
+    } else if (e.touches.length === 1 && this.isDragging && !this.isZooming) {
+      // Single touch drag
+      const touch = e.touches[0];
+      const rect = this.canvas.getBoundingClientRect();
+      const offsetX = touch.clientX - rect.left;
+
+      const deltaX = offsetX - this.dragStartX;
+      const deltaTime = (deltaX / this.options.width) * this.viewDuration;
+      const newViewStartTime = this.dragStartViewTime - deltaTime;
+
+      const maxViewStartTime = Math.max(0, this.totalDuration - this.viewDuration);
+      this.viewStartTime = Math.max(0, Math.min(maxViewStartTime, newViewStartTime));
+
+      this.draw();
+    }
+  }
+
+  private handleTouchEnd(e: TouchEvent): void {
+    if (e.touches.length < 2) {
+      this.isZooming = false;
+      this.lastPinchDistance = 0;
+    }
+
+    if (e.touches.length === 0) {
+      this.endDrag();
+    }
+  }
+
+  private handleKeyboardZoom(e: KeyboardEvent): void {
+    if (e.ctrlKey || e.metaKey) {
+      let zoomFactor: number | null = null;
+
+      if (e.key === '=' || e.key === '+') {
+        e.preventDefault();
+        zoomFactor = 0.8; // Zoom in
+      } else if (e.key === '-') {
+        e.preventDefault();
+        zoomFactor = 1.25; // Zoom out
+      } else if (e.key === '0') {
+        e.preventDefault();
+        this.resetZoom();
+        return;
+      }
+
+      if (zoomFactor) {
+        const centerX = this.options.width / 2;
+        this.zoom(zoomFactor, centerX);
+      }
+    }
+  }
+
+  private zoom(factor: number, centerX: number): void {
+    if (!this.totalDuration) return;
+
+    const oldViewDuration = this.viewDuration;
+    const oldViewStartTime = this.viewStartTime;
+
+    // Calculate the time point at the center of the zoom
+    const centerTime = this.viewStartTime + (centerX / this.options.width) * this.viewDuration;
+
+    // Calculate new view duration with better bounds checking
+    let newViewDuration = this.viewDuration * factor;
+
+    // Apply zoom limits more conservatively
+    newViewDuration = Math.max(this.options.minZoomDuration, newViewDuration);
+    newViewDuration = Math.min(this.options.maxZoomDuration, newViewDuration);
+    newViewDuration = Math.min(newViewDuration, this.totalDuration);
+
+    if (Math.abs(newViewDuration - this.viewDuration) < 10) return; // Prevent tiny changes
+
+    // Calculate new view start time to keep the center point stable
+    const centerRatio = centerX / this.options.width;
+    let newViewStartTime = centerTime - (newViewDuration * centerRatio);
+
+    // Apply bounds more carefully
+    const maxViewStartTime = this.totalDuration - newViewDuration;
+    newViewStartTime = Math.max(0, Math.min(maxViewStartTime, newViewStartTime));
+
+    // Ensure we don't go beyond the data bounds
+    if (newViewStartTime >= 0 && newViewStartTime + newViewDuration <= this.totalDuration + 1) {
+      this.viewDuration = newViewDuration;
+      this.viewStartTime = newViewStartTime;
+
+      // Update scrolling state
+      this.isScrollingEnabled = this.viewDuration < this.totalDuration;
+      this.updateCursor();
+
+      this.draw();
+    } else {
+      // If bounds check fails, revert to old values
+      console.warn('Zoom bounds check failed, reverting', {
+        newViewStartTime,
+        newViewDuration,
+        totalDuration: this.totalDuration
+      });
+    }
+  }
+
+  private resetZoom(): void {
+    if (!this.totalDuration) return;
+
+    this.viewStartTime = 0;
+    this.viewDuration = this.totalDuration > this.options.scrollThreshold
+      ? this.options.viewportDuration
+      : this.totalDuration;
+
+    this.updateScrollingState();
+    this.draw();
+  }
+
   setLoudnessData(data: LoudnessData[]): void {
     this.loudnessData = [...data];
     this.updateScrollingState();
@@ -182,6 +416,7 @@ export default class WaveformVisualizer {
     if (this.loudnessData.length === 0) {
       this.totalDuration = 0;
       this.isScrollingEnabled = false;
+      this.updateCursor();
       return;
     }
 
@@ -195,12 +430,17 @@ export default class WaveformVisualizer {
       this.viewStartTime = 0;
       this.viewDuration = this.options.viewportDuration;
     }
+
+    this.updateCursor();
   }
 
   startPlayback(playbackRate: number = 1): void {
     this.playbackStartTime = Date.now();
     this.playbackRate = playbackRate;
     this.isPlaybackActive = true;
+
+    // Reset any drag state when starting playback
+    this.endDrag();
 
     // Reset viewport to beginning when starting playback
     if (this.isScrollingEnabled) {
@@ -216,6 +456,7 @@ export default class WaveformVisualizer {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
+    this.updateCursor(); // Update cursor when playback stops
     this.draw(); // Redraw without playback line
   }
 
@@ -235,8 +476,14 @@ export default class WaveformVisualizer {
       this.statsDiv.innerText = "";
     } else {
       let value = (maxLoudness * 1000).toFixed(0);
-      const scrollInfo = this.isScrollingEnabled ? " (Scrolling)" : "";
-      this.statsDiv.innerText = `Max Vol: ${value}${scrollInfo}`;
+      let statusInfo = "";
+
+      if (this.isScrollingEnabled) {
+        const zoomPercent = Math.round((this.options.viewportDuration / this.viewDuration) * 100);
+        statusInfo = ` (${zoomPercent}% zoom)`;
+      }
+
+      this.statsDiv.innerText = `Max Vol: ${value}${statusInfo}`;
     }
   }
 
