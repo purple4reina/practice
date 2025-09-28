@@ -38,6 +38,11 @@ export default class WaveformVisualizer {
   private totalDuration: number = 0; // Total duration of the recording
   private playbackMarkerPosition: number = 0.33; // Position where marker stops and scrolling begins (0-1)
 
+  // Drag/navigation properties
+  private isDragging: boolean = false;
+  private dragStartX: number = 0;
+  private dragStartViewTime: number = 0;
+
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
@@ -63,6 +68,7 @@ export default class WaveformVisualizer {
 
     this.viewDuration = this.options.viewportDuration;
     this.setupCanvas();
+    this.setupMouseEvents();
   }
 
   private setupCanvas(): void {
@@ -72,6 +78,81 @@ export default class WaveformVisualizer {
     this.canvas.style.height = '300px';
     this.canvas.style.border = '1px solid #dee2e6';
     this.canvas.style.borderRadius = '8px';
+  }
+
+  private setupMouseEvents(): void {
+    // Set initial cursor style
+    this.canvas.style.cursor = 'default';
+
+    this.canvas.addEventListener('mousedown', (e) => {
+      if (!this.isPlaybackActive && this.isScrollingEnabled && this.totalDuration > 0) {
+        this.startDrag(e);
+      }
+    });
+
+    this.canvas.addEventListener('mousemove', (e) => {
+      if (this.isDragging) {
+        this.updateDrag(e);
+      } else {
+        // Update cursor based on whether dragging is available
+        this.updateCursor();
+      }
+    });
+
+    this.canvas.addEventListener('mouseup', () => {
+      this.endDrag();
+    });
+
+    this.canvas.addEventListener('mouseleave', () => {
+      this.endDrag();
+    });
+
+    // Prevent default context menu on right click
+    this.canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    });
+  }
+
+  private updateCursor(): void {
+    if (!this.isPlaybackActive && this.isScrollingEnabled && this.totalDuration > 0) {
+      this.canvas.style.cursor = 'grab';
+    } else {
+      this.canvas.style.cursor = 'default';
+    }
+  }
+
+  private startDrag(e: MouseEvent): void {
+    this.isDragging = true;
+    this.dragStartX = e.offsetX;
+    this.dragStartViewTime = this.viewStartTime;
+    this.canvas.style.cursor = 'grabbing';
+
+    // Prevent text selection during drag
+    e.preventDefault();
+  }
+
+  private updateDrag(e: MouseEvent): void {
+    if (!this.isDragging) return;
+
+    const deltaX = e.offsetX - this.dragStartX;
+    const deltaTime = (deltaX / this.options.width) * this.viewDuration;
+
+    // Calculate new view start time (dragging left moves forward in time, right moves backward)
+    const newViewStartTime = this.dragStartViewTime - deltaTime;
+
+    // Clamp to valid boundaries
+    const maxViewStartTime = Math.max(0, this.totalDuration - this.viewDuration);
+    this.viewStartTime = Math.max(0, Math.min(maxViewStartTime, newViewStartTime));
+
+    // Redraw with new viewport
+    this.draw();
+  }
+
+  private endDrag(): void {
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.updateCursor();
+    }
   }
 
   setLoudnessData(data: LoudnessData[]): void {
