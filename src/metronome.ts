@@ -32,7 +32,7 @@ export default class Metronome {
 
   constructor(prefix: string, audioContext: AudioContext) {
     this.enabled = boolSwitchControls(`${prefix}-metronome-enabled`, { initial: true });
-    this.bpm = plusMinusControls(`${prefix}-bpm`, { initial: 60, min: 15, max: 300 });
+    this.bpm = plusMinusControls(`${prefix}-bpm`, { initial: 60, min: 5, max: 300 });
     this.subdivisions = plusMinusControls(`${prefix}-subdivisions`, { initial: 1, min: 1, max: 32 });
     this.countOffSub = plusMinusControls(`${prefix}-count-off-sub`, { initial: 1, min: 1, max: 32 });
     this.volume = slideControls(`${prefix}-volume`, { initial: 1, min: 0, max: 5, step: 0.25 });
