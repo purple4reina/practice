@@ -87,6 +87,11 @@ export default class Metronome {
     while (this.nextClickTime < this.audioContext.currentTime + (this.scheduleLookahead / 1000)) {
       if (this._countOffs >= 0 && this.nextClickSubdivision % this._countOffSubs === 0) {
         this._countOffs -= 1;
+        if (this._countOffs === -1) {
+          // this is the first click after the count-off is complete, reset the
+          // subdivisions
+          this.nextClickSubdivision = 0;
+        }
         // double the volume
         this.createClickSound(this.nextClickTime, this.clickHz);
         this.createClickSound(this.nextClickTime, this.clickHz);
