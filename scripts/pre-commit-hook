@@ -4,5 +4,5 @@ source ./scripts/get_next_version.sh
 
 npm install
 rm -rf docs/
-npm run build
+npm run build || (git checkout docs/ && exit 1)
 git add docs/
