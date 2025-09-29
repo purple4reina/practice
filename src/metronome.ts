@@ -29,6 +29,7 @@ export default class Metronome {
   public countOffSub = plusMinusControls("rec-count-off-sub", { initial: 1, min: 1, max: 32 });
   public latency = plusMinusControls("play-latency", { initial: -75, min: -500, max: 500 });
   public volume;
+  public clickSilencing;
 
   constructor(prefix: string, audioContext: AudioContext) {
     this.enabled = boolSwitchControls(`${prefix}-metronome-enabled`, { initial: true });
@@ -36,6 +37,9 @@ export default class Metronome {
     this.subdivisions = plusMinusControls(`${prefix}-subdivisions`, { initial: 1, min: 1, max: 32 });
     this.countOffSub = plusMinusControls(`${prefix}-count-off-sub`, { initial: 1, min: 1, max: 32 });
     this.volume = slideControls(`${prefix}-volume`, { initial: 1, min: 0, max: 5, step: 0.25 });
+    this.clickSilencing = slideControls(`${prefix}-silencing`, {
+      initial: 0, min: 0, max: 100, step: 1, valueSuffix: "%", label: "Random Click Silencing",
+    });
 
     this.audioContext = audioContext;
   }
@@ -58,9 +62,13 @@ export default class Metronome {
     return this.countOff() / this.bpm() * 60 * 1000 - this.countOffAllowance;
   }
 
-  private createClickSound(when: number, clickHz: number): void {
-    const volume = this.volume();
+  private createClickSound(when: number, clickHz: number, gain: number): void {
+    const volume = this.volume() * gain;
     if (volume <= 0) {
+      return;
+    }
+
+    if (this._countOffs == -1 && Math.random() * 100 < this.clickSilencing()) {
       return;
     }
 
@@ -93,14 +101,12 @@ export default class Metronome {
           this.nextClickSubdivision = 0;
         }
         // double the volume
-        this.createClickSound(this.nextClickTime, this.clickHz);
-        this.createClickSound(this.nextClickTime, this.clickHz);
+        this.createClickSound(this.nextClickTime, this.clickHz, 2);
       } else if (this._countOffs < 0 && this.nextClickSubdivision % this._subdivisions === 0) {
         // double the volume
-        this.createClickSound(this.nextClickTime, this.clickHz);
-        this.createClickSound(this.nextClickTime, this.clickHz);
+        this.createClickSound(this.nextClickTime, this.clickHz, 2);
       } else {
-        this.createClickSound(this.nextClickTime, this.offbeatHz);
+        this.createClickSound(this.nextClickTime, this.offbeatHz, 1);
       }
 
       if (this._countOffs < 0) {

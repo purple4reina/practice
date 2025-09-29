@@ -1,20 +1,23 @@
 class SlideControls {
   private _value: number = 0;
-  private labelText: string = "";
   private min: number = 0;
   private max: number = 10;
   private step: number = 0.5;
+  private labelText: string = "";
+  private valueSuffix: string = "";
 
   private labelElement: HTMLElement | null = null;
   private slideInput: HTMLInputElement | null = null;
   private minusButton: HTMLButtonElement | null = null;
   private plusButton: HTMLButtonElement | null = null;
 
-  constructor(name: string, opts: { initial: number, min: number, max: number, step: number }) {
+  constructor(name: string, opts: { initial: number, min: number, max: number, step: number, valueSuffix?: string, label?: string }) {
     this._value = opts.initial;
     this.min = opts.min;
     this.max = opts.max;
     this.step = opts.step;
+    this.labelText = opts.label || "";
+    this.valueSuffix = opts.valueSuffix || "";
 
     this.slideInput = document.getElementById(name) as HTMLInputElement | null;
     this.minusButton = document.getElementById(`${name}-minus`) as HTMLButtonElement | null;
@@ -26,7 +29,7 @@ class SlideControls {
 
     this.labelElement = document.getElementById(`${name}-label`) as HTMLElement | null;
     if (this.labelElement) {
-      this.labelText = this.labelElement.innerText;
+      this.labelText = this.labelText || this.labelElement.innerText;
       let setLabelText = this.setLabelText.bind(this);
       this.slideInput?.addEventListener("input", function() {
         setLabelText(this.value);
@@ -66,7 +69,7 @@ class SlideControls {
 
   private setLabelText(text: string): void {
     if (this.labelElement) {
-      this.labelElement.innerText = `${this.labelText} (${text})`;
+      this.labelElement.innerText = `${this.labelText} (${text}${this.valueSuffix})`;
     }
   }
 
@@ -84,7 +87,7 @@ class SlideControls {
   }
 }
 
-export default function slideControls(name: string, opts: { initial: number, min: number, max: number, step: number }): () => number {
+export default function slideControls(name: string, opts: { initial: number, min: number, max: number, step: number, valueSuffix?: string, label?: string }): () => number {
   const c = new SlideControls(name, opts);
   return c.value.bind(c);
 }
