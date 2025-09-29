@@ -1,9 +1,11 @@
 class SlideControls {
   private _value: number = 0;
+  private labelText: string = "";
   private min: number = 0;
   private max: number = 10;
   private step: number = 0.5;
 
+  private labelElement: HTMLElement | null = null;
   private slideInput: HTMLInputElement | null = null;
   private minusButton: HTMLButtonElement | null = null;
   private plusButton: HTMLButtonElement | null = null;
@@ -21,6 +23,15 @@ class SlideControls {
     this.slideInput?.addEventListener("change", this.setVal.bind(this));
     this.minusButton?.addEventListener("click", this.minusVal.bind(this));
     this.plusButton?.addEventListener("click", this.plusVal.bind(this));
+
+    this.labelElement = document.getElementById(`${name}-label`) as HTMLElement | null;
+    if (this.labelElement) {
+      this.labelText = this.labelElement.innerText;
+      let setLabelText = this.setLabelText.bind(this);
+      this.slideInput?.addEventListener("input", function() {
+        setLabelText(this.value);
+      });
+    }
 
     this.updateSlideInput();
   }
@@ -49,6 +60,13 @@ class SlideControls {
     this._value = Math.max(this.min, Math.min(this.max, this._value));
     if (this.slideInput) {
       this.slideInput.value = this._value.toString();
+    }
+    this.setLabelText(this._value.toString());
+  }
+
+  private setLabelText(text: string): void {
+    if (this.labelElement) {
+      this.labelElement.innerText = `${this.labelText} (${text})`;
     }
   }
 
