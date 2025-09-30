@@ -6,8 +6,18 @@
     <title>Practice Recorder</title>
 
     <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
+<<<<<<< HEAD
     <script type="module" crossorigin src="/practice/assets/index-B67-kpeU.js"></script>
     <link rel="stylesheet" crossorigin href="/practice/assets/index-Dbib5ZjY.css">
+=======
+<<<<<<< HEAD
+    <script type="module" crossorigin src="/practice/assets/index-DYkjAbu7.js"></script>
+    <link rel="stylesheet" crossorigin href="/practice/assets/index-CGdLRPou.css">
+=======
+    <script type="module" crossorigin src="/practice/assets/index-Buu8s5Q3.js"></script>
+    <link rel="stylesheet" crossorigin href="/practice/assets/index-CE-hhAHw.css">
+>>>>>>> f359e10 (Reorganize offcanvas.)
+>>>>>>> b9f2080 (Reorganize offcanvas.)
   </head>
   <body>
     <div class="container">
@@ -190,10 +200,11 @@
 
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasRightLabel">Welcome!</h5>
+        <h5 class="offcanvas-title" id="offcanvasRightLabel">Welcome to Practice Recorder!</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
+<<<<<<< HEAD
         <!-- tapper -->
         <button id="tapper" class="btn">
           Metronome Tapper
@@ -237,22 +248,73 @@
         <div class="row">
           <div class="col-5" id="rec-silencing-label">
             Random Click Silencing:
+=======
+        <div class="container">
+          <hr></hr>
+          <h6>Settings</h6>
+          <!-- click silencing -->
+          <div class="row">
+            <div class="col-5" id="rec-silencing-label">
+              Random Click Silencing:
+            </div>
+            <div class="col input-group">
+              <button class="btn" id="rec-silencing-minus" type="button" tabindex="-1">-</button>
+              <input type="range" class="form-range form-control" id="rec-silencing" min="0" max="100" value="0" step="1">
+              <button class="btn" id="rec-silencing-plus" type="button" tabindex="-1">+</button>
+            </div>
+>>>>>>> f359e10 (Reorganize offcanvas.)
           </div>
-          <div class="col input-group">
-            <button class="btn" id="rec-silencing-minus" type="button" tabindex="-1">-</button>
-            <input type="range" class="form-range form-control" id="rec-silencing" min="0" max="100" value="0" step="1">
-            <button class="btn" id="rec-silencing-plus" type="button" tabindex="-1">+</button>
+          <!-- latency -->
+          <div class="row">
+            <div class="col-5">
+              Latency Compensation:
+            </div>
+            <div class="col input-group">
+              <button class="btn" id="play-latency-minus" type="button" tabindex="-1">-</button>
+              <input type="text" class="form-control" id="play-latency-val" value="-75" pattern="[0-9]*" tabindex="9">
+              <button class="btn" id="play-latency-plus" type="button" tabindex="-1">+</button>
+            </div>
           </div>
-        </div>
-        <!-- settings -->
-        <div class="row">
-          <div class="col-5">
-            Latency Compensation:
+          <!-- advanced metronome -->
+          <div class="row">
+            <div class="col-8">
+              Advanced Metronome:
+            </div>
+            <div class="col input-group form-check form-switch">
+              <input class="form-check-input" id="advanced" type="checkbox" role="switch" tabindex="-1">
+            </div>
           </div>
-          <div class="col input-group">
-            <button class="btn" id="play-latency-minus" type="button" tabindex="-1">-</button>
-            <input type="text" class="form-control" id="play-latency-val" value="-75" pattern="[0-9]*" tabindex="9">
-            <button class="btn" id="play-latency-plus" type="button" tabindex="-1">+</button>
+          <hr></hr>
+          <h6>Tools</h6>
+          <!-- tapper -->
+          <button id="tapper" class="btn">
+            Metronome Tapper
+            <span id="tapper-display" class="badge text-bg-secondary"></span>
+          </button>
+          <!-- drone -->
+          <div class="input-group">
+            <button class="btn" id="drone" type="button" tabindex="-1">Drone</button>
+            <select class="form-select" id="drone-pitch">
+              <option value="C">C</option>
+              <option value="Db">C#</option>
+              <option value="D">D</option>
+              <option value="Eb">D#</option>
+              <option value="E">E</option>
+              <option value="F">F</option>
+              <option value="Gb">F#</option>
+              <option value="G">G</option>
+              <option value="Ab">G#</option>
+              <option value="A" selected>A</option>
+              <option value="Bb">Bb</option>
+            </select>
+            <select class="form-select" id="drone-octave">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
           </div>
         </div>
       </div>
