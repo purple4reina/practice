@@ -142,16 +142,6 @@
                       </div>
                     </div>
                     <div class="row">
-                      <div class="col-5">
-                        Latency Compensation:
-                      </div>
-                      <div class="col input-group">
-                        <button class="btn" id="play-latency-minus" type="button" tabindex="-1">-</button>
-                        <input type="text" class="form-control" id="play-latency-val" value="-75" pattern="[0-9]*" tabindex="9">
-                        <button class="btn" id="play-latency-plus" type="button" tabindex="-1">+</button>
-                      </div>
-                    </div>
-                    <div class="row">
                       <div class="col-5" id="play-volume-label">
                         Volume:
                       </div>
@@ -242,6 +232,17 @@
             <button class="btn" id="rec-silencing-minus" type="button" tabindex="-1">-</button>
             <input type="range" class="form-range form-control" id="rec-silencing" min="0" max="100" value="0" step="1">
             <button class="btn" id="rec-silencing-plus" type="button" tabindex="-1">+</button>
+          </div>
+        </div>
+        <!-- settings -->
+        <div class="row">
+          <div class="col-5">
+            Latency Compensation:
+          </div>
+          <div class="col input-group">
+            <button class="btn" id="play-latency-minus" type="button" tabindex="-1">-</button>
+            <input type="text" class="form-control" id="play-latency-val" value="-75" pattern="[0-9]*" tabindex="9">
+            <button class="btn" id="play-latency-plus" type="button" tabindex="-1">+</button>
           </div>
         </div>
       </div>
