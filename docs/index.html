@@ -8,6 +8,8 @@
     <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
     <script type="module" crossorigin src="/practice/assets/index-DYkjAbu7.js"></script>
     <link rel="stylesheet" crossorigin href="/practice/assets/index-CGdLRPou.css">
 =======
@@ -17,6 +19,14 @@
 >>>>>>> d42d33f (Do not git tag when not on main.)
     <link rel="stylesheet" crossorigin href="/practice/assets/index-CE-hhAHw.css">
 >>>>>>> f359e10 (Reorganize offcanvas.)
+=======
+    <script type="module" crossorigin src="/practice/assets/index-CjZ93CbH.js"></script>
+    <link rel="stylesheet" crossorigin href="/practice/assets/index-BaYdi0Tv.css">
+>>>>>>> af89d6a (Create scaffolding for ui elements.)
+=======
+    <script type="module" crossorigin src="/practice/assets/index-TqlWQRhB.js"></script>
+    <link rel="stylesheet" crossorigin href="/practice/assets/index-yktcEs56.css">
+>>>>>>> 385d4b3 (f)
   </head>
   <body>
     <div class="container">
@@ -59,111 +69,28 @@
               Recording Metronome:
             </div>
             <div class="col input-group form-check form-switch">
-              <input class="form-check-input" id="rec-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#recordingMetronome" tabindex="3" checked>
+              <input class="form-check-input" id="rec-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target=".rec-metronome" tabindex="3" checked>
             </div>
             <div class="col-4">
               Playback Metronome:
             </div>
             <div class="col input-group form-check form-switch">
-              <input class="form-check-input" id="play-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#playbackMetronome" tabindex="4" checked>
+              <input class="form-check-input" id="play-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target=".play-metronome" tabindex="4" checked>
             </div>
           </div>
           <div class="row">
-            <div class="col">
-              <div class="collapse show" id="recordingMetronome">
-                <div class="card card-body">
-                  <div class="container">
-                    <div class="row">
-                      <div class="col-5">
-                        BPM:
-                      </div>
-                      <div class="col input-group">
-                        <button class="btn" id="rec-bpm-minus" type="button" tabindex="-1">-</button>
-                        <input type="text" class="form-control" id="rec-bpm-val" value="60" pattern="[0-9]*" tabindex="5">
-                        <button class="btn" id="rec-bpm-plus" type="button" tabindex="-1">+</button>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-5">
-                        Subdivisions:
-                      </div>
-                      <div class="col input-group">
-                        <button class="btn" id="rec-subdivisions-minus" type="button" tabindex="-1">-</button>
-                        <input type="text" class="form-control" id="rec-subdivisions-val" value="1" pattern="[0-9]*" tabindex="7">
-                        <button class="btn" id="rec-subdivisions-plus" type="button" tabindex="-1">+</button>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-5">
-                        Count Off Beats:
-                      </div>
-                      <div class="col input-group">
-                        <button class="btn" id="rec-count-off-minus" type="button" tabindex="-1">-</button>
-                        <input type="text" class="form-control" id="rec-count-off-val" value="0" pattern="[0-9]*" tabindex="9">
-                        <button class="btn" id="rec-count-off-plus" type="button" tabindex="-1">+</button>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-5">
-                        Count Off Subdivisions:
-                      </div>
-                      <div class="col input-group">
-                        <button class="btn" id="rec-count-off-sub-minus" type="button" tabindex="-1">-</button>
-                        <input type="text" class="form-control" id="rec-count-off-sub-val" value="0" pattern="[0-9]*" tabindex="9">
-                        <button class="btn" id="rec-count-off-sub-plus" type="button" tabindex="-1">+</button>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-5" id="rec-volume-label">
-                        Volume:
-                      </div>
-                      <div class="col input-group">
-                        <button class="btn" id="rec-volume-minus" type="button" tabindex="-1">-</button>
-                        <input type="range" class="form-range form-control" id="rec-volume" min="0" max="5" value="1" step="0.25">
-                        <button class="btn" id="rec-volume-plus" type="button" tabindex="-1">+</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div class="container" id="blocks">
             </div>
-            <div class="col">
-              <div class="collapse show" id="playbackMetronome">
-                <div class="card card-body">
-                  <div class="container">
-                    <div class="row">
-                      <div class="col-5">
-                        BPM:
-                      </div>
-                      <div class="col input-group">
-                        <button class="btn" id="play-bpm-minus" type="button" tabindex="-1">-</button>
-                        <input type="text" class="form-control" id="play-bpm-val" value="60" pattern="[0-9]*" tabindex="6">
-                        <button class="btn" id="play-bpm-plus" type="button" tabindex="-1">+</button>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-5">
-                        Subdivisions:
-                      </div>
-                      <div class="col input-group">
-                        <button class="btn" id="play-subdivisions-minus" type="button" tabindex="-1">-</button>
-                        <input type="text" class="form-control" id="play-subdivisions-val" value="1" pattern="[0-9]*" tabindex="7">
-                        <button class="btn" id="play-subdivisions-plus" type="button" tabindex="-1">+</button>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-5" id="play-volume-label">
-                        Volume:
-                      </div>
-                      <div class="col input-group">
-                        <button class="btn" id="play-volume-minus" type="button" tabindex="-1">-</button>
-                        <input type="range" class="form-range form-control" id="play-volume" min="0" max="5" value="1" step="0.25">
-                        <button class="btn" id="play-volume-plus" type="button" tabindex="-1">+</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          </div>
+          <div class="row">
+            <div class="dropdown">
+              <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Add Block
+              </button>
+              <ul class="dropdown-menu" id="add-block">
+                <li><button class="dropdown-item" type="button" value="metronome">Set Metronome</button></li>
+                <li><button class="dropdown-item" type="button" value="clicks">Clicks</button></li>
+              </ul>
             </div>
           </div>
         </div>
@@ -203,51 +130,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-<<<<<<< HEAD
-        <!-- tapper -->
-        <button id="tapper" class="btn">
-          Metronome Tapper
-          <span id="tapper-display" class="badge text-bg-secondary"></span>
-        </button>
-        <!-- drone -->
-        <div class="input-group">
-          <button class="btn" id="drone" type="button" tabindex="-1">Drone</button>
-          <select class="form-select" id="drone-pitch">
-            <option value="C">C</option>
-            <option value="Db">C#</option>
-            <option value="D">D</option>
-            <option value="Eb">D#</option>
-            <option value="E">E</option>
-            <option value="F">F</option>
-            <option value="Gb">F#</option>
-            <option value="G">G</option>
-            <option value="Ab">G#</option>
-            <option value="A" selected>A</option>
-            <option value="Bb">Bb</option>
-          </select>
-          <select class="form-select" id="drone-octave">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3" selected>3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-          </select>
-        </div>
-        <!-- click flash -->
-        <div class="row">
-          <div class="col-8">
-            Click Flash:
-          </div>
-          <div class="col input-group form-check form-switch">
-            <input class="form-check-input" id="rec-click-flash" type="checkbox" role="switch">
-          </div>
-        </div>
-        <!-- click silencing -->
-        <div class="row">
-          <div class="col-5" id="rec-silencing-label">
-            Random Click Silencing:
-=======
         <div class="container">
           <hr></hr>
           <h6>Settings</h6>
@@ -261,7 +143,6 @@
               <input type="range" class="form-range form-control" id="rec-silencing" min="0" max="100" value="0" step="1">
               <button class="btn" id="rec-silencing-plus" type="button" tabindex="-1">+</button>
             </div>
->>>>>>> f359e10 (Reorganize offcanvas.)
           </div>
           <!-- latency -->
           <div class="row">

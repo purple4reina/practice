@@ -1,4 +1,5 @@
 import AudioAnalyzer from "./audio-analyzer";
+import BlockManager from "./blocks/block-manager";
 import Drone from "./drone";
 import Metronome from "./metronome";
 import PlayRecordControls from "./play-record-controls";
@@ -23,6 +24,7 @@ class WebAudioRecorderController {
   private audioContext = new AudioContext();
   private recorder = new RecorderDevice(this.audioContext);
   private player = new PlayerDevice(this.audioContext);
+  private blockManager = new BlockManager();
   private recordingMetronome = new Metronome("rec", this.audioContext);
   private playbackMetronome = new Metronome("play", this.audioContext);
   private waveformVisualizer: WaveformVisualizer;
