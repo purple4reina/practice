@@ -11,7 +11,6 @@ export default class BlockManager {
 
   constructor() {
     this.newBlock("metronome");
-    this.newBlock("clicks");
     this.newBlock("record");
     this.newBlock("clicks");
 
