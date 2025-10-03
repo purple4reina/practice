@@ -69,7 +69,7 @@ class SlideControls {
 
   private setLabelText(text: string): void {
     if (this.labelElement) {
-      this.labelElement.innerText = `${this.labelText} (${text}${this.valueSuffix})`;
+      this.labelElement.innerText = `${this.labelText} (${text}${this.valueSuffix}):`;
     }
   }
 

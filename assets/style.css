@@ -72,3 +72,13 @@ input[type=range] {
   margin-top: 2rem;
   padding-top: 1rem;
 }
+
+#click-flash-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: white;
+  z-index: 9999;
+}

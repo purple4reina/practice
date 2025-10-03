@@ -8,6 +8,7 @@ export default class Metronome {
   private clickHz: number = 1000;
   private offbeatHz: number = 750;
   private oscillatorType: OscillatorType = "square";
+  private flashBox = document.getElementById("click-flash") as HTMLElement;
 
   private nextClickTime: number = 0;
   private nextClickSubdivision: number = 0;
@@ -30,6 +31,7 @@ export default class Metronome {
   public latency = plusMinusControls("play-latency", { initial: -75, min: -500, max: 500 });
   public volume;
   public clickSilencing;
+  public flash;
 
   constructor(prefix: string, audioContext: AudioContext) {
     this.enabled = boolSwitchControls(`${prefix}-metronome-enabled`, { initial: true });
@@ -40,6 +42,7 @@ export default class Metronome {
     this.clickSilencing = slideControls(`${prefix}-silencing`, {
       initial: 0, min: 0, max: 100, step: 1, valueSuffix: "%", label: "Random Click Silencing",
     });
+    this.flash = boolSwitchControls(`${prefix}-click-flash`, { initial: false });
 
     this.audioContext = audioContext;
   }
@@ -88,6 +91,11 @@ export default class Metronome {
 
     oscillator.start(when);
     oscillator.stop(when + 0.05);
+    if (this.flash()) {
+      const delay = when - this.audioContext.currentTime;
+      setTimeout(() => this.flashBox.hidden = false, delay);
+      setTimeout(() => this.flashBox.hidden = true, delay + 50);
+    }
   }
 
   private scheduler = (): void => {
