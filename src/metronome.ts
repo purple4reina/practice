@@ -8,7 +8,7 @@ export default class Metronome {
   private clickHz: number = 1000;
   private offbeatHz: number = 750;
   private oscillatorType: OscillatorType = "square";
-  private flashBox = document.getElementById("click-flash") as HTMLElement;
+  private flashBox = document.getElementById("click-flash-box") as HTMLElement;
 
   private nextClickTime: number = 0;
   private nextClickSubdivision: number = 0;
