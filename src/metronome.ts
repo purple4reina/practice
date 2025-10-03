@@ -66,12 +66,19 @@ export default class Metronome {
   }
 
   private createClickSound(when: number, clickHz: number, gain: number): void {
-    const volume = this.volume() * gain;
-    if (volume <= 0) {
+    if (this._countOffs == -1 && Math.random() * 100 < this.clickSilencing()) {
       return;
     }
 
-    if (this._countOffs == -1 && Math.random() * 100 < this.clickSilencing()) {
+    // show flash even if volume all the way down
+    if (this.flash()) {
+      const delay = when - this.audioContext.currentTime;
+      setTimeout(() => this.flashBox.hidden = false, delay);
+      setTimeout(() => this.flashBox.hidden = true, delay + 50);
+    }
+
+    const volume = this.volume() * gain;
+    if (volume <= 0) {
       return;
     }
 
@@ -91,11 +98,6 @@ export default class Metronome {
 
     oscillator.start(when);
     oscillator.stop(when + 0.05);
-    if (this.flash()) {
-      const delay = when - this.audioContext.currentTime;
-      setTimeout(() => this.flashBox.hidden = false, delay);
-      setTimeout(() => this.flashBox.hidden = true, delay + 50);
-    }
   }
 
   private scheduler = (): void => {
