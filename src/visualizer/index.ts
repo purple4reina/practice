@@ -1,5 +1,5 @@
 import boolSwitchControls from "../bool-switch-controls";
-import type { LoudnessData } from '../loudness-analyzer';
+import type { LoudnessData } from './loudness-analyzer';
 import type { IntonationData } from '../tuner';
 
 export interface VisualizerOptions {
