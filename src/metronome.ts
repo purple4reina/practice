@@ -30,7 +30,7 @@ abstract class Metronome {
   public countOffSub = plusMinusControls("rec-count-off-sub", { initial: 1, min: 1, max: 32 });
   public latency = plusMinusControls("play-latency", { initial: -75, min: -500, max: 500 });
   public volume;
-  public clickSilencing;
+  protected clickSilencing = () => 100;
   public flash;
 
   constructor(prefix: string, audioContext: AudioContext) {
@@ -39,9 +39,6 @@ abstract class Metronome {
     this.subdivisions = plusMinusControls(`${prefix}-subdivisions`, { initial: 1, min: 1, max: 32 });
     this.countOffSub = plusMinusControls(`${prefix}-count-off-sub`, { initial: 1, min: 1, max: 32 });
     this.volume = slideControls(`${prefix}-volume`, { initial: 1, min: 0, max: 5, step: 0.25 });
-    this.clickSilencing = slideControls(`${prefix}-silencing`, {
-      initial: 0, min: 0, max: 100, step: 1, valueSuffix: "%", label: "Random Click Silencing",
-    });
     this.flash = boolSwitchControls(`${prefix}-click-flash`, { initial: false });
 
     this.audioContext = audioContext;
@@ -158,6 +155,10 @@ abstract class Metronome {
 }
 
 export class RecordingMetronome extends Metronome {
+  protected clickSilencing = slideControls("rec-silencing", {
+    initial: 0, min: 0, max: 100, step: 1, valueSuffix: "%", label: "Random Click Silencing",
+  });
+
   constructor(audioContext: AudioContext) {
     super("rec", audioContext);
   }
