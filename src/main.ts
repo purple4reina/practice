@@ -1,7 +1,6 @@
 import AudioAnalyzer from "./audio-analyzer";
 import BlockManager from "./blocks/block-manager";
 import Drone from "./drone";
-import Metronome from "./metronome";
 import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
@@ -9,6 +8,10 @@ import Tapper from "./tapper";
 import Tuner from "./tuner";
 import WaveformVisualizer, { MetronomeSettings } from "./waveform-visualizer";
 import fractionControls from "./fraction-controls";
+import {
+  RecordingMetronome,
+  PlaybackMetronome,
+} from "./metronome";
 import {
   initializeMonitoring,
   setMonitoredUser,
@@ -25,8 +28,8 @@ class WebAudioRecorderController {
   private recorder = new RecorderDevice(this.audioContext);
   private player = new PlayerDevice(this.audioContext);
   private blockManager = new BlockManager();
-  private recordingMetronome = new Metronome("rec", this.audioContext);
-  private playbackMetronome = new Metronome("play", this.audioContext);
+  private recordingMetronome = new RecordingMetronome(this.audioContext);
+  private playbackMetronome = new PlaybackMetronome(this.audioContext);
   private waveformVisualizer: WaveformVisualizer;
   private tuner = new Tuner(this.audioContext);
   private tapper = new Tapper();

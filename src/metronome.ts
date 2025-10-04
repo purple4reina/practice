@@ -2,7 +2,7 @@ import boolSwitchControls from "./bool-switch-controls";
 import plusMinusControls from "./plus-minus-controls";
 import slideControls from "./slide-controls";
 
-export default class Metronome {
+abstract class Metronome {
   private audioContext: AudioContext;
 
   private clickHz: number = 1000;
@@ -154,5 +154,17 @@ export default class Metronome {
 
   stop(): void {
     this.isPlaying = false;
+  }
+}
+
+export class RecordingMetronome extends Metronome {
+  constructor(audioContext: AudioContext) {
+    super("rec", audioContext);
+  }
+}
+
+export class PlaybackMetronome extends Metronome {
+  constructor(audioContext: AudioContext) {
+    super("play", audioContext);
   }
 }
