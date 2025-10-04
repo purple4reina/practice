@@ -22,8 +22,9 @@ export interface MetronomeSettings {
 }
 
 export default class Visualizer {
-  private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
+  private canvas = document.getElementById('waveform-canvas') as HTMLCanvasElement;
+  private ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+
   private options: Required<VisualizerOptions>;
   private loudnessData: LoudnessData[] = [];
   private intonationData: IntonationData | null = null;
@@ -55,14 +56,7 @@ export default class Visualizer {
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      throw new Error('Could not get 2D context from canvas');
-    }
-    this.ctx = ctx;
-
+  constructor() {
     this.options = {
       width: 800,
       height: 300,

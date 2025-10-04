@@ -30,7 +30,7 @@ class WebAudioRecorderController {
   private blockManager = new BlockManager();
   private recordingMetronome = new RecordingMetronome(this.audioContext);
   private playbackMetronome = new PlaybackMetronome(this.audioContext);
-  private visualizer: Visualizer;
+  private visualizer = new Visualizer();
   private tuner = new Tuner(this.audioContext);
   private tapper = new Tapper();
   private drone = new Drone(this.audioContext);
@@ -39,12 +39,6 @@ class WebAudioRecorderController {
   private playRecordControls = new PlayRecordControls();
 
   constructor() {
-    const canvas = document.getElementById('waveform-canvas') as HTMLCanvasElement;
-    if (!canvas) {
-      throw new Error('Waveform canvas not found');
-    }
-    this.visualizer = new Visualizer(canvas);
-
     this.playRecordControls.initializeEventListeners({
       record: this.record.bind(this),
       stopRecording: this.stopRecording.bind(this),
