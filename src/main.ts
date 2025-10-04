@@ -29,6 +29,8 @@ class WebAudioRecorderController {
   private recordingMetronome = new RecordingMetronome(this.audioContext);
   private playbackMetronome = new PlaybackMetronome(this.audioContext);
   private visualizer = new Visualizer(this.audioContext);
+
+  // tools
   private tapper = new Tapper();
   private drone = new Drone(this.audioContext);
 

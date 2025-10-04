@@ -21,7 +21,7 @@ abstract class Metronome {
   private _countOffSubs: number = 1;
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
   private scheduleInterval: number = 25.0; // Schedule every 25ms
-  private countOffAllowance: number = 100; // Allow 100ms before the first click
+  protected countOffAllowance: number = 100; // Allow 100ms before the first click
 
   public enabled;
   public bpm;
@@ -42,15 +42,6 @@ abstract class Metronome {
     this.flash = boolSwitchControls(`${prefix}-click-flash`, { initial: false });
 
     this.audioContext = audioContext;
-  }
-
-  getPlaybackStartTime(audioStartTime: number, playbackRate: number = 1.0): number {
-    const scaledCompensation = this.latency() / playbackRate;
-    let startTime = audioStartTime - (scaledCompensation / 1000);
-    if (this.countOff() > 0) {
-      startTime += (this.countOffAllowance / playbackRate / 1000);
-    }
-    return startTime;
   }
 
   countOffMs(): number {
@@ -165,6 +156,15 @@ export class RecordingMetronome extends Metronome {
 }
 
 export class PlaybackMetronome extends Metronome {
+  getPlaybackStartTime(audioStartTime: number, playbackRate: number = 1.0): number {
+    const scaledCompensation = this.latency() / playbackRate;
+    let startTime = audioStartTime - (scaledCompensation / 1000);
+    if (this.countOff() > 0) {
+      startTime += (this.countOffAllowance / playbackRate / 1000);
+    }
+    return startTime;
+  }
+
   constructor(audioContext: AudioContext) {
     super("play", audioContext);
   }
