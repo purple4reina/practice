@@ -383,17 +383,6 @@ export default class Visualizer {
     this.draw();
   }
 
-  setLoudnessData(data: LoudnessData[]): void {
-    this.loudnessData = [...data];
-    this.updateScrollingState();
-    this.draw();
-  }
-
-  setMetronomeSettings(settings: MetronomeSettings | null): void {
-    this.metronomeSettings = settings;
-    this.draw();
-  }
-
   drawVisualization(
     loudnessData: LoudnessData[],
     intonationData: IntonationData,
