@@ -1,4 +1,4 @@
-import AudioAnalyzer from "./audio-analyzer";
+import AudioAnalyzer from "./loudness-analyzer";
 import BlockManager from "./blocks/block-manager";
 import Drone from "./drone";
 import PlayRecordControls from "./play-record-controls";
