@@ -55,7 +55,7 @@ export default class Visualizer {
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
-  constructor(canvas: HTMLCanvasElement, options: VisualizerOptions = {}) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -64,17 +64,17 @@ export default class Visualizer {
     this.ctx = ctx;
 
     this.options = {
-      width: options.width || 800,
-      height: options.height || 300,
-      backgroundColor: options.backgroundColor || '#f8f9fa',
-      waveformColor: options.waveformColor || '#a55dfc',
-      gridColor: options.gridColor || '#babcbf',
-      showGrid: options.showGrid !== undefined ? options.showGrid : true,
-      maxTime: options.maxTime || 30000, // 30 seconds default
-      scrollThreshold: options.scrollThreshold || 15000, // 15 seconds
-      viewportDuration: options.viewportDuration || 10000, // 10 seconds
-      minZoomDuration: options.minZoomDuration || 500, // 0.5 seconds minimum zoom
-      maxZoomDuration: options.maxZoomDuration || 30000, // 30 seconds maximum zoom
+      width: 800,
+      height: 300,
+      backgroundColor: '#f8f9fa',
+      waveformColor: '#a55dfc',
+      gridColor: '#babcbf',
+      showGrid: true,
+      maxTime: 30000, // 30 seconds default
+      scrollThreshold: 15000, // 15 seconds
+      viewportDuration: 10000, // 10 seconds
+      minZoomDuration: 500, // 0.5 seconds minimum zoom
+      maxZoomDuration: 30000, // 30 seconds maximum zoom
     };
 
     this.viewDuration = this.options.viewportDuration;

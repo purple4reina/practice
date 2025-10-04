@@ -43,12 +43,7 @@ class WebAudioRecorderController {
     if (!canvas) {
       throw new Error('Waveform canvas not found');
     }
-    this.visualizer = new Visualizer(canvas, {
-      backgroundColor: '#f8f9fa',
-      waveformColor: '#a55dfc',
-      showGrid: true,
-      maxTime: 30000 // 30 seconds
-    });
+    this.visualizer = new Visualizer(canvas);
 
     this.playRecordControls.initializeEventListeners({
       record: this.record.bind(this),
