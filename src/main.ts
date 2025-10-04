@@ -4,7 +4,6 @@ import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
 import Tapper from "./tapper";
-import Tuner from "./visualizer/tuner";
 import Visualizer, { MetronomeSettings } from "./visualizer";
 import fractionControls from "./fraction-controls";
 import {
@@ -29,8 +28,7 @@ class WebAudioRecorderController {
   private blockManager = new BlockManager();
   private recordingMetronome = new RecordingMetronome(this.audioContext);
   private playbackMetronome = new PlaybackMetronome(this.audioContext);
-  private visualizer = new Visualizer();
-  private tuner = new Tuner(this.audioContext);
+  private visualizer = new Visualizer(this.audioContext);
   private tapper = new Tapper();
   private drone = new Drone(this.audioContext);
 
@@ -82,8 +80,6 @@ class WebAudioRecorderController {
     // Analyze the recorded audio buffer and show visualization
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
-      const intonationData = this.tuner.analyze(audioBuffer);
-
       // Set metronome settings for beat markers (use playback metronome settings)
       let metronomeSettings: MetronomeSettings | null = null;
       if (this.playbackMetronome.enabled()) {
@@ -93,7 +89,7 @@ class WebAudioRecorderController {
         };
       }
 
-      this.visualizer.drawVisualization(audioBuffer, intonationData, metronomeSettings);
+      this.visualizer.drawVisualization(audioBuffer, metronomeSettings);
 
       sendRecordingEvent({
         duration: audioBuffer.duration,

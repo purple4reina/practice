@@ -13,7 +13,7 @@ export interface IntonationData {
   points: (IntonationPoint | null)[];
 }
 
-export default class Tuner {
+export class Tuner {
   private detectPitch: (buffer: Float32Array) => number | null;
   private audioContextSampleRate: number;
   private maxFrequencyTolerance: number = 1800;

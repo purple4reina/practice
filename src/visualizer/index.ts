@@ -3,7 +3,10 @@ import {
   LoudnessAnalyzer,
   LoudnessData,
 } from './loudness-analyzer';
-import type { IntonationData } from './tuner';
+import {
+  Tuner,
+  IntonationData,
+} from './tuner';
 
 export interface VisualizerOptions {
   width?: number;
@@ -27,6 +30,10 @@ export interface MetronomeSettings {
 export default class Visualizer {
   private canvas = document.getElementById('waveform-canvas') as HTMLCanvasElement;
   private ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+
+  // external analyzers
+  private tuner;
+  private loudnessAnalyzer = LoudnessAnalyzer;
 
   private options: Required<VisualizerOptions>;
   private loudnessData: LoudnessData[] = [];
@@ -59,7 +66,7 @@ export default class Visualizer {
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
-  constructor() {
+  constructor(audioContext: AudioContext) {
     this.options = {
       width: 800,
       height: 300,
@@ -74,6 +81,7 @@ export default class Visualizer {
       maxZoomDuration: 30000, // 30 seconds maximum zoom
     };
 
+    this.tuner = new Tuner(audioContext);
     this.viewDuration = this.options.viewportDuration;
     this.setupCanvas();
     this.setupMouseEvents();
@@ -388,11 +396,10 @@ export default class Visualizer {
 
   drawVisualization(
     audioBuffer: AudioBuffer,
-    intonationData: IntonationData,
     settings: MetronomeSettings | null,
   ) {
-    this.loudnessData = LoudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
-    this.intonationData = intonationData;
+    this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
+    this.intonationData = this.tuner.analyze(audioBuffer);
     this.metronomeSettings = settings;
     this.updateScrollingState();
     this.draw();
