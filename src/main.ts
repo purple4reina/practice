@@ -5,7 +5,7 @@ import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
 import Tapper from "./tapper";
-import Tuner from "./tuner";
+import Tuner from "./visualizer/tuner";
 import Visualizer, { MetronomeSettings } from "./visualizer";
 import fractionControls from "./fraction-controls";
 import {
