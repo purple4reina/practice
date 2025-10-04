@@ -6,7 +6,7 @@ import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
 import Tapper from "./tapper";
 import Tuner from "./tuner";
-import WaveformVisualizer, { MetronomeSettings } from "./waveform-visualizer";
+import Visualizer, { MetronomeSettings } from "./visualizer";
 import fractionControls from "./fraction-controls";
 import {
   RecordingMetronome,
@@ -30,7 +30,7 @@ class WebAudioRecorderController {
   private blockManager = new BlockManager();
   private recordingMetronome = new RecordingMetronome(this.audioContext);
   private playbackMetronome = new PlaybackMetronome(this.audioContext);
-  private waveformVisualizer: WaveformVisualizer;
+  private visualizer: Visualizer;
   private tuner = new Tuner(this.audioContext);
   private tapper = new Tapper();
   private drone = new Drone(this.audioContext);
@@ -39,12 +39,11 @@ class WebAudioRecorderController {
   private playRecordControls = new PlayRecordControls();
 
   constructor() {
-    // Initialize waveform visualizer
     const canvas = document.getElementById('waveform-canvas') as HTMLCanvasElement;
     if (!canvas) {
       throw new Error('Waveform canvas not found');
     }
-    this.waveformVisualizer = new WaveformVisualizer(canvas, {
+    this.visualizer = new Visualizer(canvas, {
       backgroundColor: '#f8f9fa',
       waveformColor: '#a55dfc',
       showGrid: true,
@@ -71,7 +70,7 @@ class WebAudioRecorderController {
 
       await this.recorder.reset();
       this.stopMetronomes();
-      this.waveformVisualizer.clear(); // Clear visualization when starting new recording
+      this.visualizer.clear(); // Clear visualization when starting new recording
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // Start metronome immediately if enabled (for count-off and recording)
@@ -107,7 +106,7 @@ class WebAudioRecorderController {
         };
       }
 
-      this.waveformVisualizer.drawVisualization(loudnessData, intonationData, metronomeSettings);
+      this.visualizer.drawVisualization(loudnessData, intonationData, metronomeSettings);
 
       sendRecordingEvent({
         duration: audioBuffer.duration,
@@ -145,7 +144,7 @@ class WebAudioRecorderController {
 
     // The visualization already shows the recorded data from when recording stopped
     // Start playback position animation
-    this.waveformVisualizer.startPlayback(this.playbackSpeed());
+    this.visualizer.startPlayback(this.playbackSpeed());
 
     sendPlaybackEvent({
       duration: audioBuffer.duration,
@@ -166,7 +165,7 @@ class WebAudioRecorderController {
   stopPlaying(): void {
     this.player.stop();
     this.stopMetronomes();
-    this.waveformVisualizer.stopPlayback();
+    this.visualizer.stopPlayback();
     this.playRecordControls.markStopped();
   }
 

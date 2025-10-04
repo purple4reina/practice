@@ -2,7 +2,7 @@ import boolSwitchControls from "./bool-switch-controls";
 import type { LoudnessData } from './audio-analyzer';
 import type { IntonationData } from './tuner';
 
-export interface WaveformVisualizerOptions {
+export interface VisualizerOptions {
   width?: number;
   height?: number;
   backgroundColor?: string;
@@ -21,10 +21,10 @@ export interface MetronomeSettings {
   subdivisions: number;
 }
 
-export default class WaveformVisualizer {
+export default class Visualizer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private options: Required<WaveformVisualizerOptions>;
+  private options: Required<VisualizerOptions>;
   private loudnessData: LoudnessData[] = [];
   private intonationData: IntonationData | null = null;
   private metronomeSettings: MetronomeSettings | null = null;
@@ -55,7 +55,7 @@ export default class WaveformVisualizer {
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
-  constructor(canvas: HTMLCanvasElement, options: WaveformVisualizerOptions = {}) {
+  constructor(canvas: HTMLCanvasElement, options: VisualizerOptions = {}) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d');
     if (!ctx) {
