@@ -1,4 +1,4 @@
-import BlockManager from "./blocks/block-manager";
+import BlockManager from "./blocks";
 import Drone from "./drone";
 import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
