@@ -1,5 +1,8 @@
 import boolSwitchControls from "../bool-switch-controls";
-import type { LoudnessData } from './loudness-analyzer';
+import {
+  LoudnessAnalyzer,
+  LoudnessData,
+} from './loudness-analyzer';
 import type { IntonationData } from './tuner';
 
 export interface VisualizerOptions {
@@ -384,11 +387,11 @@ export default class Visualizer {
   }
 
   drawVisualization(
-    loudnessData: LoudnessData[],
+    audioBuffer: AudioBuffer,
     intonationData: IntonationData,
     settings: MetronomeSettings | null,
   ) {
-    this.loudnessData = [...loudnessData];
+    this.loudnessData = LoudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
     this.intonationData = intonationData;
     this.metronomeSettings = settings;
     this.updateScrollingState();
