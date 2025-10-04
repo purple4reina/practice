@@ -3,7 +3,7 @@ export interface LoudnessData {
   loudness: number; // RMS value 0-1
 }
 
-export default class AudioAnalyzer {
+export default class LoudnessAnalyzer {
   // Calculate loudness from existing audio buffer for playback visualization
   static calculateLoudnessFromBuffer(audioBuffer: AudioBuffer, windowSize = 1024): LoudnessData[] {
     const channelData = audioBuffer.getChannelData(0);

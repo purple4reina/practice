@@ -1,4 +1,4 @@
-import AudioAnalyzer from "./loudness-analyzer";
+import LoudnessAnalyzer from "./loudness-analyzer";
 import BlockManager from "./blocks/block-manager";
 import Drone from "./drone";
 import PlayRecordControls from "./play-record-controls";
@@ -83,7 +83,7 @@ class WebAudioRecorderController {
     // Analyze the recorded audio buffer and show visualization
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
-      const loudnessData = AudioAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
+      const loudnessData = LoudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
       const intonationData = this.tuner.analyze(audioBuffer);
 
       // Set metronome settings for beat markers (use playback metronome settings)
