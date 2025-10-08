@@ -73,12 +73,11 @@ abstract class Metronome {
 
   private scheduler = (): void => {
     if (!this.clickGen) return;
-    let { value, done } = this.clickGen.next();
-    if (done) return;
-
     while (this.nextClickTime < this.audioContext.currentTime + (this.scheduleLookahead / 1000)) {
+      const { value, done } = this.clickGen.next();
+      if (done) return;
       this.createClickSound(this.nextClickTime, value);
-      this.nextClickTime += (value.delay / this.playbackRate);
+      this.nextClickTime += (value.delay / this.playbackRate / 1000);
     }
 
     if (this.isPlaying) {
