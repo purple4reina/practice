@@ -1,5 +1,5 @@
 import plusMinusControls from "../plus-minus-controls";
-import { Block } from "./block";
+import { Block, ClickState, Click } from "./block";
 
 export default class ClicksBlock extends Block {
   private count;
@@ -26,5 +26,16 @@ export default class ClicksBlock extends Block {
     `;
     parent.appendChild(div);
     this.count = plusMinusControls(`${this.id}-clicks`, { initial: 0, min: 0, max: 256 });
+  }
+
+  *clickIntervalGen(phase: "record" | "play", state: ClickState) {
+    let { bpm, subdivisions } = state;
+    const delay = 60 / bpm / subdivisions * 1000;
+    for (let i = 0; i < this.count(); i++) {
+      yield { delay: delay, strong: true };
+      for (let j = 0; j < subdivisions - 1; j++) {
+        yield { delay: delay, strong: false };
+      }
+    }
   }
 }

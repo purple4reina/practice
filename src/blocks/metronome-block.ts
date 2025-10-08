@@ -1,5 +1,5 @@
 import plusMinusControls from "../plus-minus-controls";
-import { Block } from "./block";
+import { Block, ClickState } from "./block";
 
 export default class MetronomeBlock extends Block {
   private bpm;
@@ -56,5 +56,19 @@ export default class MetronomeBlock extends Block {
     this.bpm = plusMinusControls(`${this.id}-bpm`, { initial: 60, min: 5, max: 512 });
     this.recordSubdivisions = plusMinusControls(`${this.id}-rec-subdivisions`, { initial: 1, min: 1, max: 64 });
     this.playbackSubdivisions = plusMinusControls(`${this.id}-play-subdivisions`, { initial: 1, min: 1, max: 64 });
+  }
+
+  *clickIntervalGen(phase: "record" | "play", state: ClickState) {
+    state.bpm = this.bpm();
+    switch (phase) {
+      case "record":
+        state.subdivisions = this.recordSubdivisions();
+        break;
+      case "play":
+        state.subdivisions = this.playbackSubdivisions();
+        break;
+      default:
+        throw new Error(`Unknown phase type "${phase}"`);
+    }
   }
 }

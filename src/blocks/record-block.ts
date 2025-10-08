@@ -1,4 +1,4 @@
-import { Block } from "./block";
+import { Block, ClickState } from "./block";
 
 export default class RecordBlock extends Block {
   constructor(parent: HTMLElement) {
@@ -14,5 +14,9 @@ export default class RecordBlock extends Block {
       </div>
     `;
     parent.appendChild(div);
+  }
+
+  *clickIntervalGen(phase: "record" | "play", state: ClickState) {
+    // noop
   }
 }
