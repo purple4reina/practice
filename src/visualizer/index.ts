@@ -1,3 +1,4 @@
+import { Click } from "../blocks/block";
 import boolSwitchControls from "../bool-switch-controls";
 import {
   LoudnessAnalyzer,
@@ -39,6 +40,7 @@ export default class Visualizer {
   private loudnessData: LoudnessData[] = [];
   private intonationData: IntonationData | null = null;
   private metronomeSettings: MetronomeSettings | null = null;
+  private clickGen: Generator<Click> | null = null;
   private playbackStartTime: number = 0;
   private playbackRate: number = 1;
   private isPlaybackActive: boolean = false;
@@ -396,11 +398,11 @@ export default class Visualizer {
 
   drawVisualization(
     audioBuffer: AudioBuffer,
-    settings: MetronomeSettings | null,
+    clickGen: Generator<Click>,
   ) {
     this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
     this.intonationData = this.tuner.analyze(audioBuffer);
-    this.metronomeSettings = settings;
+    this.clickGen = clickGen;
     this.updateScrollingState();
     this.draw();
   }

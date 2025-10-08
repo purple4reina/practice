@@ -49,7 +49,7 @@ export default class BlockManager {
   }
 
   *clickIntervalGen(phase: "record" | "play") {
-    const state: ClickState = { bpm: 0, subdivisions: 0 };
+    const state = new ClickState();
     for (const block of this.blocks) {
       yield* block.clickIntervalGen(phase, state);
     }
@@ -57,7 +57,7 @@ export default class BlockManager {
 
   recordingDelay(): number {
     let delay = this.recordingPrelay;  // TODO: fix recording delay calculations
-    const state: ClickState = { bpm: 0, subdivisions: 0 };
+    const state = new ClickState();
     for (const block of this.blocks) {
       if (block instanceof RecordBlock) break;
       let clickGen = block.clickIntervalGen("record", state);

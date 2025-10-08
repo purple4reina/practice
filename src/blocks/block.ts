@@ -1,11 +1,13 @@
-export interface ClickState {
-  bpm: number,
-  subdivisions: number,
+export class ClickState {
+  bpm: number = 0;
+  subdivisions: number = 0;
+  recording: boolean = false;
 }
 
 export interface Click {
   delay: number,
   strong: boolean,
+  recording: boolean,
 }
 
 export interface IBlock {

@@ -50,28 +50,24 @@ class WebAudioRecorderController {
   }
 
   async record(): Promise<void> {
-    try {
-      // Resume AudioContext if suspended
-      if (this.audioContext.state === "suspended") {
-        await this.audioContext.resume();
-      }
-
-      await this.recorder.reset();
-      this.stopMetronomes();
-      this.visualizer.clear(); // Clear visualization when starting new recording
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Start metronome immediately if enabled (for count-off and recording)
-      if (this.recordingMetronome.enabled()) {
-        const startTime = this.audioContext.currentTime;
-        this.recordingMetronome.start(startTime, 1, true);
-      }
-
-      setTimeout(() => this.recorder.start(), this.recordingMetronome.countOffMs());
-      this.playRecordControls.markRecording();
-    } catch (error) {
-      console.error("Error starting recording:", error);
+    // Resume AudioContext if suspended
+    if (this.audioContext.state === "suspended") {
+      await this.audioContext.resume();
     }
+
+    await this.recorder.reset();
+    this.stopMetronomes();
+    this.visualizer.clear(); // Clear visualization when starting new recording
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    if (this.recordingMetronome.enabled()) {
+      const startTime = this.audioContext.currentTime;
+      const clickGen = this.blockManager.clickIntervalGen("record");
+      this.recordingMetronome.start(startTime, clickGen, 1, true);
+    }
+
+    setTimeout(() => this.recorder.start(), this.blockManager.recordingDelay());
+    this.playRecordControls.markRecording();
   }
 
   stopRecording() {
@@ -82,27 +78,10 @@ class WebAudioRecorderController {
     // Analyze the recorded audio buffer and show visualization
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
-      // Set metronome settings for beat markers (use playback metronome settings)
-      let metronomeSettings: MetronomeSettings | null = null;
-      if (this.playbackMetronome.enabled()) {
-        metronomeSettings = {
-          bpm: this.playbackMetronome.bpm(),
-          subdivisions: this.playbackMetronome.subdivisions()
-        };
-      }
+      const clickGen = this.blockManager.clickIntervalGen("play");
+      this.visualizer.drawVisualization(audioBuffer, clickGen);
 
-      this.visualizer.drawVisualization(audioBuffer, metronomeSettings);
-
-      sendRecordingEvent({
-        duration: audioBuffer.duration,
-        metronome: !this.recordingMetronome.enabled() ? undefined : {
-          enabled: this.recordingMetronome.enabled(),
-          bpm: this.recordingMetronome.bpm(),
-          subdivisions: this.recordingMetronome.subdivisions(),
-          countOff: this.recordingMetronome.countOff(),
-          volume: this.recordingMetronome.volume(),
-        },
-      });
+      sendRecordingEvent({ duration: audioBuffer.duration });
     }
   }
 
@@ -123,24 +102,15 @@ class WebAudioRecorderController {
     if (this.playbackMetronome.enabled()) {
       // Apply latency compensation scaled by playback rate
       const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
-      this.playbackMetronome.start(compensatedStartTime, this.playbackSpeed(), false);
+      const clickGen = this.blockManager.clickIntervalGen("play");
+      this.playbackMetronome.start(compensatedStartTime, clickGen, this.playbackSpeed(), false);
     }
 
     // The visualization already shows the recorded data from when recording stopped
     // Start playback position animation
     this.visualizer.startPlayback(this.playbackSpeed());
 
-    sendPlaybackEvent({
-      duration: audioBuffer.duration,
-      playbackSpeed: this.playbackSpeed(),
-      metronome: !this.playbackMetronome.enabled() ? undefined : {
-        enabled: this.playbackMetronome.enabled(),
-        bpm: this.playbackMetronome.bpm(),
-        subdivisions: this.playbackMetronome.subdivisions(),
-        countOff: this.playbackMetronome.countOff(),
-        volume: this.playbackMetronome.volume(),
-      },
-    });
+    sendPlaybackEvent({ duration: audioBuffer.duration, playbackSpeed: this.playbackSpeed() });
 
     this.playRecordControls.markPlaying();
   }

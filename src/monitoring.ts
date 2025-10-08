@@ -29,25 +29,15 @@ export function setMonitoredUser(name: string, email: string, googleId: string) 
   });
 }
 
-interface MetronomeEventData {
-  enabled: boolean;
-  bpm: number;
-  subdivisions: number;
-  countOff: number;
-  volume: number;
-}
-
 interface SendRecordingEventData {
   user?: string;
   duration: number;
-  metronome?: MetronomeEventData;
 }
 
 interface SendPlaybackEventData {
   user?: string;
   duration: number;
   playbackSpeed: number;
-  metronome?: MetronomeEventData;
 }
 
 export function sendRecordingEvent(data: SendRecordingEventData) {

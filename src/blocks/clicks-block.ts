@@ -29,12 +29,12 @@ export default class ClicksBlock extends Block {
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
-    let { bpm, subdivisions } = state;
+    let { bpm, subdivisions, recording } = state;
     const delay = 60 / bpm / subdivisions * 1000;
     for (let i = 0; i < this.count(); i++) {
-      yield { delay: delay, strong: true };
+      yield { delay, strong: true, recording };
       for (let j = 0; j < subdivisions - 1; j++) {
-        yield { delay: delay, strong: false };
+        yield { delay, strong: false, recording };
       }
     }
   }

@@ -17,6 +17,8 @@ export default class RecordBlock extends Block {
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
-    // noop
+    if (phase == "record") {
+      state.recording = true;
+    }
   }
 }
