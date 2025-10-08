@@ -13,6 +13,8 @@ export default class BlockManager {
 
   constructor() {
     this.newBlock("metronome");
+    this.newBlock("clicks", { initial: 4 });
+    this.newBlock("metronome");
     this.newBlock("record");
     this.newBlock("clicks", { initial: 16 });
 
