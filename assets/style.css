@@ -81,4 +81,5 @@ input[type=range] {
   height: 100vh;
   background-color: white;
   z-index: 9999;
+  pointer-events: none;
 }
