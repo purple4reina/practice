@@ -100,7 +100,6 @@ class WebAudioRecorderController {
           bpm: this.recordingMetronome.bpm(),
           subdivisions: this.recordingMetronome.subdivisions(),
           countOff: this.recordingMetronome.countOff(),
-          latency: this.recordingMetronome.latency(),
           volume: this.recordingMetronome.volume(),
         },
       });
@@ -139,7 +138,6 @@ class WebAudioRecorderController {
         bpm: this.playbackMetronome.bpm(),
         subdivisions: this.playbackMetronome.subdivisions(),
         countOff: this.playbackMetronome.countOff(),
-        latency: this.playbackMetronome.latency(),
         volume: this.playbackMetronome.volume(),
       },
     });

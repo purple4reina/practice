@@ -19,6 +19,7 @@ abstract class Metronome {
   private _subdivisions: number = 1;
   private _countOffs: number = 1;
   private _countOffSubs: number = 1;
+
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
   private scheduleInterval: number = 25.0; // Schedule every 25ms
   protected countOffAllowance: number = 100; // Allow 100ms before the first click
@@ -28,7 +29,6 @@ abstract class Metronome {
   public subdivisions;
   public countOff = plusMinusControls("rec-count-off", { initial: 0, min: 0, max: 8 });
   public countOffSub = plusMinusControls("rec-count-off-sub", { initial: 1, min: 1, max: 32 });
-  public latency = plusMinusControls("play-latency", { initial: -75, min: -500, max: 500 });
   public volume;
   protected clickSilencing = () => 100;
   protected flash = () => false;
@@ -157,6 +157,8 @@ export class RecordingMetronome extends Metronome {
 }
 
 export class PlaybackMetronome extends Metronome {
+  private latency = plusMinusControls("play-latency", { initial: -75, min: -500, max: 500 });
+
   getPlaybackStartTime(audioStartTime: number, playbackRate: number = 1.0): number {
     const scaledCompensation = this.latency() / playbackRate;
     let startTime = audioStartTime - (scaledCompensation / 1000);

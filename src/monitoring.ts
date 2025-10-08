@@ -34,7 +34,6 @@ interface MetronomeEventData {
   bpm: number;
   subdivisions: number;
   countOff: number;
-  latency: number;
   volume: number;
 }
 
