@@ -61,9 +61,9 @@ export default class BlockManager {
     for (const block of this.blocks) {
       if (block instanceof RecordBlock) break;
       let clickGen = block.clickIntervalGen("record", state);
-      let done = false;
-      while (!done) {
+      while (true) {
         const { value, done } = clickGen.next();
+        if (done) break;
         delay += value.delay;
       }
     }
