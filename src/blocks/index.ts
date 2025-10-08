@@ -14,7 +14,7 @@ export default class BlockManager {
   constructor() {
     this.newBlock("metronome");
     this.newBlock("record");
-    this.newBlock("clicks");
+    this.newBlock("clicks", { initial: 16 });
 
     this.addButton.addEventListener("click", (e: Event) => {
       const value = (e.target as HTMLButtonElement).value;
@@ -22,14 +22,14 @@ export default class BlockManager {
     });
   }
 
-  newBlock(type: string): IBlock {
+  newBlock(type: string, opts={}): IBlock {
     let block: IBlock;
     switch (type) {
       case "metronome":
         block = new MetronomeBlock(this.blockDiv);
         break;
       case "clicks":
-        block = new ClicksBlock(this.blockDiv);
+        block = new ClicksBlock(this.blockDiv, opts);
         break;
       case "record":
         block = new RecordBlock(this.blockDiv);

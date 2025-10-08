@@ -4,7 +4,7 @@ import { Block, ClickState, Click } from "./block";
 export default class ClicksBlock extends Block {
   private count;
 
-  constructor(parent: HTMLElement) {
+  constructor(parent: HTMLElement, opts: any) {
     super();
     const div = document.createElement('div');
     div.innerHTML = `
@@ -25,7 +25,11 @@ export default class ClicksBlock extends Block {
       </div>
     `;
     parent.appendChild(div);
-    this.count = plusMinusControls(`${this.id}-clicks`, { initial: 0, min: 0, max: 256 });
+    this.count = plusMinusControls(`${this.id}-clicks`, {
+      initial: opts.initial || 0,
+      min: opts.min || 0,
+      max: opts.max || 256,
+    });
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
