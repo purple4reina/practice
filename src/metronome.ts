@@ -54,15 +54,16 @@ abstract class Metronome {
   }
 
   private createClickSound(when: number, clickHz: number, gain: number): void {
-    if (this._countOffs == -1 && Math.random() * 100 < this.clickSilencing()) {
-      return;
-    }
-
-    // show flash even if volume all the way down
+    // show flash even if volume all the way down or click is silenced
     if (this.flash()) {
       const delay = when - this.audioContext.currentTime;
       setTimeout(() => this.flashBox.hidden = false, delay);
       setTimeout(() => this.flashBox.hidden = true, delay + 50);
+    }
+
+    // click silencing
+    if (this._countOffs == -1 && Math.random() * 100 < this.clickSilencing()) {
+      return;
     }
 
     const volume = this.volume() * gain;
