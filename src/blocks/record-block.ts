@@ -5,7 +5,7 @@ export default class RecordBlock extends Block {
 
   constructor(parent: HTMLElement) {
     super();
-    const div = this.newBlockDiv();
+    const div = this.newBlockDiv(parent);
     div.innerHTML = `
       <div class="row">
         <div class="col-3 text-left">
@@ -13,7 +13,6 @@ export default class RecordBlock extends Block {
         </div>
       </div>
     `;
-    parent.appendChild(div);
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {

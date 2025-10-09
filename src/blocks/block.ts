@@ -24,9 +24,10 @@ export abstract class Block implements IBlock {
     this.id = Math.random().toString(36).substr(2, 6);
   }
 
-  protected newBlockDiv(): HTMLElement {
+  protected newBlockDiv(parent: HTMLElement): HTMLElement {
     const type = (<typeof Block> this.constructor).type;
     const div = document.createElement('div');
+    parent.appendChild(div);
     div.classList.add("row");
     div.classList.add("block-element");
     div.classList.add(type);

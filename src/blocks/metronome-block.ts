@@ -10,7 +10,7 @@ export default class MetronomeBlock extends Block {
 
   constructor(parent: HTMLElement) {
     super();
-    const div = this.newBlockDiv();
+    const div = this.newBlockDiv(parent);
     div.innerHTML = `
       <div class="row">
         <div class="col-3 text-left">
@@ -52,7 +52,6 @@ export default class MetronomeBlock extends Block {
         </div>
       </div>
     `;
-    parent.appendChild(div);
     this.bpm = plusMinusControls(`${this.id}-bpm`, { initial: 60, min: 5, max: 512 });
     this.recordSubdivisions = plusMinusControls(`${this.id}-rec-subdivisions`, { initial: 1, min: 1, max: 64 });
     this.playbackSubdivisions = plusMinusControls(`${this.id}-play-subdivisions`, { initial: 1, min: 1, max: 64 });

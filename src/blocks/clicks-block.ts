@@ -8,7 +8,7 @@ export default class ClicksBlock extends Block {
 
   constructor(parent: HTMLElement, opts: any) {
     super();
-    const div = this.newBlockDiv();
+    const div = this.newBlockDiv(parent);
     div.innerHTML = `
       <div class="row">
         <div class="col-3 text-left">
@@ -24,7 +24,6 @@ export default class ClicksBlock extends Block {
         </div>
       </div>
     `;
-    parent.appendChild(div);
     this.count = plusMinusControls(`${this.id}-clicks`, {
       initial: opts.initial || 0,
       min: opts.min || 0,
