@@ -22,7 +22,7 @@ abstract class Metronome {
 
   public enabled;
   public volume;
-  protected clickSilencing = () => 100;
+  protected clickSilencing = () => 0;
   protected flash = () => false;
 
   constructor(prefix: string, audioContext: AudioContext) {
