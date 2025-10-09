@@ -22,4 +22,10 @@ export abstract class Block implements IBlock {
   protected constructor() {
     this.id = Math.random().toString(36).substr(2, 6);
   }
+
+  protected newBlockDiv(): HTMLElement {
+    const div = document.createElement('div');
+    div.innerHTML = `<div class="row block-element" id="${this.id}"></div>`;
+    return div.firstChild as HTMLElement;
+  }
 }
