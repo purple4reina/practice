@@ -2,6 +2,8 @@ import plusMinusControls from "../plus-minus-controls";
 import { Block, ClickState, Click } from "./block";
 
 export default class ClicksBlock extends Block {
+  static readonly type = "clicks";
+
   private count;
 
   constructor(parent: HTMLElement, opts: any) {

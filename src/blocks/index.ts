@@ -25,13 +25,13 @@ export default class BlockManager {
   newBlock(type: string, opts={}): IBlock {
     let block: IBlock;
     switch (type) {
-      case "metronome":
+      case MetronomeBlock.type:
         block = new MetronomeBlock(this.blockDiv);
         break;
-      case "clicks":
+      case ClicksBlock.type:
         block = new ClicksBlock(this.blockDiv, opts);
         break;
-      case "record":
+      case RecordBlock.type:
         block = new RecordBlock(this.blockDiv);
         break;
       default:

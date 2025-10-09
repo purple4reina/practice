@@ -17,6 +17,7 @@ export interface IBlock {
 
 export abstract class Block implements IBlock {
   readonly id: string;
+  static readonly type: string = "";
   abstract clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
 
   protected constructor() {
@@ -24,8 +25,12 @@ export abstract class Block implements IBlock {
   }
 
   protected newBlockDiv(): HTMLElement {
+    const type = (<typeof Block> this.constructor).type;
     const div = document.createElement('div');
-    div.innerHTML = `<div class="row block-element" id="${this.id}"></div>`;
-    return div.firstChild as HTMLElement;
+    div.classList.add("row");
+    div.classList.add("block-element");
+    div.classList.add(type);
+    div.setAttribute('id', this.id);
+    return div;
   }
 }

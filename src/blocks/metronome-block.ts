@@ -2,6 +2,8 @@ import plusMinusControls from "../plus-minus-controls";
 import { Block, ClickState } from "./block";
 
 export default class MetronomeBlock extends Block {
+  static readonly type = "metronome";
+
   private bpm;
   private recordSubdivisions;
   private playbackSubdivisions;

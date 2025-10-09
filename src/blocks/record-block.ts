@@ -1,6 +1,8 @@
 import { Block, ClickState } from "./block";
 
 export default class RecordBlock extends Block {
+  static readonly type = "record";
+
   constructor(parent: HTMLElement) {
     super();
     const div = this.newBlockDiv();
