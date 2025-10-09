@@ -4,7 +4,7 @@ import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
 import Tapper from "./tapper";
-import Visualizer, { MetronomeSettings } from "./visualizer";
+import Visualizer from "./visualizer";
 import fractionControls from "./fraction-controls";
 import {
   RecordingMetronome,

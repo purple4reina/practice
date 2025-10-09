@@ -53,7 +53,11 @@ export default class BlockManager {
   *clickIntervalGen(phase: "record" | "play") {
     const state = new ClickState();
     for (const block of this.blocks) {
-      yield* block.clickIntervalGen(phase, state);
+      for (const click of block.clickIntervalGen(phase, state)) {
+        if (phase == "record" || state.recording) {
+          yield click;
+        }
+      }
     }
   }
 

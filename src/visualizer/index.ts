@@ -23,11 +23,6 @@ export interface VisualizerOptions {
   maxZoomDuration?: number; // Maximum zoom duration in ms
 }
 
-export interface MetronomeSettings {
-  bpm: number;
-  subdivisions: number;
-}
-
 export default class Visualizer {
   private canvas = document.getElementById('waveform-canvas') as HTMLCanvasElement;
   private ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -39,8 +34,7 @@ export default class Visualizer {
   private options: Required<VisualizerOptions>;
   private loudnessData: LoudnessData[] = [];
   private intonationData: IntonationData | null = null;
-  private metronomeSettings: MetronomeSettings | null = null;
-  private clickGen: Generator<Click> | null = null;
+  private metronomeClicks: Click[] = [];
   private playbackStartTime: number = 0;
   private playbackRate: number = 1;
   private isPlaybackActive: boolean = false;
@@ -402,7 +396,7 @@ export default class Visualizer {
   ) {
     this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
     this.intonationData = this.tuner.analyze(audioBuffer);
-    this.clickGen = clickGen;
+    this.metronomeClicks = Array.from(clickGen);
     this.updateScrollingState();
     this.draw();
   }
@@ -458,7 +452,7 @@ export default class Visualizer {
   clear(): void {
     this.loudnessData = [];
     this.intonationData = null;
-    this.metronomeSettings = null;
+    this.metronomeClicks = [];
     this.totalDuration = 0;
     this.isScrollingEnabled = false;
     this.viewStartTime = 0;
@@ -502,7 +496,7 @@ export default class Visualizer {
     this.drawWaveform(this.loudnessData);
 
     // Draw metronome beat markers on top
-    if (this.metronomeSettings) {
+    if (this.metronomeClicks) {
       this.drawMetronomeBeats();
     }
 
@@ -683,17 +677,9 @@ export default class Visualizer {
   }
 
   private drawMetronomeBeats(): void {
-    if (!this.metronomeSettings) return;
-
     const { width, height } = this.options;
-    const { bpm, subdivisions } = this.metronomeSettings;
-
-    // Calculate beat interval in milliseconds
-    const beatIntervalMs = (60 / bpm) * 1000; // Time between quarter note beats
-    const subdivisionIntervalMs = beatIntervalMs / subdivisions; // Time between subdivisions
 
     // colors
-    let strokesDrawn = 0;
     const black = '#000000';
     const blue = '#2905f5';
 
@@ -703,28 +689,25 @@ export default class Visualizer {
     // Start from the first beat that's visible in the viewport
     let currentTime = 175; // XXX: TODO: This needs to be dynamic!
 
-    // Find the first beat in the viewport
-    while (currentTime < this.viewStartTime) {
-      currentTime += subdivisionIntervalMs;
-      strokesDrawn += 1;
-    }
-
     // Draw beats within the viewport
-    while (currentTime <= this.viewStartTime + this.viewDuration && currentTime <= this.totalDuration) {
-      const x = this.timeToX(currentTime);
+    for (const click of this.metronomeClicks) {
+      if (currentTime >= this.viewStartTime) {
+        const x = this.timeToX(currentTime);
 
-      // Only draw if within canvas bounds
-      if (x >= 0 && x <= width) {
-        this.ctx.strokeStyle = (strokesDrawn % subdivisions) === 0 ? blue : black;
+        // Only draw if within canvas bounds
+        if (x >= 0 && x <= width) {
+          this.ctx.strokeStyle = click.strong ? blue : black;
 
-        this.ctx.beginPath();
-        this.ctx.moveTo(x, 0);
-        this.ctx.lineTo(x, height);
-        this.ctx.stroke();
+          this.ctx.beginPath();
+          this.ctx.moveTo(x, 0);
+          this.ctx.lineTo(x, height);
+          this.ctx.stroke();
+        }
+      } else if (currentTime <= this.totalDuration) {
+        return;
       }
 
-      currentTime += subdivisionIntervalMs;
-      strokesDrawn += 1;
+      currentTime += click.delay;
     }
   }
 
