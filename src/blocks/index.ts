@@ -9,8 +9,6 @@ export default class BlockManager {
   private addButton = document.getElementById("add-block") as HTMLElement;
   private blockDiv = document.getElementById("blocks") as HTMLElement;
 
-  private recordingPrelay = 100; // ms
-
   constructor() {
     this.newBlock("metronome");
     this.newBlock("clicks", { initial: 4 });
@@ -62,7 +60,7 @@ export default class BlockManager {
   }
 
   recordingDelay(): number {
-    let delay = this.recordingPrelay;  // TODO: fix recording delay calculations
+    let delay = 0;
     const state = new ClickState();
     for (const block of this.blocks) {
       if (block instanceof RecordBlock) break;

@@ -34,6 +34,8 @@ class WebAudioRecorderController {
   private tapper = new Tapper();
   private drone = new Drone(this.audioContext);
 
+  private recordingPrelay = 100;  // ms before first click
+
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
 
@@ -61,7 +63,7 @@ class WebAudioRecorderController {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     if (this.recordingMetronome.enabled()) {
-      const startTime = this.audioContext.currentTime;
+      const startTime = this.audioContext.currentTime + this.recordingPrelay / 1000;
       const clickGen = this.blockManager.clickIntervalGen("record");
       this.recordingMetronome.start(startTime, clickGen, 1, true);
     }

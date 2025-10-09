@@ -697,7 +697,6 @@ export default class Visualizer {
         // Only draw if within canvas bounds
         if (x >= 0 && x <= width) {
           this.ctx.strokeStyle = click.strong ? blue : black;
-
           this.ctx.beginPath();
           this.ctx.moveTo(x, 0);
           this.ctx.lineTo(x, height);
