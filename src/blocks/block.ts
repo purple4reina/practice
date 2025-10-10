@@ -33,15 +33,18 @@ export interface IBlock {
   moveUp(block: IBlock): void;
   moveDown(block: IBlock): void;
   clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
+  queryString(): string;
 }
 
 export abstract class Block implements IBlock {
   readonly id: string;
   readonly removable: boolean = true;
   static readonly type: string = "";
+
   public remove: (block: IBlock) => void;
   public moveUp: (block: IBlock) => void;
   public moveDown: (block: IBlock) => void;
+
   abstract clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
 
   protected constructor() {
@@ -144,5 +147,9 @@ export abstract class Block implements IBlock {
     });
 
     return block;
+  }
+
+  queryString(): string {
+    return '';
   }
 }

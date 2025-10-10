@@ -85,4 +85,8 @@ export default class MetronomeBlock extends Block {
         throw new Error(`Unknown phase type "${phase}"`);
     }
   }
+
+  queryString(): string {
+    return `bpm:${this.bpm()} recordSubdivisions:${this.recordSubdivisions()} playbackSubdivisions:${this.playbackSubdivisions()}`;
+  }
 }

@@ -55,4 +55,8 @@ export default class ClicksBlock extends Block {
       }
     }
   }
+
+  queryString(): string {
+    return `count:${this.count()}`;
+  }
 }

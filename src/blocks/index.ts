@@ -2,7 +2,7 @@ import AccelerandoBlock from "./accelerando-block";
 import BeatsBlock from "./beats-block";
 import MetronomeBlock from "./metronome-block";
 import RecordBlock from "./record-block";
-import { IBlock, ClickState } from "./block";
+import { Block, IBlock, ClickState } from "./block";
 
 export default class BlockManager {
   private blocks: IBlock[] = [];
@@ -32,6 +32,8 @@ export default class BlockManager {
       const value = (e.target as HTMLButtonElement).value;
       this.newBlock(value);
     });
+
+    this.updateQueryParams();
   }
 
   newBlock(type: string, opts={}) {
@@ -57,6 +59,7 @@ export default class BlockManager {
     block.moveUp = this.moveBlockUp.bind(this);
     block.moveDown = this.moveBlockDown.bind(this);
     this.blocks.push(block);
+    this.updateQueryParams();
   }
 
   removeBlock(block: IBlock) {
@@ -66,6 +69,7 @@ export default class BlockManager {
         this.blocks.splice(index, 1);
       }
     }
+    this.updateQueryParams();
   }
 
   moveBlockUp(block: IBlock) {
@@ -74,6 +78,7 @@ export default class BlockManager {
       this.blocks.splice(index, 1);
       this.blocks.splice(index - 1, 0, block);
     }
+    this.updateQueryParams();
   }
 
   moveBlockDown(block: IBlock) {
@@ -82,6 +87,7 @@ export default class BlockManager {
       this.blocks.splice(index, 1);
       this.blocks.splice(index + 1, 0, block);
     }
+    this.updateQueryParams();
   }
 
   *clickIntervalGen(phase: "record" | "play") {
@@ -108,5 +114,15 @@ export default class BlockManager {
       }
     }
     return delay;
+  }
+
+  private updateQueryParams() {
+    const url = new URL(window.location.origin + window.location.pathname);
+    [...this.blocks].forEach(block => {
+      const type = (<typeof Block> block.constructor).type;
+      const params = encodeURIComponent(block.queryString());
+      url.searchParams.append(type, params);
+    });
+    window.history.pushState(null, '', url.toString());
   }
 }
