@@ -37,14 +37,17 @@ export default class BlockManager {
       default:
         throw new Error(`Unknown type "${type}"`);
     }
+    block.removeBlock = this.removeBlock.bind(this);
     this.blocks.push(block);
     return block;
   }
 
   removeBlock(block: IBlock) {
-    const index = this.blocks.indexOf(block);
-    if (index > -1) {
-      this.blocks.splice(index, 1);
+    if (block.removable) {
+      const index = this.blocks.indexOf(block);
+      if (index > -1) {
+        this.blocks.splice(index, 1);
+      }
     }
   }
 

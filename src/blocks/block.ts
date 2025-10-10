@@ -12,16 +12,21 @@ export interface Click {
 
 export interface IBlock {
   readonly id: string;
+  readonly removable: boolean;
+  removeBlock(block: IBlock): void;
   clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
 }
 
 export abstract class Block implements IBlock {
   readonly id: string;
+  readonly removable: boolean = true;
   static readonly type: string = "";
+  public removeBlock: (block: IBlock) => void;
   abstract clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
 
   protected constructor() {
     this.id = Math.random().toString(36).substr(2, 6);
+    this.removeBlock = function(block: IBlock): void {};
   }
 
   protected newBlockDiv(parent: HTMLElement): HTMLElement {
@@ -57,13 +62,21 @@ export abstract class Block implements IBlock {
     rightControls.classList.add("col-1");
     rightControls.classList.add("right-controls");
 
-    const trash = document.createElement("i");
-    rightControls.appendChild(trash);
-    trash.classList.add("bi");
-    trash.classList.add("bi-trash");
-    trash.classList.add("bi-tiny");
-    trash.classList.add("block-control");
-    trash.style.display = "inline-block";
+    if (this.removable) {
+      const trash = document.createElement("i");
+      rightControls.appendChild(trash);
+      trash.classList.add("bi");
+      trash.classList.add("bi-trash");
+      trash.classList.add("bi-tiny");
+      trash.classList.add("block-control");
+      trash.style.display = "inline-block";
+      trash.addEventListener("click", () => {
+        if (this.removable) {
+          this.removeBlock(this);
+          envelope.remove();
+        }
+      });
+    }
 
     // hovers
     const overables = envelope.getElementsByClassName("block-control");

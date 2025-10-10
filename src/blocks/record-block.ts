@@ -1,6 +1,7 @@
 import { Block, ClickState } from "./block";
 
 export default class RecordBlock extends Block {
+  readonly removable: boolean = false;
   static readonly type = "record";
 
   constructor(parent: HTMLElement) {
