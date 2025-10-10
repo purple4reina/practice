@@ -53,6 +53,7 @@ export abstract class Block implements IBlock {
     drag.classList.add("bi-small");
     drag.classList.add("block-control");
     drag.style.display = "inline-block";
+    drag.setAttribute("hover-color", "cornflowerblue");
 
     // block
     const block = document.createElement("div");
@@ -80,6 +81,7 @@ export abstract class Block implements IBlock {
       trash.classList.add("bi-tiny");
       trash.classList.add("block-control");
       trash.style.display = "inline-block";
+      trash.setAttribute("hover-color", "red");
       trash.addEventListener("click", () => {
         if (this.removable) {
           this.removeBlock(this);
@@ -91,7 +93,9 @@ export abstract class Block implements IBlock {
     // hovers
     const overables = envelope.getElementsByClassName("block-control");
     envelope.addEventListener("mouseenter", () => {
-      [...overables].forEach(e => (e as HTMLElement).style.color = "red");
+      [...overables].forEach(e => {
+        (e as HTMLElement).style.color = (e as HTMLElement).getAttribute("hover-color") || "";
+      });
     });
     envelope.addEventListener("mouseleave", () => {
       [...overables].forEach(e => (e as HTMLElement).style.color = "white");
