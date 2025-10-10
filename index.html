@@ -30,6 +30,33 @@
           <i id="playing" class="bi bi-play-circle blinking" style="display:none"></i>
         </div>
       </div>
+      <div class="row text-right">
+        <div class="col" id="visualization-stats"></div>
+      </div>
+      <div class="collapse show" id="visualization">
+        <div class="card card-body">
+          <div class="row">
+            <div class="col">
+              <canvas id="waveform-canvas" width="800" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr/>
+      <div class="row">
+        <div class="col-4">
+          Waveform:
+        </div>
+        <div class="col input-group form-check form-switch">
+          <input class="form-check-input" id="visualization-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#visualization" tabindex="10" checked>
+        </div>
+        <div class="col-4">
+          Tuner:
+        </div>
+        <div class="col input-group form-check form-switch">
+          <input class="form-check-input" id="tuner-enabled" type="checkbox" role="switch" tabindex="11" checked>
+        </div>
+      </div>
       <div class="row">
         <div class="col-4">
           Playback Speed:
@@ -71,30 +98,6 @@
                 <li><button class="dropdown-item" type="button" value="metronome">Set Metronome</button></li>
                 <li><button class="dropdown-item" type="button" value="clicks">Clicks</button></li>
               </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          Waveform:
-        </div>
-        <div class="col input-group form-check form-switch">
-          <input class="form-check-input" id="visualization-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#visualization" tabindex="10" checked>
-        </div>
-        <div class="col">
-          Tuner:
-        </div>
-        <div class="col input-group form-check form-switch">
-          <input class="form-check-input" id="tuner-enabled" type="checkbox" role="switch" tabindex="11" checked>
-        </div>
-        <div class="col-6" id="visualization-stats"></div>
-      </div>
-      <div class="collapse show" id="visualization">
-        <div class="card card-body">
-          <div class="row">
-            <div class="col">
-              <canvas id="waveform-canvas" width="800" height="300"></canvas>
             </div>
           </div>
         </div>
