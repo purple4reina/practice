@@ -43,6 +43,16 @@ export abstract class Block implements IBlock {
     envelope.appendChild(leftControls);
     leftControls.classList.add("col-1");
     leftControls.classList.add("left-controls");
+    leftControls.style.display = "flex";
+    leftControls.style.alignItems = "center";
+
+    const drag = document.createElement("i");
+    leftControls.appendChild(drag);
+    drag.classList.add("bi");
+    drag.classList.add("bi-grip-vertical");
+    drag.classList.add("bi-small");
+    drag.classList.add("block-control");
+    drag.style.display = "inline-block";
 
     // block
     const block = document.createElement("div");
