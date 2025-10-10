@@ -8,10 +8,14 @@ export default class RecordBlock extends Block {
     super();
     const div = this.newBlockDiv(parent);
     div.innerHTML = `
-      <div class="row">
-        <div class="col-3 text-left">
+      <div class="row g-0 p-0">
+        <div class="col text-left">
           <strong>Start Recording</strong>
         </div>
+        <div class="col"><!-- empty column --></div>
+        <div class="col"><!-- empty column --></div>
+        <div class="col"><!-- empty column --></div>
+        <div class="col"><!-- empty column --></div>
       </div>
     `;
   }

@@ -10,17 +10,24 @@ export default class ClicksBlock extends Block {
     super();
     const div = this.newBlockDiv(parent);
     div.innerHTML = `
-      <div class="row">
-        <div class="col-3 text-left">
+      <div class="row g-0 p-0">
+        <div class="col text-left">
           <strong>Clicks</strong>
         </div>
-        <div class="col-3">
-          Count:
-        </div>
-        <div class="col input-group">
-          <button class="btn" id="${this.id}-clicks-minus" type="button" tabindex="-1">-</button>
-          <input type="text" class="form-control" id="${this.id}-clicks-val" value="0" pattern="[0-9]*">
-          <button class="btn" id="${this.id}-clicks-plus" type="button" tabindex="-1">+</button>
+        <div class="col"><!-- empty column --></div>
+        <div class="col"><!-- empty column --></div>
+        <div class="col"><!-- empty column --></div>
+        <div class="col">
+          <div class="container">
+            <div class="row-col">
+              Count:
+            </div>
+            <div class="row-col input-group">
+              <button class="btn" id="${this.id}-clicks-minus" type="button" tabindex="-1">-</button>
+              <input type="text" class="form-control" id="${this.id}-clicks-val" value="0" pattern="[0-9]*">
+              <button class="btn" id="${this.id}-clicks-plus" type="button" tabindex="-1">+</button>
+            </div>
+          </div>
         </div>
       </div>
     `;
