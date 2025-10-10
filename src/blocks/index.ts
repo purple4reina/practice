@@ -1,5 +1,5 @@
 import AccelerandoBlock from "./accelerando-block";
-import ClicksBlock from "./clicks-block";
+import BeatsBlock from "./beats-block";
 import MetronomeBlock from "./metronome-block";
 import RecordBlock from "./record-block";
 import { IBlock, ClickState } from "./block";
@@ -12,10 +12,10 @@ export default class BlockManager {
 
   constructor() {
     this.newBlock("metronome");
-    this.newBlock("clicks", { initial: 4 });
+    this.newBlock("beats", { initial: 4 });
     this.newBlock("record");
     this.newBlock("metronome");
-    this.newBlock("clicks", { initial: 16 });
+    this.newBlock("beats", { initial: 16 });
 
     this.addButton.addEventListener("click", (e: Event) => {
       const value = (e.target as HTMLButtonElement).value;
@@ -29,8 +29,8 @@ export default class BlockManager {
       case AccelerandoBlock.type:
         block = new AccelerandoBlock(this.blockDiv);
         break;
-      case ClicksBlock.type:
-        block = new ClicksBlock(this.blockDiv, opts);
+      case BeatsBlock.type:
+        block = new BeatsBlock(this.blockDiv, opts);
         break;
       case MetronomeBlock.type:
         block = new MetronomeBlock(this.blockDiv, opts);

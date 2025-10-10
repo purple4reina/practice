@@ -2,7 +2,7 @@ import plusMinusControls from "../plus-minus-controls";
 import { Block, ClickState, Click } from "./block";
 
 export default class ClicksBlock extends Block {
-  static readonly type = "clicks";
+  static readonly type = "beats";
 
   private count;
 
@@ -12,7 +12,7 @@ export default class ClicksBlock extends Block {
     div.innerHTML = `
       <div class="row g-0 p-0">
         <div class="col text-left">
-          <strong>Clicks</strong>
+          <strong>Beats</strong>
         </div>
         <div class="col"><!-- empty column --></div>
         <div class="col"><!-- empty column --></div>
@@ -23,15 +23,15 @@ export default class ClicksBlock extends Block {
               Count:
             </div>
             <div class="row-col input-group">
-              <button class="btn" id="${this.id}-clicks-minus" type="button" tabindex="-1">-</button>
-              <input type="text" class="form-control" id="${this.id}-clicks-val" value="0" pattern="[0-9]*">
-              <button class="btn" id="${this.id}-clicks-plus" type="button" tabindex="-1">+</button>
+              <button class="btn" id="${this.id}-beats-minus" type="button" tabindex="-1">-</button>
+              <input type="text" class="form-control" id="${this.id}-beats-val" value="0" pattern="[0-9]*">
+              <button class="btn" id="${this.id}-beats-plus" type="button" tabindex="-1">+</button>
             </div>
           </div>
         </div>
       </div>
     `;
-    this.count = plusMinusControls(`${this.id}-clicks`, {
+    this.count = plusMinusControls(`${this.id}-beats`, {
       initial: opts.initial || 0,
       min: opts.min || 0,
       max: opts.max || 256,
