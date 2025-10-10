@@ -33,7 +33,7 @@ export default class BlockManager {
         block = new ClicksBlock(this.blockDiv, opts);
         break;
       case MetronomeBlock.type:
-        block = new MetronomeBlock(this.blockDiv);
+        block = new MetronomeBlock(this.blockDiv, opts);
         break;
       case RecordBlock.type:
         block = new RecordBlock(this.blockDiv);
