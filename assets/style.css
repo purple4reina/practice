@@ -46,6 +46,15 @@ div {
   padding: 0px;
 }
 
+.bi-tiny {
+  font-size: 15px;
+  padding: 0px;
+}
+
+.block-control {
+  color: white;
+}
+
 .center {
   text-align: center;
 }
@@ -82,4 +91,26 @@ input[type=range] {
   background-color: white;
   z-index: 9999;
   pointer-events: none;
+}
+
+.left-controls, .right-controls {
+  padding: 0px;
+  width: 30px;
+}
+
+.block-element {
+  border: 1px solid lightgrey;
+  border-radius: 6px;
+  margin: 10px 0px 10px 0px;;
+  padding: 10px 0px 5px 0px;
+}
+
+.block-element .block-element:first-child {
+  padding: 10px;
+  margin-right: 15px;
+}
+
+.block-element .block-element:last-child {
+  padding: 10px;
+  margin-left: 15px;
 }

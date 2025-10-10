@@ -1,5 +1,5 @@
 import * as pitchfinder from "pitchfinder";
-import boolSwitchControls from "./bool-switch-controls";
+import boolSwitchControls from "../bool-switch-controls";
 
 interface IntonationPoint {
   frequency: number;  // frequency of the actual pitch
@@ -13,7 +13,7 @@ export interface IntonationData {
   points: (IntonationPoint | null)[];
 }
 
-export default class Tuner {
+export class Tuner {
   private detectPitch: (buffer: Float32Array) => number | null;
   private audioContextSampleRate: number;
   private maxFrequencyTolerance: number = 1800;

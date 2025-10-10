@@ -1,13 +1,15 @@
-import AudioAnalyzer from "./audio-analyzer";
+import BlockManager from "./blocks";
 import Drone from "./drone";
-import Metronome from "./metronome";
 import PlayRecordControls from "./play-record-controls";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
 import Tapper from "./tapper";
-import Tuner from "./tuner";
-import WaveformVisualizer, { MetronomeSettings } from "./waveform-visualizer";
+import Visualizer from "./visualizer";
 import fractionControls from "./fraction-controls";
+import {
+  RecordingMetronome,
+  PlaybackMetronome,
+} from "./metronome";
 import {
   initializeMonitoring,
   setMonitoredUser,
@@ -23,29 +25,21 @@ class WebAudioRecorderController {
   private audioContext = new AudioContext();
   private recorder = new RecorderDevice(this.audioContext);
   private player = new PlayerDevice(this.audioContext);
-  private recordingMetronome = new Metronome("rec", this.audioContext);
-  private playbackMetronome = new Metronome("play", this.audioContext);
-  private waveformVisualizer: WaveformVisualizer;
-  private tuner = new Tuner(this.audioContext);
+  private blockManager = new BlockManager();
+  private recordingMetronome = new RecordingMetronome(this.audioContext);
+  private playbackMetronome = new PlaybackMetronome(this.audioContext);
+  private visualizer = new Visualizer(this.audioContext);
+
+  // tools
   private tapper = new Tapper();
   private drone = new Drone(this.audioContext);
+
+  private recordingPrelay = 100;  // ms before first click
 
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
 
   constructor() {
-    // Initialize waveform visualizer
-    const canvas = document.getElementById('waveform-canvas') as HTMLCanvasElement;
-    if (!canvas) {
-      throw new Error('Waveform canvas not found');
-    }
-    this.waveformVisualizer = new WaveformVisualizer(canvas, {
-      backgroundColor: '#f8f9fa',
-      waveformColor: '#a55dfc',
-      showGrid: true,
-      maxTime: 30000 // 30 seconds
-    });
-
     this.playRecordControls.initializeEventListeners({
       record: this.record.bind(this),
       stopRecording: this.stopRecording.bind(this),
@@ -58,28 +52,24 @@ class WebAudioRecorderController {
   }
 
   async record(): Promise<void> {
-    try {
-      // Resume AudioContext if suspended
-      if (this.audioContext.state === "suspended") {
-        await this.audioContext.resume();
-      }
-
-      await this.recorder.reset();
-      this.stopMetronomes();
-      this.waveformVisualizer.clear(); // Clear visualization when starting new recording
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Start metronome immediately if enabled (for count-off and recording)
-      if (this.recordingMetronome.enabled()) {
-        const startTime = this.audioContext.currentTime;
-        this.recordingMetronome.start(startTime, 1, true);
-      }
-
-      setTimeout(() => this.recorder.start(), this.recordingMetronome.countOffMs());
-      this.playRecordControls.markRecording();
-    } catch (error) {
-      console.error("Error starting recording:", error);
+    // Resume AudioContext if suspended
+    if (this.audioContext.state === "suspended") {
+      await this.audioContext.resume();
     }
+
+    await this.recorder.reset();
+    this.stopMetronomes();
+    this.visualizer.clear(); // Clear visualization when starting new recording
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    if (this.recordingMetronome.enabled()) {
+      const startTime = this.audioContext.currentTime + this.recordingPrelay / 1000;
+      const clickGen = this.blockManager.clickIntervalGen("record");
+      this.recordingMetronome.start(startTime, clickGen, 1, true);
+    }
+
+    setTimeout(() => this.recorder.start(), this.blockManager.recordingDelay());
+    this.playRecordControls.markRecording();
   }
 
   stopRecording() {
@@ -90,31 +80,10 @@ class WebAudioRecorderController {
     // Analyze the recorded audio buffer and show visualization
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
-      const loudnessData = AudioAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
-      const intonationData = this.tuner.analyze(audioBuffer);
+      const clickGen = this.blockManager.clickIntervalGen("play");
+      this.visualizer.drawVisualization(audioBuffer, clickGen);
 
-      // Set metronome settings for beat markers (use playback metronome settings)
-      let metronomeSettings: MetronomeSettings | null = null;
-      if (this.playbackMetronome.enabled()) {
-        metronomeSettings = {
-          bpm: this.playbackMetronome.bpm(),
-          subdivisions: this.playbackMetronome.subdivisions()
-        };
-      }
-
-      this.waveformVisualizer.drawVisualization(loudnessData, intonationData, metronomeSettings);
-
-      sendRecordingEvent({
-        duration: audioBuffer.duration,
-        metronome: !this.recordingMetronome.enabled() ? undefined : {
-          enabled: this.recordingMetronome.enabled(),
-          bpm: this.recordingMetronome.bpm(),
-          subdivisions: this.recordingMetronome.subdivisions(),
-          countOff: this.recordingMetronome.countOff(),
-          latency: this.recordingMetronome.latency(),
-          volume: this.recordingMetronome.volume(),
-        },
-      });
+      sendRecordingEvent({ duration: audioBuffer.duration });
     }
   }
 
@@ -135,25 +104,15 @@ class WebAudioRecorderController {
     if (this.playbackMetronome.enabled()) {
       // Apply latency compensation scaled by playback rate
       const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
-      this.playbackMetronome.start(compensatedStartTime, this.playbackSpeed(), false);
+      const clickGen = this.blockManager.clickIntervalGen("play");
+      this.playbackMetronome.start(compensatedStartTime, clickGen, this.playbackSpeed(), false);
     }
 
     // The visualization already shows the recorded data from when recording stopped
     // Start playback position animation
-    this.waveformVisualizer.startPlayback(this.playbackSpeed());
+    this.visualizer.startPlayback(this.playbackSpeed());
 
-    sendPlaybackEvent({
-      duration: audioBuffer.duration,
-      playbackSpeed: this.playbackSpeed(),
-      metronome: !this.playbackMetronome.enabled() ? undefined : {
-        enabled: this.playbackMetronome.enabled(),
-        bpm: this.playbackMetronome.bpm(),
-        subdivisions: this.playbackMetronome.subdivisions(),
-        countOff: this.playbackMetronome.countOff(),
-        latency: this.playbackMetronome.latency(),
-        volume: this.playbackMetronome.volume(),
-      },
-    });
+    sendPlaybackEvent({ duration: audioBuffer.duration, playbackSpeed: this.playbackSpeed() });
 
     this.playRecordControls.markPlaying();
   }
@@ -161,7 +120,7 @@ class WebAudioRecorderController {
   stopPlaying(): void {
     this.player.stop();
     this.stopMetronomes();
-    this.waveformVisualizer.stopPlayback();
+    this.visualizer.stopPlayback();
     this.playRecordControls.markStopped();
   }
 

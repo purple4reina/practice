@@ -1,8 +1,15 @@
-import boolSwitchControls from "./bool-switch-controls";
-import type { LoudnessData } from './audio-analyzer';
-import type { IntonationData } from './tuner';
+import { Click } from "../blocks/block";
+import boolSwitchControls from "../bool-switch-controls";
+import {
+  LoudnessAnalyzer,
+  LoudnessData,
+} from './loudness-analyzer';
+import {
+  Tuner,
+  IntonationData,
+} from './tuner';
 
-export interface WaveformVisualizerOptions {
+export interface VisualizerOptions {
   width?: number;
   height?: number;
   backgroundColor?: string;
@@ -16,18 +23,18 @@ export interface WaveformVisualizerOptions {
   maxZoomDuration?: number; // Maximum zoom duration in ms
 }
 
-export interface MetronomeSettings {
-  bpm: number;
-  subdivisions: number;
-}
+export default class Visualizer {
+  private canvas = document.getElementById('waveform-canvas') as HTMLCanvasElement;
+  private ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
 
-export default class WaveformVisualizer {
-  private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
-  private options: Required<WaveformVisualizerOptions>;
+  // external analyzers
+  private tuner;
+  private loudnessAnalyzer = LoudnessAnalyzer;
+
+  private options: Required<VisualizerOptions>;
   private loudnessData: LoudnessData[] = [];
   private intonationData: IntonationData | null = null;
-  private metronomeSettings: MetronomeSettings | null = null;
+  private metronomeClicks: Click[] = [];
   private playbackStartTime: number = 0;
   private playbackRate: number = 1;
   private isPlaybackActive: boolean = false;
@@ -55,28 +62,22 @@ export default class WaveformVisualizer {
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
-  constructor(canvas: HTMLCanvasElement, options: WaveformVisualizerOptions = {}) {
-    this.canvas = canvas;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      throw new Error('Could not get 2D context from canvas');
-    }
-    this.ctx = ctx;
-
+  constructor(audioContext: AudioContext) {
     this.options = {
-      width: options.width || 800,
-      height: options.height || 300,
-      backgroundColor: options.backgroundColor || '#f8f9fa',
-      waveformColor: options.waveformColor || '#a55dfc',
-      gridColor: options.gridColor || '#babcbf',
-      showGrid: options.showGrid !== undefined ? options.showGrid : true,
-      maxTime: options.maxTime || 30000, // 30 seconds default
-      scrollThreshold: options.scrollThreshold || 15000, // 15 seconds
-      viewportDuration: options.viewportDuration || 10000, // 10 seconds
-      minZoomDuration: options.minZoomDuration || 500, // 0.5 seconds minimum zoom
-      maxZoomDuration: options.maxZoomDuration || 30000, // 30 seconds maximum zoom
+      width: 800,
+      height: 300,
+      backgroundColor: '#f8f9fa',
+      waveformColor: '#a55dfc',
+      gridColor: '#babcbf',
+      showGrid: true,
+      maxTime: 30000, // 30 seconds default
+      scrollThreshold: 15000, // 15 seconds
+      viewportDuration: 10000, // 10 seconds
+      minZoomDuration: 500, // 0.5 seconds minimum zoom
+      maxZoomDuration: 30000, // 30 seconds maximum zoom
     };
 
+    this.tuner = new Tuner(audioContext);
     this.viewDuration = this.options.viewportDuration;
     this.setupCanvas();
     this.setupMouseEvents();
@@ -389,25 +390,13 @@ export default class WaveformVisualizer {
     this.draw();
   }
 
-  setLoudnessData(data: LoudnessData[]): void {
-    this.loudnessData = [...data];
-    this.updateScrollingState();
-    this.draw();
-  }
-
-  setMetronomeSettings(settings: MetronomeSettings | null): void {
-    this.metronomeSettings = settings;
-    this.draw();
-  }
-
   drawVisualization(
-    loudnessData: LoudnessData[],
-    intonationData: IntonationData,
-    settings: MetronomeSettings | null,
+    audioBuffer: AudioBuffer,
+    clickGen: Generator<Click>,
   ) {
-    this.loudnessData = [...loudnessData];
-    this.intonationData = intonationData;
-    this.metronomeSettings = settings;
+    this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
+    this.intonationData = this.tuner.analyze(audioBuffer);
+    this.metronomeClicks = Array.from(clickGen);
     this.updateScrollingState();
     this.draw();
   }
@@ -463,7 +452,7 @@ export default class WaveformVisualizer {
   clear(): void {
     this.loudnessData = [];
     this.intonationData = null;
-    this.metronomeSettings = null;
+    this.metronomeClicks = [];
     this.totalDuration = 0;
     this.isScrollingEnabled = false;
     this.viewStartTime = 0;
@@ -507,7 +496,7 @@ export default class WaveformVisualizer {
     this.drawWaveform(this.loudnessData);
 
     // Draw metronome beat markers on top
-    if (this.metronomeSettings) {
+    if (this.metronomeClicks) {
       this.drawMetronomeBeats();
     }
 
@@ -688,17 +677,9 @@ export default class WaveformVisualizer {
   }
 
   private drawMetronomeBeats(): void {
-    if (!this.metronomeSettings) return;
-
     const { width, height } = this.options;
-    const { bpm, subdivisions } = this.metronomeSettings;
-
-    // Calculate beat interval in milliseconds
-    const beatIntervalMs = (60 / bpm) * 1000; // Time between quarter note beats
-    const subdivisionIntervalMs = beatIntervalMs / subdivisions; // Time between subdivisions
 
     // colors
-    let strokesDrawn = 0;
     const black = '#000000';
     const blue = '#2905f5';
 
@@ -708,28 +689,24 @@ export default class WaveformVisualizer {
     // Start from the first beat that's visible in the viewport
     let currentTime = 175; // XXX: TODO: This needs to be dynamic!
 
-    // Find the first beat in the viewport
-    while (currentTime < this.viewStartTime) {
-      currentTime += subdivisionIntervalMs;
-      strokesDrawn += 1;
-    }
-
     // Draw beats within the viewport
-    while (currentTime <= this.viewStartTime + this.viewDuration && currentTime <= this.totalDuration) {
-      const x = this.timeToX(currentTime);
+    for (const click of this.metronomeClicks) {
+      if (currentTime >= this.viewStartTime) {
+        const x = this.timeToX(currentTime);
 
-      // Only draw if within canvas bounds
-      if (x >= 0 && x <= width) {
-        this.ctx.strokeStyle = (strokesDrawn % subdivisions) === 0 ? blue : black;
-
-        this.ctx.beginPath();
-        this.ctx.moveTo(x, 0);
-        this.ctx.lineTo(x, height);
-        this.ctx.stroke();
+        // Only draw if within canvas bounds
+        if (x >= 0 && x <= width) {
+          this.ctx.strokeStyle = click.strong ? blue : black;
+          this.ctx.beginPath();
+          this.ctx.moveTo(x, 0);
+          this.ctx.lineTo(x, height);
+          this.ctx.stroke();
+        }
+      } else if (currentTime <= this.totalDuration) {
+        return;
       }
 
-      currentTime += subdivisionIntervalMs;
-      strokesDrawn += 1;
+      currentTime += click.delay;
     }
   }
 
