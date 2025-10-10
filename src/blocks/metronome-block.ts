@@ -61,7 +61,19 @@ export default class MetronomeBlock extends Block {
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
-    state.bpm = this.bpm();
+    const bpm = this.bpm();
+
+    if (state.accel.enabled) {
+      const coef = (60 / bpm - 60 / state.bpm) / state.accel.clicks.length * 1000;
+      for (let i = 0; i < state.accel.clicks.length; i++) {
+        const click = state.accel.clicks[i];
+        click.delay += coef * (i + 1);
+        yield click;
+      }
+    }
+
+    state.accel.reset();
+    state.bpm = bpm;
     switch (phase) {
       case "record":
         state.subdivisions = this.recordSubdivisions();

@@ -1,7 +1,23 @@
+class ClickStateAccel {
+  enabled: boolean = false;
+  clicks: Click[] = [];
+
+  reset() {
+    this.enabled = false;
+    this.clicks = [];
+  }
+
+  start() {
+    this.reset();
+    this.enabled = true;
+  }
+}
+
 export class ClickState {
   bpm: number = 0;
   subdivisions: number = 0;
   recording: boolean = false;
+  accel = new ClickStateAccel();
 }
 
 export interface Click {
