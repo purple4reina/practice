@@ -47,7 +47,10 @@ export default class ClicksBlock extends Block {
         yield click;
       }
     }
+
     let { bpm, subdivisions, recording } = state;
+    if (bpm === 0 || subdivisions === 0) return;
+
     const delay = 60 / bpm / subdivisions * 1000;
     for (let i = 0; i < this.count(); i++) {
       yield* addClick(delay, true, recording);
