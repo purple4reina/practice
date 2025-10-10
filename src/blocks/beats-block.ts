@@ -31,11 +31,7 @@ export default class ClicksBlock extends Block {
         </div>
       </div>
     `;
-    this.count = plusMinusControls(`${this.id}-beats`, {
-      initial: opts.initial || 0,
-      min: opts.min || 0,
-      max: opts.max || 256,
-    });
+    this.count = plusMinusControls(`${this.id}-beats`, { initial: opts.count || 0, min: 0, max: 256 });
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {

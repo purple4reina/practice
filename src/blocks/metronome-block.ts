@@ -56,8 +56,8 @@ export default class MetronomeBlock extends Block {
       </div>
     `;
     this.bpm = plusMinusControls(`${this.id}-bpm`, { initial: opts.bpm || 60, min: 5, max: 512 });
-    this.recordSubdivisions = plusMinusControls(`${this.id}-rec-subdivisions`, { initial: 1, min: 1, max: 64 });
-    this.playbackSubdivisions = plusMinusControls(`${this.id}-play-subdivisions`, { initial: 1, min: 1, max: 64 });
+    this.recordSubdivisions = plusMinusControls(`${this.id}-rec-subdivisions`, { initial: opts.recordSubdivisions || 1, min: 1, max: 64 });
+    this.playbackSubdivisions = plusMinusControls(`${this.id}-play-subdivisions`, { initial: opts.playbackSubdivisions || 1, min: 1, max: 64 });
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {

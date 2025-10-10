@@ -11,11 +11,22 @@ export default class BlockManager {
   private blockDiv = document.getElementById("blocks") as HTMLElement;
 
   constructor() {
-    this.newBlock("metronome");
-    this.newBlock("beats", { initial: 4 });
-    this.newBlock("record");
-    this.newBlock("metronome");
-    this.newBlock("beats", { initial: 16 });
+    if (window.location.search) {
+      for (const [key, value] of new URLSearchParams(window.location.search)) {
+        const opts: { [key: string]: string } = {};
+        for (let val of value.split(' ')) {
+          const [k, v] = val.split(':');
+          opts[k] = v;
+        }
+        this.newBlock(key, opts);
+      }
+    } else {
+      this.newBlock("metronome");
+      this.newBlock("beats", { count: 4 });
+      this.newBlock("record");
+      this.newBlock("metronome");
+      this.newBlock("beats", { count: 16 });
+    }
 
     this.addButton.addEventListener("click", (e: Event) => {
       const value = (e.target as HTMLButtonElement).value;
@@ -23,7 +34,7 @@ export default class BlockManager {
     });
   }
 
-  newBlock(type: string, opts={}): IBlock {
+  newBlock(type: string, opts={}) {
     let block: IBlock;
     switch (type) {
       case AccelerandoBlock.type:
@@ -39,13 +50,13 @@ export default class BlockManager {
         block = new RecordBlock(this.blockDiv);
         break;
       default:
-        throw new Error(`Unknown type "${type}"`);
+        console.error(`Unknown block type "${type}"`);
+        return;
     }
     block.remove = this.removeBlock.bind(this);
     block.moveUp = this.moveBlockUp.bind(this);
     block.moveDown = this.moveBlockDown.bind(this);
     this.blocks.push(block);
-    return block;
   }
 
   removeBlock(block: IBlock) {
