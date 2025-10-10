@@ -1,3 +1,4 @@
+import AccelerandoBlock from "./accelerando-block";
 import ClicksBlock from "./clicks-block";
 import MetronomeBlock from "./metronome-block";
 import RecordBlock from "./record-block";
@@ -25,11 +26,14 @@ export default class BlockManager {
   newBlock(type: string, opts={}): IBlock {
     let block: IBlock;
     switch (type) {
-      case MetronomeBlock.type:
-        block = new MetronomeBlock(this.blockDiv);
+      case AccelerandoBlock.type:
+        block = new AccelerandoBlock(this.blockDiv);
         break;
       case ClicksBlock.type:
         block = new ClicksBlock(this.blockDiv, opts);
+        break;
+      case MetronomeBlock.type:
+        block = new MetronomeBlock(this.blockDiv);
         break;
       case RecordBlock.type:
         block = new RecordBlock(this.blockDiv);
