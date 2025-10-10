@@ -43,17 +43,25 @@ export abstract class Block implements IBlock {
     envelope.appendChild(leftControls);
     leftControls.classList.add("col-1");
     leftControls.classList.add("left-controls");
-    leftControls.style.display = "flex";
-    leftControls.style.alignItems = "center";
+    leftControls.style.paddingLeft = "5px";
 
-    const drag = document.createElement("i");
-    leftControls.appendChild(drag);
-    drag.classList.add("bi");
-    drag.classList.add("bi-grip-vertical");
-    drag.classList.add("bi-small");
-    drag.classList.add("block-control");
-    drag.style.display = "inline-block";
-    drag.setAttribute("hover-color", "cornflowerblue");
+    const moveUp = document.createElement("i");
+    leftControls.appendChild(moveUp);
+    moveUp.classList.add("bi");
+    moveUp.classList.add("bi-chevron-up");
+    moveUp.classList.add("bi-tiny");
+    moveUp.classList.add("block-control");
+    moveUp.style.display = "inline-block";
+    moveUp.setAttribute("hover-color", "cornflowerblue");
+
+    const moveDown = document.createElement("i");
+    leftControls.appendChild(moveDown);
+    moveDown.classList.add("bi");
+    moveDown.classList.add("bi-chevron-down");
+    moveDown.classList.add("bi-tiny");
+    moveDown.classList.add("block-control");
+    moveDown.style.display = "inline-block";
+    moveDown.setAttribute("hover-color", "cornflowerblue");
 
     // block
     const block = document.createElement("div");
