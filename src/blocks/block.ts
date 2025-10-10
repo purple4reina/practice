@@ -13,7 +13,9 @@ export interface Click {
 export interface IBlock {
   readonly id: string;
   readonly removable: boolean;
-  removeBlock(block: IBlock): void;
+  remove(block: IBlock): void;
+  moveUp(block: IBlock): void;
+  moveDown(block: IBlock): void;
   clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
 }
 
@@ -21,12 +23,14 @@ export abstract class Block implements IBlock {
   readonly id: string;
   readonly removable: boolean = true;
   static readonly type: string = "";
-  public removeBlock: (block: IBlock) => void;
+  public remove: (block: IBlock) => void;
+  public moveUp: (block: IBlock) => void;
+  public moveDown: (block: IBlock) => void;
   abstract clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
 
   protected constructor() {
     this.id = Math.random().toString(36).substr(2, 6);
-    this.removeBlock = function(block: IBlock): void {};
+    this.remove = this.moveUp = this.moveDown = function(block: IBlock): void {};
   }
 
   protected newBlockDiv(parent: HTMLElement): HTMLElement {
@@ -37,6 +41,7 @@ export abstract class Block implements IBlock {
     envelope.classList.add("container");
     envelope.classList.add("row");
     envelope.classList.add("block-element");
+    envelope.setAttribute("id", this.id);
 
     // left controls
     const leftControls = document.createElement("div");
@@ -53,6 +58,13 @@ export abstract class Block implements IBlock {
     moveUp.classList.add("block-control");
     moveUp.style.display = "inline-block";
     moveUp.setAttribute("hover-color", "cornflowerblue");
+    moveUp.addEventListener("click", () => {
+      this.moveUp(this);
+      const prev = envelope.previousSibling;
+      if (prev) {
+        parent.insertBefore(envelope, prev);
+      }
+    });
 
     const moveDown = document.createElement("i");
     leftControls.appendChild(moveDown);
@@ -62,6 +74,13 @@ export abstract class Block implements IBlock {
     moveDown.classList.add("block-control");
     moveDown.style.display = "inline-block";
     moveDown.setAttribute("hover-color", "cornflowerblue");
+    moveDown.addEventListener("click", () => {
+      this.moveDown(this);
+      const next = envelope.nextSibling;
+      if (next) {
+        parent.insertBefore(next, envelope);
+      }
+    });
 
     // block
     const block = document.createElement("div");
@@ -73,7 +92,6 @@ export abstract class Block implements IBlock {
     blockBody.classList.add("row");
     blockBody.classList.add("block-body");
     blockBody.classList.add(type);
-    blockBody.setAttribute("id", this.id);
 
     // right controls
     const rightControls = document.createElement("div");
@@ -92,7 +110,7 @@ export abstract class Block implements IBlock {
       trash.setAttribute("hover-color", "red");
       trash.addEventListener("click", () => {
         if (this.removable) {
-          this.removeBlock(this);
+          this.remove(this);
           envelope.remove();
         }
       });

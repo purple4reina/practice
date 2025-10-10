@@ -37,7 +37,9 @@ export default class BlockManager {
       default:
         throw new Error(`Unknown type "${type}"`);
     }
-    block.removeBlock = this.removeBlock.bind(this);
+    block.remove = this.removeBlock.bind(this);
+    block.moveUp = this.moveBlockUp.bind(this);
+    block.moveDown = this.moveBlockDown.bind(this);
     this.blocks.push(block);
     return block;
   }
@@ -49,6 +51,14 @@ export default class BlockManager {
         this.blocks.splice(index, 1);
       }
     }
+  }
+
+  moveBlockUp(block: IBlock) {
+    console.log("UP");
+  }
+
+  moveBlockDown(block: IBlock) {
+    console.log("DOWN");
   }
 
   *clickIntervalGen(phase: "record" | "play") {
