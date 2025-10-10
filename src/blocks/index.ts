@@ -54,11 +54,19 @@ export default class BlockManager {
   }
 
   moveBlockUp(block: IBlock) {
-    console.log("UP");
+    const index = this.blocks.indexOf(block);
+    if (index > 0) {
+      this.blocks.splice(index, 1);
+      this.blocks.splice(index - 1, 0, block);
+    }
   }
 
   moveBlockDown(block: IBlock) {
-    console.log("DOWN");
+    const index = this.blocks.indexOf(block);
+    if (index > 0) {
+      this.blocks.splice(index, 1);
+      this.blocks.splice(index + 1, 0, block);
+    }
   }
 
   *clickIntervalGen(phase: "record" | "play") {
