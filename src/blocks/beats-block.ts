@@ -1,7 +1,7 @@
 import plusMinusControls from "../plus-minus-controls";
 import { Block, ClickState, Click } from "./block";
 
-export default class ClicksBlock extends Block {
+export default class BeatsBlock extends Block {
   static readonly type = "beats";
 
   private count;
