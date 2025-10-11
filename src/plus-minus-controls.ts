@@ -58,6 +58,7 @@ class PlusMinusControls {
     this._value = Math.max(this.minValue, Math.min(this.maxValue, this._value));
     if (this.valueInput) {
       this.valueInput.value = this._value.toString();
+      this.valueInput.dispatchEvent(new CustomEvent("input", { bubbles: true }));
     }
   }
 

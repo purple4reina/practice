@@ -11,10 +11,21 @@ export default class BlockManager {
   private blockDiv = document.getElementById("blocks") as HTMLElement;
 
   constructor() {
+    // query param listeners
+    new MutationObserver(mutationList => {
+      this.updateQueryParams();
+      for (const mutation of mutationList) {
+        mutation.addedNodes.forEach(node => {
+          // XXX: do not add the same listener multiple times
+          node.addEventListener("input", this.updateQueryParams.bind(this));
+        });
+      }
+    }).observe(this.blockDiv, { childList: true, subtree: true });
+
     if (window.location.search) {
       for (const [key, value] of new URLSearchParams(window.location.search)) {
         const opts: { [key: string]: string } = {};
-        for (let val of value.split(' ')) {
+        for (let val of decodeURIComponent(value).split(' ')) {
           const [k, v] = val.split(':');
           opts[k] = v;
         }
@@ -28,12 +39,11 @@ export default class BlockManager {
       this.newBlock("beats", { count: 16 });
     }
 
+    // add button
     this.addButton.addEventListener("click", (e: Event) => {
       const value = (e.target as HTMLButtonElement).value;
       this.newBlock(value);
     });
-
-    this.updateQueryParams();
   }
 
   newBlock(type: string, opts={}) {
@@ -59,7 +69,6 @@ export default class BlockManager {
     block.moveUp = this.moveBlockUp.bind(this);
     block.moveDown = this.moveBlockDown.bind(this);
     this.blocks.push(block);
-    this.updateQueryParams();
   }
 
   removeBlock(block: IBlock) {
@@ -69,7 +78,6 @@ export default class BlockManager {
         this.blocks.splice(index, 1);
       }
     }
-    this.updateQueryParams();
   }
 
   moveBlockUp(block: IBlock) {
@@ -78,16 +86,15 @@ export default class BlockManager {
       this.blocks.splice(index, 1);
       this.blocks.splice(index - 1, 0, block);
     }
-    this.updateQueryParams();
   }
 
   moveBlockDown(block: IBlock) {
+    // XXX: this doens't actually switch the this.blocks list correctly
     const index = this.blocks.indexOf(block);
     if (index > 0) {
       this.blocks.splice(index, 1);
       this.blocks.splice(index + 1, 0, block);
     }
-    this.updateQueryParams();
   }
 
   *clickIntervalGen(phase: "record" | "play") {
