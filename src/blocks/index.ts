@@ -89,9 +89,8 @@ export default class BlockManager {
   }
 
   moveBlockDown(block: IBlock) {
-    // XXX: this doens't actually switch the this.blocks list correctly
     const index = this.blocks.indexOf(block);
-    if (index > 0) {
+    if (index > -1) {
       this.blocks.splice(index, 1);
       this.blocks.splice(index + 1, 0, block);
     }
