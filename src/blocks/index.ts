@@ -17,7 +17,7 @@ export default class BlockManager {
       callback();
       for (const mutation of mutationList) {
         mutation.addedNodes.forEach(node => {
-          if (node.classList?.contains("block-element")) {
+          if ((node as HTMLElement).classList?.contains("block-element")) {
             node.addEventListener("input", callback);
           }
         });
