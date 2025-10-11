@@ -12,12 +12,14 @@ export default class BlockManager {
 
   constructor() {
     // query param listeners
+    const callback = this.updateQueryParams.bind(this);
     new MutationObserver(mutationList => {
-      this.updateQueryParams();
+      callback();
       for (const mutation of mutationList) {
         mutation.addedNodes.forEach(node => {
-          // XXX: do not add the same listener multiple times
-          node.addEventListener("input", this.updateQueryParams.bind(this));
+          if (node.classList?.contains("block-element")) {
+            node.addEventListener("input", callback);
+          }
         });
       }
     }).observe(this.blockDiv, { childList: true, subtree: true });
