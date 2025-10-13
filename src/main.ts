@@ -95,7 +95,7 @@ class WebAudioRecorderController {
     }
 
     if (this.autoPlay()) {
-      setTimeout(() => this.play(), 1000);
+      setTimeout(() => this.play(), 500);
     }
   }
 
