@@ -21,7 +21,7 @@ export class Tuner {
   private windowSize: number = 2048;
   private hopSize: number = 512;
 
-  public enabled = boolSwitchControls("tuner-enabled", { initial: true });
+  public enabled = boolSwitchControls("tuner-enabled", { initial: false });
 
   constructor(audioContext: AudioContext) {
     this.audioContextSampleRate = audioContext.sampleRate;
