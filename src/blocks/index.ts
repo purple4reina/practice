@@ -109,19 +109,26 @@ export default class BlockManager {
     }
   }
 
-  recordingDelay(): number {
-    let delay = 0;
+  getRecordDelays() {
+    let recordingDelay = 0;
+    let stopDelay = 0;
+    let countOff = true;
     const state = new ClickState();
     for (const block of this.blocks) {
-      if (block instanceof RecordBlock) break;
+      if (block instanceof RecordBlock) {
+        countOff = false;
+      }
       let clickGen = block.clickIntervalGen("record", state);
       while (true) {
         const { value, done } = clickGen.next();
         if (done) break;
-        delay += value.delay;
+        stopDelay += value.delay;
+        if (countOff) {
+          recordingDelay += value.delay;
+        }
       }
     }
-    return delay;
+    return { recordingDelay, stopDelay };
   }
 
   private updateQueryParams() {
