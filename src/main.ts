@@ -5,6 +5,7 @@ import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
 import Tapper from "./tapper";
 import Visualizer from "./visualizer";
+import boolSwitchControls from "./bool-switch-controls";
 import fractionControls from "./fraction-controls";
 import {
   RecordingMetronome,
@@ -40,6 +41,7 @@ class WebAudioRecorderController {
 
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
+  private autoPlay = boolSwitchControls("auto-play", { initial: true });
 
   constructor() {
     this.playRecordControls.initializeEventListeners({
@@ -90,6 +92,10 @@ class WebAudioRecorderController {
       this.visualizer.drawVisualization(audioBuffer, clickGen);
 
       sendRecordingEvent({ duration: audioBuffer.duration });
+    }
+
+    if (this.autoPlay()) {
+      setTimeout(() => this.play(), 1000);
     }
   }
 
