@@ -1,7 +1,9 @@
-import boolSwitchControls from "./controls/bool-switch-controls";
-import plusMinusControls from "./controls/plus-minus-controls";
-import slideControls from "./controls/slide-controls";
 import { Click } from "./blocks/block";
+import {
+  boolSwitchControls,
+  plusMinusControls,
+  slideControls,
+} from "./controls";
 
 abstract class Metronome {
   private audioContext: AudioContext;

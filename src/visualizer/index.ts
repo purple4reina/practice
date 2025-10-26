@@ -1,5 +1,5 @@
 import { Click } from "../blocks/block";
-import boolSwitchControls from "../controls/bool-switch-controls";
+import { boolSwitchControls } from "../controls";
 import {
   LoudnessAnalyzer,
   LoudnessData,

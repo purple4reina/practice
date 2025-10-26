@@ -1,13 +1,15 @@
 import BlockManager from "./blocks";
 import Drone from "./drone";
-import PlayRecordControls from "./controls/play-record-controls";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
 import Tapper from "./tapper";
 import Visualizer from "./visualizer";
-import boolSwitchControls from "./controls/bool-switch-controls";
-import fractionControls from "./controls/fraction-controls";
 import googleLogin from "./login";
+import {
+  PlayRecordControls,
+  boolSwitchControls,
+  fractionControls,
+} from "./controls";
 import {
   RecordingMetronome,
   PlaybackMetronome,

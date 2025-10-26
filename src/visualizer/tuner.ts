@@ -1,5 +1,5 @@
 import * as pitchfinder from "pitchfinder";
-import boolSwitchControls from "../controls/bool-switch-controls";
+import { boolSwitchControls } from "../controls";
 
 interface IntonationPoint {
   frequency: number;  // frequency of the actual pitch
