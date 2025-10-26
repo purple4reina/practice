@@ -56,8 +56,6 @@ export default class Visualizer {
   private isZooming: boolean = false;
   private lastPinchDistance: number = 0;
   private pinchCenterX: number = 0;
-  private lastWheelTime: number = 0;
-  private isMouseOverCanvas: boolean = false;
 
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
@@ -90,19 +88,14 @@ export default class Visualizer {
     this.canvas.style.height = '300px';
     this.canvas.style.border = '1px solid #dee2e6';
     this.canvas.style.borderRadius = '8px';
+    this.canvas.style.touchAction = 'none';
   }
 
   private setupMouseEvents(): void {
     // Set initial cursor style
     this.canvas.style.cursor = 'default';
 
-    // Track mouse enter/leave for zoom control
-    this.canvas.addEventListener('mouseenter', () => {
-      this.isMouseOverCanvas = true;
-    });
-
     this.canvas.addEventListener('mouseleave', () => {
-      this.isMouseOverCanvas = false;
       this.endDrag();
     });
 
@@ -126,44 +119,36 @@ export default class Visualizer {
       this.endDrag();
     });
 
-    // Mouse wheel for zooming - only when mouse is over canvas
+    // Wheel events - only handle trackpad pinch (Ctrl+wheel), ignore regular scrolling
     this.canvas.addEventListener('wheel', (e) => {
-      if (this.isMouseOverCanvas && !this.isPlaybackActive && this.totalDuration > 0) {
-        this.handleWheelZoom(e);
+      if (e.ctrlKey && !this.isPlaybackActive && this.totalDuration > 0) {
+        e.preventDefault();
+        const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
+        this.zoom(zoomFactor, e.offsetX);
       }
-    });
+    }, { passive: false });
 
-    // Touch events for pinch-to-zoom
+    // Touch events for pinch-to-zoom (mobile devices)
     this.canvas.addEventListener('touchstart', (e) => {
       if (!this.isPlaybackActive && this.totalDuration > 0) {
         this.handleTouchStart(e);
       }
-    });
+    }, { passive: false });
 
     this.canvas.addEventListener('touchmove', (e) => {
       if (!this.isPlaybackActive && this.totalDuration > 0) {
         this.handleTouchMove(e);
       }
-    });
+    }, { passive: false });
 
     this.canvas.addEventListener('touchend', (e) => {
       this.handleTouchEnd(e);
-    });
+    }, { passive: false });
 
     // Prevent default context menu on right click
     this.canvas.addEventListener('contextmenu', (e) => {
       e.preventDefault();
     });
-
-    // Keyboard shortcuts for zoom - only when canvas is focused
-    this.canvas.addEventListener('keydown', (e) => {
-      if (!this.isPlaybackActive && this.totalDuration > 0) {
-        this.handleKeyboardZoom(e);
-      }
-    });
-
-    // Make canvas focusable for keyboard events
-    this.canvas.tabIndex = 0;
   }
 
   private updateCursor(): void {
@@ -206,19 +191,6 @@ export default class Visualizer {
       this.isDragging = false;
       this.updateCursor();
     }
-  }
-
-  private handleWheelZoom(e: WheelEvent): void {
-    e.preventDefault();
-
-    // Throttle wheel events to prevent too rapid zooming
-    const now = Date.now();
-    if (now - this.lastWheelTime < 50) return;
-    this.lastWheelTime = now;
-
-    const zoomFactor = e.deltaY > 0 ? 1.2 : 0.8; // Zoom out or in (adjusted for better control)
-    const mouseX = e.offsetX;
-    this.zoom(zoomFactor, mouseX);
   }
 
   private handleTouchStart(e: TouchEvent): void {
@@ -305,29 +277,6 @@ export default class Visualizer {
 
     if (e.touches.length === 0) {
       this.endDrag();
-    }
-  }
-
-  private handleKeyboardZoom(e: KeyboardEvent): void {
-    if (e.ctrlKey || e.metaKey) {
-      let zoomFactor: number | null = null;
-
-      if (e.key === '=' || e.key === '+') {
-        e.preventDefault();
-        zoomFactor = 0.8; // Zoom in
-      } else if (e.key === '-') {
-        e.preventDefault();
-        zoomFactor = 1.25; // Zoom out
-      } else if (e.key === '0') {
-        e.preventDefault();
-        this.resetZoom();
-        return;
-      }
-
-      if (zoomFactor) {
-        const centerX = this.options.width / 2;
-        this.zoom(zoomFactor, centerX);
-      }
     }
   }
 

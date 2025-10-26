@@ -75,6 +75,7 @@ input[type=range] {
   border: 1px solid #dee2e6;
   border-radius: 8px;
   background-color: #f8f9fa;
+  touch-action: none;
 }
 
 .visualization-section {
