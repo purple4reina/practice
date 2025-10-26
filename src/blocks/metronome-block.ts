@@ -64,10 +64,25 @@ export default class MetronomeBlock extends Block {
     const bpm = this.bpm();
 
     if (state.accel.enabled) {
-      const coef = (60 / bpm - 60 / state.bpm) / state.accel.clicks.length * 1000;
+      const numStrongBeats = state.accel.clicks.filter(c => c.strong).length;
+
+      // Recalculate delays with linear BPM interpolation
+      let beatIndex = -1;
       for (let i = 0; i < state.accel.clicks.length; i++) {
         const click = state.accel.clicks[i];
-        click.delay += coef * (i + 1);
+
+        if (click.strong) {
+          beatIndex++;
+        }
+
+        // Linear interpolation of BPM based on beat position
+        const t = numStrongBeats > 1 ? beatIndex / (numStrongBeats - 1) : 0;
+        const currentBpm = state.bpm + (bpm - state.bpm) * t;
+
+        // Calculate delay for this click: total beat duration / number of subdivisions
+        const beatDuration = 60 / currentBpm * 1000;
+        click.delay = beatDuration / state.subdivisions;
+
         yield click;
       }
     }
