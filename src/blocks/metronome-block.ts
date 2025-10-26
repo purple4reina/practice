@@ -61,23 +61,22 @@ export default class MetronomeBlock extends Block {
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
-    const bpm = this.bpm();
+    const newBpm = this.bpm();
+    const oldBpm = state.bpm;
 
     if (state.accel.enabled) {
-      const numStrongBeats = state.accel.clicks.filter(c => c.strong).length;
+      const numStrongBeats = state.accel.clicks.length / state.subdivisions;
 
       // Recalculate delays with linear BPM interpolation
       let beatIndex = -1;
-      for (let i = 0; i < state.accel.clicks.length; i++) {
-        const click = state.accel.clicks[i];
-
+      for (const click of state.accel.clicks) {
         if (click.strong) {
           beatIndex++;
         }
 
         // Linear interpolation of BPM based on beat position
         const t = numStrongBeats > 1 ? beatIndex / (numStrongBeats - 1) : 0;
-        const currentBpm = state.bpm + (bpm - state.bpm) * t;
+        const currentBpm = oldBpm + (newBpm - oldBpm) * t;
 
         // Calculate delay for this click: total beat duration / number of subdivisions
         const beatDuration = 60 / currentBpm * 1000;
@@ -88,7 +87,7 @@ export default class MetronomeBlock extends Block {
     }
 
     state.accel.reset();
-    state.bpm = bpm;
+    state.bpm = newBpm;
     switch (phase) {
       case "record":
         state.subdivisions = this.recordSubdivisions();
