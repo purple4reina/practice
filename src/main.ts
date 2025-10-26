@@ -7,19 +7,20 @@ import Tapper from "./tapper";
 import Visualizer from "./visualizer";
 import boolSwitchControls from "./bool-switch-controls";
 import fractionControls from "./fraction-controls";
+import googleLogin from "./login";
 import {
   RecordingMetronome,
   PlaybackMetronome,
 } from "./metronome";
 import {
   initializeMonitoring,
-  setMonitoredUser,
   sendPlaybackEvent,
   sendRecordingEvent,
 } from "./monitoring";
 
 if (window.location.hostname === "purple4reina.github.io") {
   initializeMonitoring();
+  googleLogin();
 }
 
 class WebAudioRecorderController {
@@ -147,24 +148,3 @@ let webAudioController: WebAudioRecorderController;
 window.addEventListener("load", () => {
   webAudioController = new WebAudioRecorderController();
 })
-
-declare global {
-  interface Window {
-    loginCallback: (resp: any) => void;
-  }
-}
-
-window.loginCallback = function(resp: any) {
-  // https://developers.google.com/identity/gsi/web/reference/js-reference#credential
-  const decodeJwtResponse = function(token: any) {
-    let base64Url = token.split('.')[1];
-    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-  }
-  const data = decodeJwtResponse(resp.credential);
-  setMonitoredUser(data.name, data.email, data.sub);
-  (document.getElementById('user') as HTMLElement).innerText = `Welcome ${data.given_name}`;
-}
