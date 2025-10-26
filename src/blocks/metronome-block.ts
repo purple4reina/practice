@@ -1,5 +1,5 @@
 import { plusMinusControls } from "../controls";
-import { Block, ClickState } from "./block";
+import { Block, ClickState, Click } from "./block";
 
 export default class MetronomeBlock extends Block {
   static readonly type = "metronome";
@@ -61,33 +61,32 @@ export default class MetronomeBlock extends Block {
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
-    const newBpm = this.bpm();
-    const oldBpm = state.bpm;
-
     if (state.accel.enabled) {
-      const numStrongBeats = state.accel.clicks.length / state.subdivisions;
+      const subs = state.subdivisions;
+      const numStrongBeats = state.accel.clicks.length / subs;
 
-      // Recalculate delays with linear BPM interpolation
-      let beatIndex = -1;
-      for (const click of state.accel.clicks) {
-        if (click.strong) {
-          beatIndex++;
+      const oldDur = 60 / state.bpm * 1000;
+      const newDur = 60 / this.bpm() * 1000;
+      const durDiff = (newDur - oldDur) / (numStrongBeats + 1);
+
+      let beatDur = oldDur;
+      for (let beat = 0; beat < numStrongBeats; beat++) {
+        let subDur = beatDur / subs;
+
+        beatDur += durDiff;
+        const subDiff = 2 * (beatDur - subs * subDur) / subs / (subs + 1);
+
+        for (let sub = 0; sub < subs; sub++) {
+          subDur += subDiff;
+          const click = state.accel.clicks.shift() as Click;
+          click.delay = subDur;
+          yield click;
         }
-
-        // Linear interpolation of BPM based on beat position
-        const t = numStrongBeats > 1 ? beatIndex / (numStrongBeats - 1) : 0;
-        const currentBpm = oldBpm + (newBpm - oldBpm) * t;
-
-        // Calculate delay for this click: total beat duration / number of subdivisions
-        const beatDuration = 60 / currentBpm * 1000;
-        click.delay = beatDuration / state.subdivisions;
-
-        yield click;
       }
     }
 
     state.accel.reset();
-    state.bpm = newBpm;
+    state.bpm = this.bpm();
     switch (phase) {
       case "record":
         state.subdivisions = this.recordSubdivisions();
