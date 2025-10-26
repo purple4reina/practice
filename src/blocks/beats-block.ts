@@ -35,8 +35,7 @@ export default class BeatsBlock extends Block {
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
-    const addClick = function* (delay: number, strong: boolean, recording: boolean) {
-      const click = { delay, strong, recording };
+    const addClick = function* (click: Click) {
       if (state.accel.enabled) {
         state.accel.clicks.push(click);
       } else {
@@ -49,9 +48,9 @@ export default class BeatsBlock extends Block {
 
     const delay = 60 / bpm / subdivisions * 1000;
     for (let i = 0; i < this.count(); i++) {
-      yield* addClick(delay, true, recording);
+      yield* addClick({ delay, strong: true, recording });
       for (let j = 0; j < subdivisions - 1; j++) {
-        yield* addClick(delay, false, recording);
+        yield* addClick({ delay, strong: false, recording });
       }
     }
   }
