@@ -112,18 +112,18 @@ export default class BlockManager {
   getRecordDelays() {
     let recordingDelay = 0;
     let stopDelay = 0;
-    let countOff = true;
+    let recording = false;
     const state = new ClickState();
     for (const block of this.blocks) {
       if (block instanceof RecordBlock) {
-        countOff = false;
+        recording = true;
       }
       let clickGen = block.clickIntervalGen("record", state);
       while (true) {
         const { value, done } = clickGen.next();
         if (done) break;
         stopDelay += value.delay;
-        if (countOff) {
+        if (!recording) {
           recordingDelay += value.delay;
         }
       }
