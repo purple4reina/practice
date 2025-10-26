@@ -1,6 +1,6 @@
-import boolSwitchControls from "./bool-switch-controls";
-import plusMinusControls from "./plus-minus-controls";
-import slideControls from "./slide-controls";
+import boolSwitchControls from "./controls/bool-switch-controls";
+import plusMinusControls from "./controls/plus-minus-controls";
+import slideControls from "./controls/slide-controls";
 import { Click } from "./blocks/block";
 
 abstract class Metronome {

@@ -1,4 +1,4 @@
-import plusMinusControls from "../plus-minus-controls";
+import plusMinusControls from "../controls/plus-minus-controls";
 import { Block, ClickState } from "./block";
 
 export default class MetronomeBlock extends Block {
