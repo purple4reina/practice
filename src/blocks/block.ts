@@ -33,6 +33,7 @@ export interface IBlock {
   moveUp(block: IBlock): void;
   moveDown(block: IBlock): void;
   clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
+  highlight(): void;
   queryString(): string;
 }
 
@@ -44,6 +45,7 @@ export abstract class Block implements IBlock {
   public remove: (block: IBlock) => void;
   public moveUp: (block: IBlock) => void;
   public moveDown: (block: IBlock) => void;
+  public highlight = () => {};
 
   abstract clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
 
@@ -61,6 +63,13 @@ export abstract class Block implements IBlock {
     envelope.classList.add("row");
     envelope.classList.add("block-element");
     envelope.setAttribute("id", this.id);
+    let highlightTimeout = 0;
+    this.highlight = () => {
+      clearTimeout(highlightTimeout);
+      const colorCls = "border-danger";
+      envelope.classList.add(colorCls);
+      highlightTimeout = setTimeout(() => { envelope.classList.remove(colorCls) }, 1000);
+    };
 
     // left controls
     const leftControls = document.createElement("div");

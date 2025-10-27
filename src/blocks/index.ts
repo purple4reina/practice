@@ -6,6 +6,7 @@ import { Block, IBlock, ClickState } from "./block";
 
 export default class BlockManager {
   private blocks: IBlock[] = [];
+  private initialized = false;
 
   private addButton = document.getElementById("add-block") as HTMLElement;
   private blockDiv = document.getElementById("blocks") as HTMLElement;
@@ -46,6 +47,8 @@ export default class BlockManager {
       const value = (e.target as HTMLButtonElement).value;
       this.newBlock(value);
     });
+
+    this.initialized = true;
   }
 
   newBlock(type: string, opts={}) {
@@ -67,6 +70,9 @@ export default class BlockManager {
         console.error(`Unknown block type "${type}"`);
         return;
     }
+    if (this.initialized) {
+      block.highlight();
+    }
     block.remove = this.removeBlock.bind(this);
     block.moveUp = this.moveBlockUp.bind(this);
     block.moveDown = this.moveBlockDown.bind(this);
@@ -85,6 +91,7 @@ export default class BlockManager {
   moveBlockUp(block: IBlock) {
     const index = this.blocks.indexOf(block);
     if (index > 0) {
+      block.highlight();
       this.blocks.splice(index, 1);
       this.blocks.splice(index - 1, 0, block);
     }
@@ -93,6 +100,7 @@ export default class BlockManager {
   moveBlockDown(block: IBlock) {
     const index = this.blocks.indexOf(block);
     if (index > -1) {
+      block.highlight();
       this.blocks.splice(index, 1);
       this.blocks.splice(index + 1, 0, block);
     }
