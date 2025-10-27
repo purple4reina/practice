@@ -35,6 +35,7 @@ export default class Visualizer {
   private loudnessData: LoudnessData[] = [];
   private intonationData: IntonationData | null = null;
   private metronomeClicks: Click[] = [];
+  private recordSpeed: number = 1;
   private playbackStartTime: number = 0;
   private playbackRate: number = 1;
   private isPlaybackActive: boolean = false;
@@ -342,10 +343,12 @@ export default class Visualizer {
   drawVisualization(
     audioBuffer: AudioBuffer,
     clickGen: Generator<Click>,
+    recordSpeed: number,
   ) {
     this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
     this.intonationData = this.tuner.analyze(audioBuffer);
     this.metronomeClicks = Array.from(clickGen);
+    this.recordSpeed = recordSpeed;
     this.updateScrollingState();
     this.draw();
   }
@@ -655,7 +658,7 @@ export default class Visualizer {
         return;
       }
 
-      currentTime += click.delay;
+      currentTime += click.delay / this.recordSpeed;
     }
   }
 

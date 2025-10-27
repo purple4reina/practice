@@ -58,7 +58,15 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-4">
+        <div class="col" id="rec-speed-label">
+          Recording Speed:
+        </div>
+        <div class="col input-group">
+          <button class="btn" id="rec-speed-minus" type="button" tabindex="-1">-</button>
+          <input type="range" class="form-range form-control" id="rec-speed" min="0" max="100" value="100" step="1">
+          <button class="btn" id="rec-speed-plus" type="button" tabindex="-1">+</button>
+        </div>
+        <div class="col">
           Playback Speed:
         </div>
         <div class="col input-group">

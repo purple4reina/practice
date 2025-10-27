@@ -9,6 +9,7 @@ import {
   PlayRecordControls,
   boolSwitchControls,
   fractionControls,
+  slideControls,
 } from "./controls";
 import {
   RecordingMetronome,
@@ -42,6 +43,7 @@ class WebAudioRecorderController {
   private startRecordingTimeout: number = 0;
   private stopRecordingTimeout: number = 0;
 
+  private recordSpeed = slideControls("rec-speed", { initial: 100, min: 0, max: 100, step: 1, valueSuffix: "%" });
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
   private autoPlay = boolSwitchControls("auto-play", { initial: true });
@@ -69,15 +71,16 @@ class WebAudioRecorderController {
     this.visualizer.clear(); // Clear visualization when starting new recording
     await new Promise(resolve => setTimeout(resolve, 100));
 
+    const recordSpeed = this.recordSpeed() / 100;
     if (this.recordingMetronome.enabled()) {
       const startTime = this.audioContext.currentTime + this.recordingPrelay / 1000;
       const clickGen = this.blockManager.clickIntervalGen("record");
-      this.recordingMetronome.start(startTime, clickGen, 1, true);
+      this.recordingMetronome.start(startTime, clickGen, recordSpeed, true);
     }
 
     const { recordingDelay, stopDelay } = this.blockManager.getRecordDelays();
-    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), recordingDelay);
-    this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), stopDelay + this.recordingPrelay * 2 / 1000);
+    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), recordingDelay / recordSpeed);
+    this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), (stopDelay / recordSpeed) + (this.recordingPrelay * 2 / 1000));
     this.playRecordControls.markRecording();
   }
 
@@ -92,7 +95,7 @@ class WebAudioRecorderController {
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
       const clickGen = this.blockManager.clickIntervalGen("play");
-      this.visualizer.drawVisualization(audioBuffer, clickGen);
+      this.visualizer.drawVisualization(audioBuffer, clickGen, this.recordSpeed() / 100);
 
       sendRecordingEvent({ duration: audioBuffer.duration });
     }
@@ -116,11 +119,13 @@ class WebAudioRecorderController {
       this.stopPlaying();
     });
 
+    const recordSpeed = this.recordSpeed() / 100;
     if (this.playbackMetronome.enabled()) {
       // Apply latency compensation scaled by playback rate
       const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
       const clickGen = this.blockManager.clickIntervalGen("play");
-      this.playbackMetronome.start(compensatedStartTime, clickGen, this.playbackSpeed(), false);
+      const playbackSpeed = this.playbackSpeed() * recordSpeed;
+      this.playbackMetronome.start(compensatedStartTime, clickGen, playbackSpeed, false);
     }
 
     // The visualization already shows the recorded data from when recording stopped
