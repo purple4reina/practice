@@ -66,7 +66,7 @@ export abstract class Block implements IBlock {
     let highlightTimeout = 0;
     this.highlight = () => {
       clearTimeout(highlightTimeout);
-      const colorCls = "border-danger";
+      const colorCls = "border-primary";
       envelope.classList.add(colorCls);
       highlightTimeout = setTimeout(() => { envelope.classList.remove(colorCls) }, 1000);
     };
