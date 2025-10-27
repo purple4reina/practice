@@ -11,6 +11,13 @@ export default class BlockManager {
   private addButton = document.getElementById("add-block") as HTMLElement;
   private blockDiv = document.getElementById("blocks") as HTMLElement;
 
+  private blockTypes = [
+    AccelerandoBlock.type,
+    BeatsBlock.type,
+    MetronomeBlock.type,
+    RecordBlock.type,
+  ];
+
   constructor() {
     // query param listeners
     const callback = this.updateQueryParams.bind(this);
@@ -67,7 +74,6 @@ export default class BlockManager {
         block = new RecordBlock(this.blockDiv);
         break;
       default:
-        console.error(`Unknown block type "${type}"`);
         return;
     }
     if (this.initialized) {
@@ -136,6 +142,11 @@ export default class BlockManager {
       const params = encodeURIComponent(block.queryString());
       url.searchParams.append(type, params);
     });
+    for (const [key, value] of new URLSearchParams(window.location.search)) {
+      if (!this.blockTypes.includes(key)) {
+        url.searchParams.append(key, value);
+      }
+    }
     window.history.pushState(null, '', url.toString());
   }
 }
