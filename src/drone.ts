@@ -39,14 +39,28 @@ export default class Drone {
   private toggle() {
     if (this.isPlaying) {
       this.stop();
+      this.droneButton.classList.add("btn-outline-secondary");
       this.droneButton.classList.remove("btn-primary");
-      this.pitchSelect.classList.remove("bg-primary");
+
+      this.octaveSelect.classList.add("border-secondary");
       this.octaveSelect.classList.remove("bg-primary");
+      this.octaveSelect.classList.remove("border-primary");
+
+      this.pitchSelect.classList.add("border-secondary");
+      this.pitchSelect.classList.remove("bg-primary");
+      this.pitchSelect.classList.remove("border-primary");
     } else {
       this.start();
       this.droneButton.classList.add("btn-primary");
-      this.pitchSelect.classList.add("bg-primary");
+      this.droneButton.classList.remove("btn-outline-secondary");
+
       this.octaveSelect.classList.add("bg-primary");
+      this.octaveSelect.classList.add("border-primary");
+      this.octaveSelect.classList.remove("border-secondary");
+
+      this.pitchSelect.classList.add("bg-primary");
+      this.pitchSelect.classList.add("border-primary");
+      this.pitchSelect.classList.remove("border-secondary");
     }
   }
 
