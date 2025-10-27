@@ -25,10 +25,12 @@ export default class Tapper {
     if (!this.started) {
       window.addEventListener('keydown', this.eventListener);
       this.tapperToggle.classList.add("btn-primary");
+      this.tapperToggle.classList.remove("btn-outline-secondary");
       this.bpmDisplay.innerText = "Press Enter to Tap";
       this.started = true;
     } else {
       window.removeEventListener('keydown', this.eventListener);
+      this.tapperToggle.classList.add("btn-outline-secondary");
       this.tapperToggle.classList.remove("btn-primary");
       this.bpmDisplay.innerText = "";
       this.started = false;
