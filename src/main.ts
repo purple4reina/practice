@@ -2,6 +2,7 @@ import BlockManager from "./blocks";
 import Drone from "./drone";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
+import Saves from "./saves";
 import Tapper from "./tapper";
 import Visualizer from "./visualizer";
 import googleLogin from "./login";
@@ -152,6 +153,8 @@ class WebAudioRecorderController {
 
 // Initialize the controller when the page is completely loaded
 let webAudioController: WebAudioRecorderController;
+let saves: Saves;
 window.addEventListener("load", () => {
   webAudioController = new WebAudioRecorderController();
+  saves = new Saves();
 })

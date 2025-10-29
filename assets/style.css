@@ -113,3 +113,13 @@ input[type=range] {
 .block-element input {
   text-align: center;
 }
+
+.save-link {
+  margin: 0px 0px 5px 10px;
+  color: grey;
+  text-decoration: none;
+}
+
+.save-link:hover {
+  color: #a55dfc;;
+}
