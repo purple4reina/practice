@@ -55,6 +55,10 @@ export default class BeatsBlock extends Block {
     }
   }
 
+  getOpts(): any {
+    return { count: this.count() };
+  }
+
   queryString(): string {
     return `count:${this.count()}`;
   }

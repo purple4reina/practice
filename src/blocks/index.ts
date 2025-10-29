@@ -37,9 +37,13 @@ export default class BlockManager {
         const opts: { [key: string]: string } = {};
         for (let val of decodeURIComponent(value).split(' ')) {
           const [k, v] = val.split(':');
-          opts[k] = v;
+          if (v !== undefined) {
+            opts[k] = v;
+          }
         }
-        this.newBlock(key, opts);
+        if (this.blockTypes.includes(key)) {
+          this.newBlock(key, opts);
+        }
       }
     } else {
       this.newBlock("metronome");
@@ -59,6 +63,7 @@ export default class BlockManager {
   }
 
   newBlock(type: string, opts={}) {
+    opts = Object.keys(opts).length ? opts : this.getLastBlockOpts(type);
     let block: IBlock;
     switch (type) {
       case AccelerandoBlock.type:
@@ -83,6 +88,14 @@ export default class BlockManager {
     block.moveUp = this.moveBlockUp.bind(this);
     block.moveDown = this.moveBlockDown.bind(this);
     this.blocks.push(block);
+  }
+
+  private getLastBlockOpts(type: string): any {
+    return this.blocks.reduceRight((opts, block) => {
+      if (opts) return opts;
+      const btype = (<typeof Block> block.constructor).type;
+      if (type == btype) return block.getOpts();
+    }, null) || {};
   }
 
   removeBlock(block: IBlock) {

@@ -99,6 +99,14 @@ export default class MetronomeBlock extends Block {
     }
   }
 
+  getOpts(): any {
+    return {
+      bpm: this.bpm(),
+      recordSubdivisions: this.recordSubdivisions(),
+      playbackSubdivisions: this.playbackSubdivisions(),
+    };
+  }
+
   queryString(): string {
     return `bpm:${this.bpm()} recordSubdivisions:${this.recordSubdivisions()} playbackSubdivisions:${this.playbackSubdivisions()}`;
   }

@@ -34,6 +34,7 @@ export interface IBlock {
   moveDown(block: IBlock): void;
   clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
   highlight(): void;
+  getOpts(): any;
   queryString(): string;
 }
 
@@ -156,6 +157,10 @@ export abstract class Block implements IBlock {
     });
 
     return block;
+  }
+
+  getOpts(): any {
+    return {};
   }
 
   queryString(): string {
