@@ -1,11 +1,10 @@
 import Cookies from "./cookies";
 
 export default class Saves {
-  private savesPrefix = "saved-save-";
+  private savesPrefix = "practice-recorder-saved-save-";
   private savesDiv = document.getElementById("saves") as HTMLElement;
 
   constructor() {
-    Cookies.set(this.savesPrefix+"456", "home,https://purple4reina.github.io");
     this.loadSaves();
   }
 
