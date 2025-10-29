@@ -32,8 +32,9 @@ export default class BlockManager {
       }
     }).observe(this.blockDiv, { childList: true, subtree: true });
 
-    if (window.location.search) {
-      for (const [key, value] of new URLSearchParams(window.location.search)) {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("record")) {
+      for (const [key, value] of params) {
         const opts: { [key: string]: string } = {};
         for (let val of decodeURIComponent(value).split(' ')) {
           const [k, v] = val.split(':');
