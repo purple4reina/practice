@@ -44,7 +44,14 @@ class WebAudioRecorderController {
   private startRecordingTimeout: number = 0;
   private stopRecordingTimeout: number = 0;
 
-  private recordSpeed = slideControls("rec-speed", { initial: 100, min: 0, max: 100, step: 1, valueSuffix: "%" });
+  private recordSpeed = slideControls("rec-speed", {
+    initial: 100,
+    min: 0,
+    max: 100,
+    step: 1,
+    valueSuffix: "%",
+    label: "Recording Speed",
+  });
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
   private autoPlay = boolSwitchControls("auto-play", { initial: true });

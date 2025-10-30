@@ -111,7 +111,12 @@ abstract class Metronome {
 export class RecordingMetronome extends Metronome {
   protected flash = boolSwitchControls("rec-click-flash", { initial: false });
   protected clickSilencing = slideControls("rec-silencing", {
-    initial: 0, min: 0, max: 100, step: 1, valueSuffix: "%", label: "Random Click Silencing",
+    initial: 0,
+    min: 0,
+    max: 100,
+    step: 1,
+    valueSuffix: "%",
+    label: "Random Click Silencing",
   });
 
   constructor(audioContext: AudioContext) {
