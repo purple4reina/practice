@@ -9,6 +9,8 @@ export default class PlayRecordControls {
   private state: State = State.STOPPED;
   private nextState: State = State.RECORDING;
 
+  private offCanvass: boolean = false;
+
   constructor() {
     this.showControls([this.recordIcon]);
   }
@@ -20,6 +22,7 @@ export default class PlayRecordControls {
     this.playingIcon?.addEventListener("click", callbacks.stopPlaying.bind(this));
 
     document.addEventListener("keydown", (e) => {
+      if (this.offCanvass) return;
       if (e.key === " ") {
         e.preventDefault();
         if (this.state === State.RECORDING) {
@@ -42,6 +45,8 @@ export default class PlayRecordControls {
         }
       }
     });
+    document.addEventListener("hidden.bs.offcanvas", () => { this.offCanvass = false });
+    document.addEventListener("shown.bs.offcanvas", () => { this.offCanvass = true });
   }
 
   markRecording() {
