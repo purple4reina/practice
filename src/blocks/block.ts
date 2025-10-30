@@ -1,3 +1,5 @@
+import { randomId } from "../utils";
+
 class ClickStateAccel {
   enabled: boolean = false;
   clicks: Click[] = [];
@@ -51,7 +53,7 @@ export abstract class Block implements IBlock {
   abstract clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
 
   protected constructor() {
-    this.id = Math.random().toString(36).substr(2, 6);
+    this.id = randomId(6);
     this.remove = this.moveUp = this.moveDown = function(block: IBlock): void {};
   }
 

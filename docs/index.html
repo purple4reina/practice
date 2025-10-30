@@ -6,7 +6,7 @@
     <title>Practice Recorder</title>
 
     <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
-    <script type="module" crossorigin src="/practice/assets/index-DiXVZyRE.js"></script>
+    <script type="module" crossorigin src="/practice/assets/index-DC1r5y4W.js"></script>
     <link rel="stylesheet" crossorigin href="/practice/assets/index-SCKIuYEA.css">
   </head>
   <body>
@@ -200,14 +200,24 @@
           </div>
           <hr></hr>
           <h6>Saves</h6>
-          <div id="saves">
+          <div id="saves"></div>
+          <div class="input-group" id="save-new-group-1">
+            <button class="btn btn-outline-secondary" id="save-new" type="button">
+              New
+            </button>
+            <button class="btn btn-outline-secondary" id="save-delete" type="button">
+              Delete
+            </button>
           </div>
-          <div class="input-group" hidden>
-            <input type="text" class="form-control" id="save-name">
-            <button class="btn btn-outline-primary" type="button">Save</button>
-            <button class="btn btn-outline-danger" type="button">Cancel</button>
+          <div class="input-group" id="save-new-group-2" hidden>
+            <input type="text" class="form-control" id="save-name" placeholder="Name">
+            <button class="btn btn-outline-primary" id="save-submit" type="button">
+              Save
+            </button>
+            <button class="btn btn-outline-danger" id="save-cancel" type="button">
+              Cancel
+            </button>
           </div>
-          <button class="btn btn-outline-secondary" type="button">New</button>
         </div>
       </div>
     </div>
