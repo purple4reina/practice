@@ -21,6 +21,9 @@ import {
   sendPlaybackEvent,
   sendRecordingEvent,
 } from "./monitoring";
+import {
+  sleep,
+} from "./utils";
 
 if (window.location.hostname === "purple4reina.github.io") {
   initializeMonitoring();
@@ -77,7 +80,7 @@ class WebAudioRecorderController {
     await this.recorder.reset();
     this.stopMetronomes();
     this.visualizer.clear(); // Clear visualization when starting new recording
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await sleep(100);
 
     const recordSpeed = this.recordSpeed() / 100;
     if (this.recordingMetronome.enabled()) {

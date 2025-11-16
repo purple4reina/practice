@@ -89,8 +89,8 @@ export abstract class Block implements IBlock {
     moveUp.classList.add("block-control");
     moveUp.style.display = "inline-block";
     moveUp.setAttribute("hover-color", "cornflowerblue");
-    moveUp.addEventListener("click", () => {
-      this.moveUp(this);
+    moveUp.addEventListener("click", async () => {
+      await this.moveUp(this);
       const prev = envelope.previousSibling;
       if (prev) {
         parent.insertBefore(envelope, prev);
@@ -105,8 +105,8 @@ export abstract class Block implements IBlock {
     moveDown.classList.add("block-control");
     moveDown.style.display = "inline-block";
     moveDown.setAttribute("hover-color", "cornflowerblue");
-    moveDown.addEventListener("click", () => {
-      this.moveDown(this);
+    moveDown.addEventListener("click", async () => {
+      await this.moveDown(this);
       const next = envelope.nextSibling;
       if (next) {
         parent.insertBefore(next, envelope);

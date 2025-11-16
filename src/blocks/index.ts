@@ -3,6 +3,7 @@ import BeatsBlock from "./beats-block";
 import MetronomeBlock from "./metronome-block";
 import RecordBlock from "./record-block";
 import { Block, IBlock, ClickState } from "./block";
+import { sleep } from "../utils";
 
 export default class BlockManager {
   private blocks: IBlock[] = [];
@@ -108,19 +109,21 @@ export default class BlockManager {
     }
   }
 
-  moveBlockUp(block: IBlock) {
+  async moveBlockUp(block: IBlock) {
     const index = this.blocks.indexOf(block);
     if (index > 0) {
       block.highlight();
+      await sleep(100);
       this.blocks.splice(index, 1);
       this.blocks.splice(index - 1, 0, block);
     }
   }
 
-  moveBlockDown(block: IBlock) {
+  async moveBlockDown(block: IBlock) {
     const index = this.blocks.indexOf(block);
     if (index > -1) {
       block.highlight();
+      await sleep(100);
       this.blocks.splice(index, 1);
       this.blocks.splice(index + 1, 0, block);
     }
