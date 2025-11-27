@@ -59,6 +59,6 @@ export default class PatternBlock extends Block {
   }
 
   queryString(): string {
-    return `beats:${this.beats()}`;
+    return `beats:${this.beats()} start:${this.start()}`;
   }
 }
