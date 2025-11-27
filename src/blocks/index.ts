@@ -1,5 +1,6 @@
 import AccelerandoBlock from "./accelerando-block";
 import BeatsBlock from "./beats-block";
+import MeasuresBlock from "./measures-block";
 import MetronomeBlock from "./metronome-block";
 import PatternBlock from "./pattern-block";
 import RecordBlock from "./record-block";
@@ -16,6 +17,7 @@ export default class BlockManager {
   private blockTypes = [
     AccelerandoBlock.type,
     BeatsBlock.type,
+    MeasuresBlock.type,
     MetronomeBlock.type,
     PatternBlock.type,
     RecordBlock.type,
@@ -75,6 +77,9 @@ export default class BlockManager {
         break;
       case BeatsBlock.type:
         block = new BeatsBlock(this.blockDiv, opts);
+        break;
+      case MeasuresBlock.type:
+        block = new MeasuresBlock(this.blockDiv, opts);
         break;
       case MetronomeBlock.type:
         block = new MetronomeBlock(this.blockDiv, opts);
@@ -143,8 +148,9 @@ export default class BlockManager {
         }
       }
     }
-    // yield one final click as a downbeat
-    yield { delay: 350, level: 1, recording: true };
+    // yield one final click
+    const level = (state.beatIndex % state.beatsPerMeasure) === 0 ? 1 : 2;
+    yield { delay: 350, level: level, recording: true };
   }
 
   getRecordDelays() {
