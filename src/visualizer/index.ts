@@ -41,6 +41,11 @@ export default class Visualizer {
   private isPlaybackActive: boolean = false;
   private animationFrameId: number | null = null;
 
+  private clickLines: { [key: number]: string } = {
+    1: '#2905f5',  // blue
+    4: '#000000',  // black
+  }
+
   // Viewport/scrolling properties
   private isScrollingEnabled: boolean = false;
   private viewStartTime: number = 0; // Start time of current viewport in ms
@@ -631,10 +636,6 @@ export default class Visualizer {
   private drawMetronomeBeats(): void {
     const { width, height } = this.options;
 
-    // colors
-    const black = '#000000';
-    const blue = '#2905f5';
-
     // Draw beat markers
     this.ctx.lineWidth = 1;
 
@@ -648,7 +649,7 @@ export default class Visualizer {
 
         // Only draw if within canvas bounds
         if (x >= 0 && x <= width) {
-          this.ctx.strokeStyle = click.strong ? blue : black;
+          this.ctx.strokeStyle = this.clickLines[click.level];
           this.ctx.beginPath();
           this.ctx.moveTo(x, 0);
           this.ctx.lineTo(x, height);

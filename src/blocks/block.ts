@@ -24,7 +24,7 @@ export class ClickState {
 
 export interface Click {
   delay: number,
-  strong: boolean,
+  level: number,
   recording: boolean,
 }
 

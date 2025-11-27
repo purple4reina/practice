@@ -5,11 +5,21 @@ import {
   slideControls,
 } from "./controls";
 
+interface ClickSound {
+  hz: number,
+  vol: number,
+}
+
 abstract class Metronome {
   private audioContext: AudioContext;
 
   private clickHz: number = 1000;
   private offbeatHz: number = 750;
+  private clickSounds: { [key: number]: ClickSound } = {
+    1: { hz: 1000, vol: 2 },
+    4: { hz: 750, vol: 1 },
+  };
+
   private oscillatorType: OscillatorType = "square";
   private flashBox = document.getElementById("click-flash-box") as HTMLElement;
 
@@ -23,14 +33,12 @@ abstract class Metronome {
   protected countOffAllowance: number = 100; // Allow 100ms before the first click
 
   public enabled;
-  public volume;
   protected clickSilencing = () => 0;
   protected flash = () => false;
 
   constructor(prefix: string, audioContext: AudioContext) {
     this.audioContext = audioContext;
     this.enabled = boolSwitchControls(`${prefix}-metronome-enabled`, { initial: true });
-    this.volume = slideControls(`${prefix}-volume`, { initial: 1, min: 0, max: 5, step: 0.25 });
   }
 
   private createClickSound(when: number, click: Click) { //clickHz: number, gain: number): void {
@@ -46,24 +54,16 @@ abstract class Metronome {
       return;
     }
 
-    let volume = this.volume();
-    if (volume <= 0) {
-      return;
-    }
-    if (click.strong) {
-      volume *= 2;
-    }
-
+    const clickSound = this.clickSounds[click.level];
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
 
     oscillator.type = this.oscillatorType;
-    const clickHz = click.strong ? this.clickHz : this.offbeatHz;
-    oscillator.frequency.setValueAtTime(clickHz, when);
+    oscillator.frequency.setValueAtTime(clickSound.hz, when);
 
     // Create a sharp click envelope
     gainNode.gain.setValueAtTime(0, when);
-    gainNode.gain.linearRampToValueAtTime(volume, when + 0.001);
+    gainNode.gain.linearRampToValueAtTime(clickSound.vol, when + 0.001);
     gainNode.gain.exponentialRampToValueAtTime(0.001, when + 0.05);
 
     oscillator.connect(gainNode);

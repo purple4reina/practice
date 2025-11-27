@@ -48,9 +48,9 @@ export default class BeatsBlock extends Block {
 
     const delay = 60 / bpm / subdivisions * 1000;
     for (let i = 0; i < this.count(); i++) {
-      yield* addClick({ delay, strong: true, recording });
+      yield* addClick({ delay, level: 1, recording });
       for (let j = 0; j < subdivisions - 1; j++) {
-        yield* addClick({ delay, strong: false, recording });
+        yield* addClick({ delay, level: 4, recording });
       }
     }
   }

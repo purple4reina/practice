@@ -144,7 +144,7 @@ export default class BlockManager {
       }
     }
     // yield one final click as a downbeat
-    yield { delay: 350, strong: true, recording: true };
+    yield { delay: 350, level: 1, recording: true };
   }
 
   getRecordDelays() {
