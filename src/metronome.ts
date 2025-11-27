@@ -17,6 +17,7 @@ abstract class Metronome {
   private offbeatHz: number = 750;
   private clickSounds: { [key: number]: ClickSound } = {
     1: { hz: 1000, vol: 2 },
+    2: { hz: 850, vol: 2 },
     4: { hz: 750, vol: 1 },
   };
 

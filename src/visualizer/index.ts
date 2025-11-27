@@ -42,7 +42,8 @@ export default class Visualizer {
   private animationFrameId: number | null = null;
 
   private clickLines: { [key: number]: string } = {
-    1: '#2905f5',  // blue
+    1: '#f50505',  // red
+    2: '#2905f5',  // blue
     4: '#000000',  // black
   }
 
