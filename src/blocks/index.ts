@@ -1,6 +1,7 @@
 import AccelerandoBlock from "./accelerando-block";
 import BeatsBlock from "./beats-block";
 import MetronomeBlock from "./metronome-block";
+import PatternBlock from "./pattern-block";
 import RecordBlock from "./record-block";
 import { Block, IBlock, ClickState } from "./block";
 import { sleep } from "../utils";
@@ -16,6 +17,7 @@ export default class BlockManager {
     AccelerandoBlock.type,
     BeatsBlock.type,
     MetronomeBlock.type,
+    PatternBlock.type,
     RecordBlock.type,
   ];
 
@@ -76,6 +78,9 @@ export default class BlockManager {
         break;
       case MetronomeBlock.type:
         block = new MetronomeBlock(this.blockDiv, opts);
+        break;
+      case PatternBlock.type:
+        block = new PatternBlock(this.blockDiv, opts);
         break;
       case RecordBlock.type:
         block = new RecordBlock(this.blockDiv);
