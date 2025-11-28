@@ -17,8 +17,20 @@ class PatternButton {
 
     div.innerText = `${index+1}`;
     div.id = `${name}-${index}`;
-
     parent?.appendChild(div);
+
+    div.addEventListener("click", this.cycle.bind(this));
+  }
+
+  cycle() {
+    this.value = (this.value + 1) % 4;
+    for (let i = 0; i < 5; i++) {
+      if (i === this.value) {
+        this.buttonDiv?.classList.add(`pattern-level-${this.value}`);
+      } else {
+        this.buttonDiv?.classList.remove(`pattern-level-${i}`);
+      }
+    }
   }
 }
 

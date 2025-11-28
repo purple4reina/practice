@@ -124,49 +124,64 @@ input[type=range] {
   color: #a55dfc;
 }
 
-.pattern-btn {
+.pattern-div {
   height: 100%;
   margin-top: auto;
   margin-bottom: auto;
   padding: 0px;
-}
 
-.pattern-level-1 {
-  border-color: #f50505;  /* red */
-  height: 62px;
-}
-.pattern-level-1:hover {
-  border-color: #f50505;  /* red */
-}
-.pattern-level-1:active {
-  border-color: #f50505 !important;  /* red */
-}
+  .btn:active {
+    border-color: #ffffff !important;  /* white */
+  }
 
-.pattern-level-2 {
-  border-color: #2905f5;  /* blue */
-  height: 52px;
-}
-.pattern-level-2:hover {
-  border-color: #2905f5;  /* blue */
-}
-.pattern-level-2:active {
-  border-color: #2905f5 !important;  /* blue */
-}
+  .pattern-btn {
+    height: 100%;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding: 0px;
+  }
 
-.pattern-level-2 {
-}
-.pattern-level-2:hover {
-}
-.pattern-level-2:active {
-}
+  .pattern-level-1 {
+    border-color: #f50505;  /* red */
+    height: 62px;
+  }
+  .pattern-level-1:hover {
+    border-color: #f50505;  /* red */
+  }
+  .pattern-level-1:active {
+    border-color: #f50505 !important;  /* red */
+  }
 
-.pattern-level-4 {
-  border-color: #000000;  /* black */
-  height: 32px;
-}
-.pattern-level-4:hover {
-  border-color: #000000;  /* black */
-}
-.pattern-level-4:active {
-  border-color: #000000 !important;  /* black */
+  .pattern-level-2 {
+    border-color: #2905f5;  /* blue */
+    height: 52px;
+  }
+  .pattern-level-2:hover {
+    border-color: #2905f5;  /* blue */
+  }
+  .pattern-level-2:active {
+    border-color: #2905f5 !important;  /* blue */
+  }
+
+  .pattern-level-3 {
+    border-color: #02b025;  /* green */
+    height: 42px;
+  }
+  .pattern-level-3:hover {
+    border-color: #02b025;  /* green */
+  }
+  .pattern-level-3:active {
+    border-color: #02b025;  /* green */
+  }
+
+  .pattern-level-0 {
+    border-color: #ffffff;  /* white */
+    height: 32px;
+  }
+  .pattern-level-0:hover {
+    border-color: #ffffff;  /* white */
+  }
+  .pattern-level-0:active {
+    border-color: #ffffff !important;  /* white */
+  }
 }

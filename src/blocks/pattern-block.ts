@@ -40,10 +40,8 @@ export default class PatternBlock extends Block {
             </div>
           </div>
         </div>
-        <div class="col">
-          <div class="container">
-            <div class="row" id="${this.id}-pattern"></div>
-          </div>
+        <div class="col align-items-center">
+          <div class="row pattern-div" id="${this.id}-pattern"></div>
         </div>
         <div class="col"><!-- empty column --></div>
       </div>
