@@ -1,4 +1,4 @@
-import { patternControls, plusMinusControls } from "../controls";
+import { PatternControls, plusMinusControls } from "../controls";
 import { Block, ClickState, Click } from "./block";
 
 export default class PatternBlock extends Block {
@@ -48,14 +48,21 @@ export default class PatternBlock extends Block {
     `;
     this.beats = plusMinusControls(`${this.id}-beats`, { initial: opts.beats || 4, min: 1, max: 16 });
     this.start = plusMinusControls(`${this.id}-start`, { initial: opts.start || 1, min: 1, max: 16 });
+
     const initPattern = (opts.pattern || '1,2,2,2').split(',').map((v: string) => parseInt(v));
-    this.pattern = patternControls(`${this.id}-pattern`, { initial: initPattern });
+    this.pattern = new PatternControls(`${this.id}-pattern`, { initial: initPattern });
+    div.addEventListener("input", (e) => {
+      const target = e.target as HTMLInputElement;
+      if (target.id === `${this.id}-beats-val`) {
+        this.pattern.setBeatCount(parseInt(target.value));
+      }
+    });
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
     state.beatIndex = this.start() - 1;
     state.beatsPerMeasure = this.beats();
-    state.beatPattern = this.pattern();
+    state.beatPattern = this.pattern.values();
   }
 
   getOpts(): any {
@@ -65,6 +72,6 @@ export default class PatternBlock extends Block {
   }
 
   queryString(): string {
-    return `beats:${this.beats()} start:${this.start()} pattern:${this.pattern().join()}`;
+    return `beats:${this.beats()} start:${this.start()} pattern:${this.pattern.values().join()}`;
   }
 }
