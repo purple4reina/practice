@@ -1,4 +1,4 @@
-import { plusMinusControls } from "../controls";
+import { patternControls, plusMinusControls } from "../controls";
 import { Block, ClickState, Click } from "./block";
 
 export default class PatternBlock extends Block {
@@ -6,6 +6,7 @@ export default class PatternBlock extends Block {
 
   private beats;
   private start;
+  private pattern;
 
   constructor(parent: HTMLElement, opts: any) {
     super();
@@ -39,12 +40,18 @@ export default class PatternBlock extends Block {
             </div>
           </div>
         </div>
-        <div class="col"><!-- empty column --></div>
+        <div class="col">
+          <div class="container">
+            <div class="row" id="${this.id}-pattern"></div>
+          </div>
+        </div>
         <div class="col"><!-- empty column --></div>
       </div>
     `;
     this.beats = plusMinusControls(`${this.id}-beats`, { initial: opts.beats || 4, min: 1, max: 16 });
     this.start = plusMinusControls(`${this.id}-start`, { initial: opts.start || 1, min: 1, max: 16 });
+    const initPattern = (opts.pattern || '1,2,2,2').split(',').map((v: string) => parseInt(v));
+    this.pattern = patternControls(`${this.id}-pattern`, { initial: initPattern });
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
@@ -59,6 +66,6 @@ export default class PatternBlock extends Block {
   }
 
   queryString(): string {
-    return `beats:${this.beats()} start:${this.start()}`;
+    return `beats:${this.beats()} start:${this.start()} pattern:${this.pattern().join()}`;
   }
 }
