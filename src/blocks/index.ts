@@ -149,8 +149,7 @@ export default class BlockManager {
       }
     }
     // yield one final click
-    const level = (state.beatIndex % state.beatsPerMeasure) === 0 ? 1 : 2;
-    yield { delay: 350, level: level, recording: true };
+    yield { delay: 350, level: state.getLevel(), recording: true };
   }
 
   getRecordDelays() {

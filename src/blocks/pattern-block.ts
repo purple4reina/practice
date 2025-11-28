@@ -55,6 +55,7 @@ export default class PatternBlock extends Block {
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
     state.beatIndex = this.start() - 1;
     state.beatsPerMeasure = this.beats();
+    state.beatPattern = this.pattern();
   }
 
   getOpts(): any {

@@ -44,6 +44,7 @@ export default class Visualizer {
   private clickLines: { [key: number]: string } = {
     1: '#f50505',  // red
     2: '#2905f5',  // blue
+    3: '#02b025',  // green
     4: '#000000',  // black
   }
 
@@ -649,7 +650,7 @@ export default class Visualizer {
         const x = this.timeToX(currentTime);
 
         // Only draw if within canvas bounds
-        if (x >= 0 && x <= width) {
+        if (x >= 0 && x <= width && click.level > 0) {
           this.ctx.strokeStyle = this.clickLines[click.level];
           this.ctx.beginPath();
           this.ctx.moveTo(x, 0);

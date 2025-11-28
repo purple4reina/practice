@@ -17,8 +17,10 @@ abstract class Metronome {
   private offbeatHz: number = 750;
   private clickSounds: { [key: number]: ClickSound } = {
     1: { hz: 1000, vol: 2 },
-    2: { hz: 850, vol: 2 },
-    4: { hz: 750, vol: 1 },
+    2: { hz: 900, vol: 2 },
+    3: { hz: 800, vol: 1 },
+    4: { hz: 700, vol: 1 },
+    0: { hz: 0, vol: 0 },
   };
 
   private oscillatorType: OscillatorType = "square";
@@ -56,6 +58,10 @@ abstract class Metronome {
     }
 
     const clickSound = this.clickSounds[click.level];
+    if (clickSound.vol === 0) {
+      return;
+    }
+
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
 

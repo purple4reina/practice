@@ -20,8 +20,13 @@ export class ClickState {
   beatsPerMeasure: number = 0;
   subdivisions: number = 0;
   beatIndex: number = 0;
+  beatPattern: number[] = [];
   recording: boolean = false;
   accel = new ClickStateAccel();
+
+  getLevel(): number {
+    return this.beatPattern[this.beatIndex % this.beatsPerMeasure];
+  }
 }
 
 export interface Click {
