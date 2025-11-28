@@ -68,6 +68,8 @@ export default class PatternBlock extends Block {
   getOpts(): any {
     return {
       beats: this.beats(),
+      start: this.start(),
+      pattern: this.pattern.values().join(),
     };
   }
 
