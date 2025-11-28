@@ -31,6 +31,7 @@ class PatternButton {
         this.buttonDiv?.classList.remove(`pattern-level-${i}`);
       }
     }
+    this.buttonDiv?.dispatchEvent(new CustomEvent("input", { bubbles: true }));
   }
 }
 
