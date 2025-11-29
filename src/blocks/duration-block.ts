@@ -35,11 +35,36 @@ export default class DurationBlock extends Block {
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
-    yield {
-      delay: this.seconds() * 1000,
-      level: 0,
-      recording: state.recording,
-    };
+    let { bpm, subdivisions, recording } = state;
+    if (bpm > 0 && subdivisions > 0) {
+      const addClick = function* (click: Click) {
+        if (state.accel.enabled) {
+          state.accel.clicks.push(click);
+        } else {
+          yield click;
+        }
+      }
+
+      // TODO: if there is an accel in place, this is wrong, must take accel
+      // into account when calculating number of beats.
+      const beats = this.seconds() / 60 * state.bpm;
+      const delay = 60 / bpm / subdivisions * 1000;
+      for (let i = 0; i < beats; i++) {
+        const level = (state.beatIndex % state.beatsPerMeasure) === 0 ? 1 : 2;
+        yield* addClick({ delay, level: level, recording });
+        for (let j = 0; j < subdivisions - 1; j++) {
+          yield* addClick({ delay, level: 4, recording });
+        }
+        state.beatIndex++;
+      }
+
+    } else {
+      yield {
+        delay: this.seconds() * 1000,
+        level: 0,
+        recording,
+      };
+    }
   }
 
   getOpts(): any {
