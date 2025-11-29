@@ -1,5 +1,6 @@
 import AccelerandoBlock from "./accelerando-block";
 import BeatsBlock from "./beats-block";
+import DurationBlock from "./duration-block";
 import MeasuresBlock from "./measures-block";
 import MetronomeBlock from "./metronome-block";
 import PatternBlock from "./pattern-block";
@@ -17,6 +18,7 @@ export default class BlockManager {
   private blockTypes = [
     AccelerandoBlock.type,
     BeatsBlock.type,
+    DurationBlock.type,
     MeasuresBlock.type,
     MetronomeBlock.type,
     PatternBlock.type,
@@ -77,6 +79,9 @@ export default class BlockManager {
         break;
       case BeatsBlock.type:
         block = new BeatsBlock(this.blockDiv, opts);
+        break;
+      case DurationBlock.type:
+        block = new DurationBlock(this.blockDiv, opts);
         break;
       case MeasuresBlock.type:
         block = new MeasuresBlock(this.blockDiv, opts);
