@@ -63,6 +63,7 @@ class SlideControls {
     this._value = Math.max(this.min, Math.min(this.max, this._value));
     if (this.slideInput) {
       this.slideInput.value = this._value.toString();
+      this.slideInput.dispatchEvent(new CustomEvent("input"));
     }
     this.setLabelText(this._value.toString());
   }

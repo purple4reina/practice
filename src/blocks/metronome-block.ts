@@ -7,6 +7,8 @@ export default class MetronomeBlock extends Block {
   private bpm;
   private recordSubdivisions;
   private playbackSubdivisions;
+  private bpmLabel;
+  private recSpeed;
 
   constructor(parent: HTMLElement, opts: any) {
     super();
@@ -18,7 +20,7 @@ export default class MetronomeBlock extends Block {
         </div>
         <div class="col">
           <div class="container">
-            <div class="row-col">
+            <div class="row-col" id="${this.id}-bpm-label">
               BPM:
             </div>
             <div class="row-col input-group">
@@ -58,6 +60,18 @@ export default class MetronomeBlock extends Block {
     this.bpm = plusMinusControls(`${this.id}-bpm`, { initial: opts.bpm || 60, min: 5, max: 512 });
     this.recordSubdivisions = plusMinusControls(`${this.id}-rec-subdivisions`, { initial: opts.recordSubdivisions || 1, min: 1, max: 64 });
     this.playbackSubdivisions = plusMinusControls(`${this.id}-play-subdivisions`, { initial: opts.playbackSubdivisions || 1, min: 1, max: 64 });
+
+    this.bpmLabel = document.getElementById(`${this.id}-bpm-label`) as HTMLElement;
+    this.recSpeed = document.getElementById("rec-speed") as HTMLInputElement;
+    this.recSpeed.addEventListener("input", e => { this.updateBpmLabel() });
+    document.getElementById(`${this.id}-bpm-val`)?.addEventListener("input", e => { this.updateBpmLabel() });
+  }
+
+  private updateBpmLabel() {
+    const bpm = this.bpm();
+    const percent = parseInt(this.recSpeed.value);
+    const value = Math.round(bpm * percent / 100);
+    this.bpmLabel.innerText = (value === bpm) ? `BPM:` : `BPM (${value}):`;
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
