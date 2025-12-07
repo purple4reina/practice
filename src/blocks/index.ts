@@ -4,7 +4,7 @@ import DurationBlock from "./duration-block";
 import MeasuresBlock from "./measures-block";
 import MetronomeBlock from "./metronome-block";
 import PatternBlock from "./pattern-block";
-import RecordBlock from "./record-block";
+import StartRecordingBlock from "./start-recording-block";
 import { Block, IBlock, ClickState } from "./block";
 import { sleep } from "../utils";
 
@@ -22,7 +22,7 @@ export default class BlockManager {
     MeasuresBlock.type,
     MetronomeBlock.type,
     PatternBlock.type,
-    RecordBlock.type,
+    StartRecordingBlock.type,
   ];
 
   constructor() {
@@ -92,8 +92,8 @@ export default class BlockManager {
       case PatternBlock.type:
         block = new PatternBlock(this.blockDiv, opts);
         break;
-      case RecordBlock.type:
-        block = new RecordBlock(this.blockDiv);
+      case StartRecordingBlock.type:
+        block = new StartRecordingBlock(this.blockDiv);
         break;
       default:
         return;

@@ -1,6 +1,6 @@
 import { Block, ClickState } from "./block";
 
-export default class RecordBlock extends Block {
+export default class StartRecordingBlock extends Block {
   readonly removable: boolean = false;
   static readonly type = "record";
 
