@@ -88,37 +88,39 @@ export abstract class Block implements IBlock {
     leftControls.classList.add("left-controls");
     leftControls.style.paddingLeft = "5px";
 
-    const moveUp = document.createElement("i");
-    leftControls.appendChild(moveUp);
-    moveUp.classList.add("bi");
-    moveUp.classList.add("bi-chevron-up");
-    moveUp.classList.add("bi-tiny");
-    moveUp.classList.add("block-control");
-    moveUp.style.display = "inline-block";
-    moveUp.setAttribute("hover-color", "cornflowerblue");
-    moveUp.addEventListener("click", async () => {
-      await this.moveUp(this);
-      const prev = envelope.previousSibling;
-      if (prev) {
-        parent.insertBefore(envelope, prev);
-      }
-    });
+    if (this.removable) {
+      const moveUp = document.createElement("i");
+      leftControls.appendChild(moveUp);
+      moveUp.classList.add("bi");
+      moveUp.classList.add("bi-chevron-up");
+      moveUp.classList.add("bi-tiny");
+      moveUp.classList.add("block-control");
+      moveUp.style.display = "inline-block";
+      moveUp.setAttribute("hover-color", "cornflowerblue");
+      moveUp.addEventListener("click", async () => {
+        await this.moveUp(this);
+        const prev = envelope.previousSibling;
+        if (prev) {
+          parent.insertBefore(envelope, prev);
+        }
+      });
 
-    const moveDown = document.createElement("i");
-    leftControls.appendChild(moveDown);
-    moveDown.classList.add("bi");
-    moveDown.classList.add("bi-chevron-down");
-    moveDown.classList.add("bi-tiny");
-    moveDown.classList.add("block-control");
-    moveDown.style.display = "inline-block";
-    moveDown.setAttribute("hover-color", "cornflowerblue");
-    moveDown.addEventListener("click", async () => {
-      await this.moveDown(this);
-      const next = envelope.nextSibling;
-      if (next) {
-        parent.insertBefore(next, envelope);
-      }
-    });
+      const moveDown = document.createElement("i");
+      leftControls.appendChild(moveDown);
+      moveDown.classList.add("bi");
+      moveDown.classList.add("bi-chevron-down");
+      moveDown.classList.add("bi-tiny");
+      moveDown.classList.add("block-control");
+      moveDown.style.display = "inline-block";
+      moveDown.setAttribute("hover-color", "cornflowerblue");
+      moveDown.addEventListener("click", async () => {
+        await this.moveDown(this);
+        const next = envelope.nextSibling;
+        if (next) {
+          parent.insertBefore(next, envelope);
+        }
+      });
+    }
 
     // block
     const block = document.createElement("div");
