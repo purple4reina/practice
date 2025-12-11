@@ -32,6 +32,6 @@ export default class AccelerandoBlock extends Block {
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
-    state.accel.start();
+    state.accel.start(this.kind());
   }
 }

@@ -74,28 +74,41 @@ export default class MetronomeBlock extends Block {
     this.bpmLabel.innerText = (value === bpm) ? `BPM:` : `BPM (${value}):`;
   }
 
+  private *linearAccel(state: ClickState) {
+    const subs = state.subdivisions;
+    const numStrongBeats = state.accel.clicks.length / subs;
+
+    const oldDur = 60 / state.bpm * 1000;
+    const newDur = 60 / this.bpm() * 1000;
+    const durDiff = (newDur - oldDur) / (numStrongBeats + 1);
+
+    let beatDur = oldDur;
+    for (let beat = 0; beat < numStrongBeats; beat++) {
+      let subDur = beatDur / subs;
+
+      beatDur += durDiff;
+      const subDiff = 2 * (beatDur - subs * subDur) / subs / (subs + 1);
+
+      for (let sub = 0; sub < subs; sub++) {
+        subDur += subDiff;
+        const click = state.accel.clicks.shift() as Click;
+        click.delay = subDur;
+        yield click;
+      }
+    }
+  }
+
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
     if (state.accel.enabled) {
-      const subs = state.subdivisions;
-      const numStrongBeats = state.accel.clicks.length / subs;
-
-      const oldDur = 60 / state.bpm * 1000;
-      const newDur = 60 / this.bpm() * 1000;
-      const durDiff = (newDur - oldDur) / (numStrongBeats + 1);
-
-      let beatDur = oldDur;
-      for (let beat = 0; beat < numStrongBeats; beat++) {
-        let subDur = beatDur / subs;
-
-        beatDur += durDiff;
-        const subDiff = 2 * (beatDur - subs * subDur) / subs / (subs + 1);
-
-        for (let sub = 0; sub < subs; sub++) {
-          subDur += subDiff;
-          const click = state.accel.clicks.shift() as Click;
-          click.delay = subDur;
-          yield click;
-        }
+      switch (state.accel.kind) {
+        case "linear":
+          yield* this.linearAccel(state);
+          break;
+        case "percentage":
+          throw new Error("percentage accelerando not implemented");
+          break;
+        default:
+          throw new Error(`unknown accelerando kind ${state.accel.kind}`);
       }
     }
 

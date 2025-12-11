@@ -2,16 +2,19 @@ import { randomId } from "../utils";
 
 class ClickStateAccel {
   enabled: boolean = false;
+  kind: string | undefined;
   clicks: Click[] = [];
 
   reset() {
     this.enabled = false;
+    this.kind = undefined;
     this.clicks = [];
   }
 
-  start() {
+  start(kind: string) {
     this.reset();
     this.enabled = true;
+    this.kind = kind;
   }
 }
 
