@@ -17,10 +17,10 @@ class ClickStateAccel {
 
 export class ClickState {
   bpm: number = 0;
-  beatsPerMeasure: number = 0;
-  subdivisions: number = 0;
-  beatIndex: number = 0;
-  beatPattern: number[] = [];
+  beatsPerMeasure: number = 1;
+  subdivisions: number = 1;
+  beatIndex: number = 1;
+  beatPattern: number[] = [1];
   recording: boolean = false;
   accel = new ClickStateAccel();
 

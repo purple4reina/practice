@@ -160,19 +160,21 @@ export default class BlockManager {
       }
     }
     // yield one final click
-    yield { delay: 350, level: state.getLevel(), recording: true };
+    yield { delay: 350, level: state.getLevel(), recording: state.recording };
   }
 
   getRecordDelays() {
-    let recordingDelay = 0;
+    let startRecordingDelay = 0;
     let stopDelay = 0;
+    let started = false;
     for (const click of this.clickIntervalGen("record")) {
+      started = started || click.recording;
       stopDelay += click.delay;
-      if (!click.recording) {
-        recordingDelay += click.delay;
+      if (!click.recording && !started) {
+        startRecordingDelay += click.delay;
       }
     }
-    return { recordingDelay, stopDelay };
+    return { startRecordingDelay, stopDelay };
   }
 
   private updateQueryParams() {

@@ -89,8 +89,8 @@ class WebAudioRecorderController {
       this.recordingMetronome.start(startTime, clickGen, recordSpeed, true);
     }
 
-    const { recordingDelay, stopDelay } = this.blockManager.getRecordDelays();
-    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), recordingDelay / recordSpeed);
+    const { startRecordingDelay, stopDelay } = this.blockManager.getRecordDelays();
+    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), startRecordingDelay / recordSpeed);
     this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), (stopDelay / recordSpeed) + (this.recordingPrelay * 2 / 1000));
     this.playRecordControls.markRecording();
   }
