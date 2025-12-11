@@ -2,12 +2,17 @@ import { Block, ClickState } from "./block";
 
 export default class AccelerandoBlock extends Block {
   static readonly type = "accelerando";
-  private kind;
 
-  constructor(parent: HTMLElement) {
+  private kind;
+  private kinds = [
+    "linear",
+    "percentage",
+  ];
+
+  constructor(parent: HTMLElement, opts: any) {
     super();
     const div = this.newBlockDiv(parent);
-    div.innerHTML = `
+    let innerHTML = `
       <div class="row g-0 p-0">
         <div class="col text-left">
           <strong>Accelerando</strong>
@@ -17,8 +22,12 @@ export default class AccelerandoBlock extends Block {
           <div class="container">
             <div class="row-col input-group">
               <select class="form-select" id="${this.id}-accel-kind">
-                <option value="linear">Linear</option>
-                <option value="percentage" disabled>Percentage</option>
+    `;
+    for (const k of this.kinds) {
+      const kTitle = k.charAt(0).toUpperCase() + k.substring(1).toLowerCase();
+      innerHTML += `<option value="${k}">${kTitle}</option>`;
+    }
+    innerHTML += `
               </select>
             </div>
           </div>
@@ -27,11 +36,17 @@ export default class AccelerandoBlock extends Block {
         <div class="col"><!-- empty column --></div>
       </div>
     `;
+    div.innerHTML = innerHTML;
     const kindSelect = document.getElementById(`${this.id}-accel-kind`) as HTMLSelectElement;
+    kindSelect.value = this.kinds.includes(opts.kind) ? opts.kind : "linear";
     this.kind = () => kindSelect.value;
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
     state.accel.start(this.kind());
+  }
+
+  queryString(): string {
+    return `kind:${this.kind()}`;
   }
 }

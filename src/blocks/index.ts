@@ -78,7 +78,7 @@ export default class BlockManager {
     let block: IBlock;
     switch (type) {
       case AccelerandoBlock.type:
-        block = new AccelerandoBlock(this.blockDiv);
+        block = new AccelerandoBlock(this.blockDiv, opts);
         break;
       case BeatsBlock.type:
         block = new BeatsBlock(this.blockDiv, opts);
