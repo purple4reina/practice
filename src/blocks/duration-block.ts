@@ -50,7 +50,7 @@ export default class DurationBlock extends Block {
       const beats = this.seconds() / 60 * state.bpm;
       const delay = 60 / bpm / subdivisions * 1000;
       for (let i = 0; i < beats; i++) {
-        const level = (state.beatIndex % state.beatsPerMeasure) === 0 ? 1 : 2;
+        const level = state.getLevel();
         yield* addClick({ delay, level: level, recording });
         for (let j = 0; j < subdivisions - 1; j++) {
           yield* addClick({ delay, level: 4, recording });
