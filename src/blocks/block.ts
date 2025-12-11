@@ -16,6 +16,7 @@ class ClickStateAccel {
 }
 
 export class ClickState {
+  phase: string;
   bpm: number = 0;
   beatsPerMeasure: number = 1;
   subdivisions: number = 1;
@@ -24,8 +25,16 @@ export class ClickState {
   recording: boolean = false;
   accel = new ClickStateAccel();
 
+  constructor(phase: "record" | "play") {
+    this.phase = phase;
+  }
+
   getLevel(): number {
-    return this.beatPattern[this.beatIndex % this.beatsPerMeasure];
+    let level = this.beatPattern[this.beatIndex % this.beatsPerMeasure];
+    if (this.phase == "play" && level === 0) {
+      level = this.beatIndex === 0 ? 1 : 2;
+    }
+    return level;
   }
 }
 
