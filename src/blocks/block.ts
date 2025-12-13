@@ -35,7 +35,7 @@ export class ClickState {
   getLevel(): number {
     let level = this.beatPattern[this.beatIndex % this.beatsPerMeasure];
     if (this.phase == "play" && level === 0) {
-      level = this.beatIndex === 0 ? 1 : 2;
+      level = (this.beatIndex % this.beatsPerMeasure) === 0 ? 1 : 2;
     }
     return level;
   }
