@@ -646,10 +646,16 @@ export default class Visualizer {
 
     // Draw beats within the viewport
     for (const click of this.metronomeClicks) {
-      if (currentTime >= this.viewStartTime) {
+      // Stop if we've gone past the end of the visible viewport
+      if (currentTime > this.viewStartTime + this.viewDuration) {
+        return;
+      }
+
+      // Only draw if within the visible viewport
+      if (currentTime >= this.viewStartTime && currentTime <= this.viewStartTime + this.viewDuration) {
         const x = this.timeToX(currentTime);
 
-        // Only draw if within canvas bounds
+        // Only draw if within canvas bounds and has a level
         if (x >= 0 && x <= width && click.level > 0) {
           this.ctx.strokeStyle = this.clickLines[click.level];
           this.ctx.beginPath();
@@ -657,8 +663,6 @@ export default class Visualizer {
           this.ctx.lineTo(x, height);
           this.ctx.stroke();
         }
-      } else if (currentTime <= this.totalDuration) {
-        return;
       }
 
       currentTime += click.delay / this.recordSpeed;
