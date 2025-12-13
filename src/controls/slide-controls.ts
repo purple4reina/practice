@@ -3,6 +3,7 @@ class SlideControls {
   private min: number = 0;
   private max: number = 10;
   private step: number = 0.5;
+  private name: string = "";
   private labelText: string = "";
   private valueSuffix: string = "";
 
@@ -13,9 +14,16 @@ class SlideControls {
 
   constructor(name: string, opts: { initial: number, min: number, max: number, step: number, valueSuffix?: string, label?: string }) {
     this._value = opts.initial;
+    for (const [key, value] of new URLSearchParams(window.location.search)) {
+      if (key == name) {
+        this._value = parseInt(value);
+      }
+    }
+
     this.min = opts.min;
     this.max = opts.max;
     this.step = opts.step;
+    this.name = name;
     this.labelText = opts.label || "";
     this.valueSuffix = opts.valueSuffix || "";
 
@@ -66,6 +74,15 @@ class SlideControls {
       this.slideInput.dispatchEvent(new CustomEvent("input"));
     }
     this.setLabelText(this._value.toString());
+
+    const url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.append(this.name, this._value.toString());
+    for (const [paramKey, paramValue] of new URLSearchParams(window.location.search)) {
+      if (paramKey !== this.name) {
+        url.searchParams.append(paramKey, paramValue);
+      }
+    }
+    window.history.pushState(null, '', url.toString());
   }
 
   private setLabelText(text: string): void {
