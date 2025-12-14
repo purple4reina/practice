@@ -3,7 +3,6 @@ export default class PlayerDevice {
   private sourceNode: AudioBufferSourceNode | null = null;
   private gainNode: GainNode;
 
-  private isPlaying: boolean = false;
   private playbackRate: number = 1.0;
   private onEndedCallback: (() => void) | null = null;
   private startTime: number = 0;
@@ -26,7 +25,6 @@ export default class PlayerDevice {
     this.onEndedCallback = onEnded || null;
 
     this.sourceNode.onended = () => {
-      this.isPlaying = false;
       if (this.onEndedCallback) {
         this.onEndedCallback();
       }
@@ -35,17 +33,15 @@ export default class PlayerDevice {
     const startTime = this.audioContext.currentTime;
     this.startTime = startTime;
     this.sourceNode.start(startTime);
-    this.isPlaying = true;
 
     return startTime;
   }
 
   stop(): void {
-    if (this.sourceNode && this.isPlaying) {
+    if (this.sourceNode) {
       this.sourceNode.stop();
       this.sourceNode.disconnect();
       this.sourceNode = null;
-      this.isPlaying = false;
     }
   }
 }
