@@ -1,6 +1,8 @@
 class FractionControls {
   private numerator: number = 1;
   private denominator: number = 4;
+  private numerName: string;
+  private denomName: string;
 
   private _value: number = this.numerator / this.denominator;
 
@@ -12,9 +14,19 @@ class FractionControls {
   constructor(name: string, opts: { initNum: number, initDen: number, arrowKeys?: boolean}) {
     this.numerator = opts.initNum;
     this.denominator = opts.initDen;
+    this.numerName = `${name}-numer`;
+    this.denomName = `${name}-denom`;
 
-    this.numerValueInput = document.getElementById(`${name}-numer`) as HTMLInputElement;
-    this.denomValueInput = document.getElementById(`${name}-denom`) as HTMLInputElement;
+    for (const [key, value] of new URLSearchParams(window.location.search)) {
+      if (key == this.numerName) {
+        this.numerator = parseInt(value);
+      } else if (key == this.denomName) {
+        this.denominator = parseInt(value);
+      }
+    }
+
+    this.numerValueInput = document.getElementById(this.numerName) as HTMLInputElement;
+    this.denomValueInput = document.getElementById(this.denomName) as HTMLInputElement;
     this.minusButtom = document.getElementById(`${name}-minus`) as HTMLButtonElement;
     this.plusButton = document.getElementById(`${name}-plus`) as HTMLButtonElement;
 
@@ -53,6 +65,16 @@ class FractionControls {
       this.denomValueInput.value = this.denominator.toString();
     }
     this._value = this.numerator / this.denominator;
+
+    const url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.append(this.numerName, this.numerator.toString());
+    url.searchParams.append(this.denomName, this.denominator.toString());
+    for (const [paramKey, paramValue] of new URLSearchParams(window.location.search)) {
+      if (paramKey !== this.numerName && paramKey !== this.denomName) {
+        url.searchParams.append(paramKey, paramValue);
+      }
+    }
+    window.history.pushState(null, '', url.toString());
   }
 
   private setNumerator(event: Event): void {
