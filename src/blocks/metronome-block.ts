@@ -1,3 +1,4 @@
+import { accelFunctions } from "./accel-functions";
 import { plusMinusControls } from "../controls";
 import { Block, ClickState, Click } from "./block";
 
@@ -76,7 +77,7 @@ export default class MetronomeBlock extends Block {
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
     if (state.accel.enabled) {
-      const timeFn = timeFunctions[state.accel.kind as keyof typeof timeFunctions];
+      const timeFn = accelFunctions[state.accel.kind as keyof typeof accelFunctions];
       if (!timeFn) {
         throw new Error(`${state.accel.kind} accelerando kind not found`);
       }
@@ -121,18 +122,3 @@ export default class MetronomeBlock extends Block {
     return `bpm:${this.bpm()} recordSubdivisions:${this.recordSubdivisions()} playbackSubdivisions:${this.playbackSubdivisions()}`;
   }
 }
-
-type timeFunctionOpts = {thisClick: number, totalClicks: number, initialTempo: number, finalTempo: number};
-type timeFunction = (opts: timeFunctionOpts) => number;
-
-function linearTimeFn(opts: timeFunctionOpts): number {
-  const totalTime = opts.totalClicks / (opts.initialTempo + (opts.finalTempo - opts.initialTempo) / 2)
-  const A = (opts.finalTempo - opts.initialTempo) / 2 / totalTime;
-  const B = opts.initialTempo;
-  const C = -opts.thisClick;
-  return (-B + Math.sqrt(B**2 - 4*A*C)) / (2*A);
-}
-
-const timeFunctions = {
-  linear: linearTimeFn,
-};

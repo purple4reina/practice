@@ -1,13 +1,10 @@
+import { accelFunctions } from "./accel-functions";
 import { Block, ClickState } from "./block";
 
 export default class AccelerandoBlock extends Block {
   static readonly type = "accelerando";
 
   private kind;
-  private kinds = [
-    "linear",
-    "percentage",
-  ];
 
   constructor(parent: HTMLElement, opts: any) {
     super();
@@ -23,7 +20,7 @@ export default class AccelerandoBlock extends Block {
             <div class="row-col input-group">
               <select class="form-select" id="${this.id}-accel-kind">
     `;
-    for (const k of this.kinds) {
+    for (const k in accelFunctions) {
       const kTitle = k.charAt(0).toUpperCase() + k.substring(1).toLowerCase();
       innerHTML += `<option value="${k}">${kTitle}</option>`;
     }
@@ -38,7 +35,7 @@ export default class AccelerandoBlock extends Block {
     `;
     div.innerHTML = innerHTML;
     const kindSelect = document.getElementById(`${this.id}-accel-kind`) as HTMLSelectElement;
-    kindSelect.value = this.kinds.includes(opts.kind) ? opts.kind : "linear";
+    kindSelect.value = opts.kinds in accelFunctions ? opts.kind : "linear";
     this.kind = () => kindSelect.value;
   }
 
