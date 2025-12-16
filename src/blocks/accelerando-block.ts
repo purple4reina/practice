@@ -35,7 +35,7 @@ export default class AccelerandoBlock extends Block {
     `;
     div.innerHTML = innerHTML;
     const kindSelect = document.getElementById(`${this.id}-accel-kind`) as HTMLSelectElement;
-    kindSelect.value = opts.kinds in accelFunctions ? opts.kind : "linear";
+    kindSelect.value = opts.kind in accelFunctions ? opts.kind : "linear";
     this.kind = () => kindSelect.value;
   }
 
