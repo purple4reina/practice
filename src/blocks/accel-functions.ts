@@ -7,19 +7,21 @@ type accelFunctionOpts = {
 
 export const accelFunctions = {
   linear: (opts: accelFunctionOpts): number => {
-    const totalTime = opts.totalClicks / (opts.initialTempo + (opts.finalTempo - opts.initialTempo) / 2)
-    const A = (opts.finalTempo - opts.initialTempo) / 2 / totalTime;
-    const B = opts.initialTempo;
-    const C = -opts.thisClick;
+    const { thisClick, totalClicks, initialTempo, finalTempo } = opts;
+    const totalTime = totalClicks / (initialTempo + (finalTempo - initialTempo) / 2)
+    const A = (finalTempo - initialTempo) / 2 / totalTime;
+    const B = initialTempo;
+    const C = -thisClick;
     return (-B + Math.sqrt(B**2 - 4*A*C)) / (2*A);
   },
 
   parabola: (opts: accelFunctionOpts): number => {
-    const k = (opts.finalTempo - opts.initialTempo) / opts.totalClicks;
+    const { thisClick, totalClicks, initialTempo, finalTempo } = opts;
+    const k = (finalTempo - initialTempo) / totalClicks;
     if (Math.abs(k) < 1e-15) {
-      return opts.thisClick / opts.initialTempo;
+      return thisClick / initialTempo;
     }
-    return Math.log(1 + (opts.thisClick * k) / opts.initialTempo) / k;
+    return Math.log(1 + (thisClick * k) / initialTempo) / k;
   },
 
   squareRoot: (opts: accelFunctionOpts): number => {
