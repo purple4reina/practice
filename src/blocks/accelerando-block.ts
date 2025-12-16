@@ -1,5 +1,6 @@
 import { accelFunctions } from "./accel-functions";
 import { Block, ClickState } from "./block";
+import { toTitleCase } from "../utils";
 
 export default class AccelerandoBlock extends Block {
   static readonly type = "accelerando";
@@ -21,8 +22,7 @@ export default class AccelerandoBlock extends Block {
               <select class="form-select" id="${this.id}-accel-kind">
     `;
     for (const k in accelFunctions) {
-      const kTitle = k.charAt(0).toUpperCase() + k.substring(1).toLowerCase();
-      innerHTML += `<option value="${k}">${kTitle}</option>`;
+      innerHTML += `<option value="${k}">${toTitleCase(k)}</option>`;
     }
     innerHTML += `
               </select>
