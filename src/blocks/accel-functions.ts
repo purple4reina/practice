@@ -64,4 +64,47 @@ export const accelFunctions = {
     }
     return t;
   },
+
+  circle: (opts: accelFunctionOpts): number => {
+    const { thisClick, totalClicks, initialTempo, finalTempo } = opts;
+    const curvature = 1;
+    if (Math.abs(finalTempo - initialTempo) < 1e-15) {
+      return thisClick / initialTempo;
+    }
+    const circularProgress = (u: number): number => {
+      if (u <= 0.5) {
+        return Math.sqrt(u * (1 - u));
+      } else {
+        const x = 2 * u - 1;
+        return 0.5 + 0.5 * (1 - Math.sqrt(1 - x * x));
+      }
+    };
+    const progress = (u: number): number => {
+      return (1 - curvature) * u + curvature * circularProgress(u);
+    };
+    const getTempo = (u: number): number => {
+      return initialTempo + (finalTempo - initialTempo) * progress(u);
+    };
+    const T = 2 * totalClicks / (initialTempo + finalTempo);
+    const integrateBeats = (uEnd: number): number => {
+      const n = 100;
+      const h = uEnd / n;
+      let sum = getTempo(0);
+      for (let i = 1; i < n; i++) {
+        sum += (i % 2 === 0 ? 2 : 4) * getTempo(i * h);
+      }
+      sum += getTempo(uEnd);
+      return T * (h / 3) * sum;
+    };
+    let u = thisClick / totalClicks;
+    for (let i = 0; i < 50; i++) {
+      const beats = integrateBeats(u);
+      const f = beats - thisClick;
+      const fp = T * getTempo(u);
+      const uNew = u - f / fp;
+      if (Math.abs(uNew - u) < 1e-12) break;
+      u = Math.max(0, Math.min(1, uNew));
+    }
+    return u * T;
+  },
 };
