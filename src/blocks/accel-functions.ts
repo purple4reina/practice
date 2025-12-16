@@ -40,5 +40,26 @@ export const accelFunctions = {
       t = tNew;
     }
     return t;
-  }
+  },
+
+  cosine: (opts: accelFunctionOpts): number => {
+    const { thisClick, totalClicks, initialTempo, finalTempo } = opts;
+    if (Math.abs(finalTempo - initialTempo) < 1e-15) {
+      return thisClick / initialTempo;
+    }
+    const T = 2 * totalClicks / (initialTempo + finalTempo);
+    const A = (initialTempo + finalTempo) / 2;
+    const B = (finalTempo - initialTempo) * T / (2 * Math.PI);
+    let t = thisClick / A; // initial guess
+    for (let i = 0; i < 50; i++) {
+      const sinTerm = Math.sin(Math.PI * t / T);
+      const cosTerm = Math.cos(Math.PI * t / T);
+      const f = A * t - B * sinTerm - thisClick;
+      const fp = A - (finalTempo - initialTempo) / 2 * cosTerm;
+      const tNew = t - f / fp;
+      if (Math.abs(tNew - t) < 1e-12) break;
+      t = tNew;
+    }
+    return t;
+  },
 };
