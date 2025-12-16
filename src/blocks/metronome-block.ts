@@ -74,41 +74,24 @@ export default class MetronomeBlock extends Block {
     this.bpmLabel.innerText = (value === bpm) ? `BPM:` : `BPM (${value}):`;
   }
 
-  private *linearAccel(state: ClickState) {
-    const subs = state.subdivisions;
-    const numStrongBeats = state.accel.clicks.length / subs;
-
-    const oldDur = 60 / state.bpm * 1000;
-    const newDur = 60 / this.bpm() * 1000;
-    const durDiff = (newDur - oldDur) / (numStrongBeats + 1);
-
-    let beatDur = oldDur;
-    for (let beat = 0; beat < numStrongBeats; beat++) {
-      let subDur = beatDur / subs;
-
-      beatDur += durDiff;
-      const subDiff = 2 * (beatDur - subs * subDur) / subs / (subs + 1);
-
-      for (let sub = 0; sub < subs; sub++) {
-        subDur += subDiff;
-        const click = state.accel.clicks.shift() as Click;
-        click.delay = subDur;
-        yield click;
-      }
-    }
-  }
-
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
     if (state.accel.enabled) {
-      switch (state.accel.kind) {
-        case "linear":
-          yield* this.linearAccel(state);
-          break;
-        case "percentage":
-          throw new Error("percentage accelerando not implemented");
-          break;
-        default:
-          throw new Error(`unknown accelerando kind ${state.accel.kind}`);
+      const timeFn = timeFunctions[state.accel.kind as keyof typeof timeFunctions];
+      if (!timeFn) {
+        throw new Error(`${state.accel.kind} accelerando kind not found`);
+      }
+
+      const totalClicks = state.accel.clicks.length;
+      const finalTempo = this.bpm() / 60 / 1000 * state.subdivisions;  // clicks per ms
+      const initialTempo = state.bpm / 60 / 1000 * state.subdivisions;  // clicks per ms
+
+      let prevTime = 0;
+      for (let thisClick = 1; thisClick <= totalClicks; thisClick++) {
+        const click = state.accel.clicks.shift() as Click;
+        const thisTime = timeFn({ thisClick, totalClicks, initialTempo, finalTempo });
+        click.delay = thisTime - prevTime;
+        prevTime = thisTime;
+        yield click;
       }
     }
 
@@ -138,3 +121,18 @@ export default class MetronomeBlock extends Block {
     return `bpm:${this.bpm()} recordSubdivisions:${this.recordSubdivisions()} playbackSubdivisions:${this.playbackSubdivisions()}`;
   }
 }
+
+type timeFunctionOpts = {thisClick: number, totalClicks: number, initialTempo: number, finalTempo: number};
+type timeFunction = (opts: timeFunctionOpts) => number;
+
+function linearTimeFn(opts: timeFunctionOpts): number {
+  const totalTime = opts.totalClicks / (opts.initialTempo + (opts.finalTempo - opts.initialTempo) / 2)
+  const A = (opts.finalTempo - opts.initialTempo) / 2 / totalTime;
+  const B = opts.initialTempo;
+  const C = -opts.thisClick;
+  return (-B + Math.sqrt(B**2 - 4*A*C)) / (2*A);
+}
+
+const timeFunctions = {
+  linear: linearTimeFn,
+};
