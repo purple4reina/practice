@@ -90,8 +90,10 @@ export default class MetronomeBlock extends Block {
       for (let thisClick = 1; thisClick <= totalClicks; thisClick++) {
         const click = state.accel.clicks.shift() as Click;
         const thisTime = timeFn({ thisClick, totalClicks, initialTempo, finalTempo });
-        click.delay = thisTime - prevTime;
-        prevTime = thisTime;
+        if (thisTime) {
+          click.delay = thisTime - prevTime;
+          prevTime = thisTime;
+        }
         yield click;
       }
     }
