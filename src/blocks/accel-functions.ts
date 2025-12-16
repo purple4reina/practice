@@ -22,6 +22,23 @@ export const accelFunctions = {
     return Math.log(1 + (opts.thisClick * k) / opts.initialTempo) / k;
   },
 
-  // TODO:
-  // "square root"
+  squareRoot: (opts: accelFunctionOpts): number => {
+    const { thisClick, totalClicks, initialTempo, finalTempo } = opts;
+    if (Math.abs(finalTempo - initialTempo) < 1e-15) {
+      return thisClick / initialTempo;
+    }
+    const T = 3 * totalClicks / (initialTempo + 2 * finalTempo);
+    const A = initialTempo;
+    const B = (2 / 3) * (finalTempo - initialTempo) / Math.sqrt(T);
+    let t = thisClick / initialTempo; // initial guess
+    for (let i = 0; i < 50; i++) {
+      const sqrtT = Math.sqrt(t);
+      const f = A * t + B * t * sqrtT - thisClick;
+      const fp = A + 1.5 * B * sqrtT;
+      const tNew = t - f / fp;
+      if (Math.abs(tNew - t) < 1e-12) break;
+      t = tNew;
+    }
+    return t;
+  }
 };
