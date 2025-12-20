@@ -15,7 +15,7 @@ export const accelFunctions = {
     return (-B + Math.sqrt(B**2 - 4*A*C)) / (2*A);
   },
 
-  parabola: (opts: accelFunctionOpts): number => {
+  quadratic: (opts: accelFunctionOpts): number => {
     const { thisClick, totalClicks, initialTempo, finalTempo } = opts;
     const k = (finalTempo - initialTempo) / totalClicks;
     if (Math.abs(k) < 1e-15) {
@@ -65,7 +65,7 @@ export const accelFunctions = {
     return t;
   },
 
-  circle: (opts: accelFunctionOpts): number => {
+  circular: (opts: accelFunctionOpts): number => {
     const { thisClick, totalClicks, initialTempo, finalTempo } = opts;
     const curvature = 1;
     if (Math.abs(finalTempo - initialTempo) < 1e-15) {
