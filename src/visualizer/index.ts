@@ -64,6 +64,7 @@ export default class Visualizer {
   private isZooming: boolean = false;
   private lastPinchDistance: number = 0;
   private pinchCenterX: number = 0;
+  private savedZoomPercent: number = 100; // 100% = default zoom level
 
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
@@ -319,6 +320,7 @@ export default class Visualizer {
     if (newViewStartTime >= 0 && newViewStartTime + newViewDuration <= this.totalDuration + 1) {
       this.viewDuration = newViewDuration;
       this.viewStartTime = newViewStartTime;
+      this.savedZoomPercent = (this.options.viewportDuration / this.viewDuration) * 100;
 
       // Update scrolling state
       this.isScrollingEnabled = this.viewDuration < this.totalDuration;
@@ -344,6 +346,7 @@ export default class Visualizer {
       : this.totalDuration;
 
     this.updateScrollingState();
+    this.savedZoomPercent = 100;
     this.draw();
   }
 
@@ -371,12 +374,19 @@ export default class Visualizer {
     this.totalDuration = this.loudnessData[this.loudnessData.length - 1].timestamp;
     this.isScrollingEnabled = this.totalDuration > this.options.scrollThreshold;
 
+    // Always reset to beginning
+    this.viewStartTime = 0;
+
     if (!this.isScrollingEnabled) {
-      this.viewStartTime = 0;
       this.viewDuration = this.totalDuration;
     } else {
-      this.viewStartTime = 0;
-      this.viewDuration = this.options.viewportDuration;
+      const desiredViewDuration = this.options.viewportDuration * (100 / this.savedZoomPercent);
+      const clampedDuration = Math.max(
+        this.options.minZoomDuration,
+        Math.min(this.options.maxZoomDuration, desiredViewDuration)
+      );
+      this.viewDuration = Math.min(clampedDuration, this.totalDuration);
+      this.isScrollingEnabled = this.viewDuration < this.totalDuration;
     }
 
     this.updateCursor();
