@@ -112,6 +112,10 @@ input[type=range] {
   input {
     text-align: center;
   }
+  select {
+    text-align-last: center;
+    margin: 9%;
+  }
   .container {
     padding: 0px;
   }
