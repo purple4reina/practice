@@ -152,7 +152,8 @@ input[type=range] {
     padding: 0px;
   }
   .pattern-level {
-    margin-right: 0.01vw;
+    margin: 1px;
+    padding: 0px;
   }
 
   .pattern-level-1 {
