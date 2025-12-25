@@ -20,7 +20,7 @@ export default class MeasuresBlock extends Block {
         <div class="col">
           <div class="container">
             <div class="row-col">
-              Count:
+              Measures:
             </div>
             <div class="row-col input-group">
               <button class="btn" id="${this.id}-measures-minus" type="button" tabindex="-1">-</button>

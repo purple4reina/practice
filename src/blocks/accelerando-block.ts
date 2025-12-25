@@ -15,7 +15,6 @@ export default class AccelerandoBlock extends Block {
         <div class="col text-left">
           <strong>Accelerando</strong>
         </div>
-        <div class="col"><!-- empty column --></div>
         <div class="col">
           <div class="container">
             <div class="row-col input-group">
@@ -29,6 +28,7 @@ export default class AccelerandoBlock extends Block {
             </div>
           </div>
         </div>
+        <div class="col"><!-- empty column --></div>
         <div class="col"><!-- empty column --></div>
         <div class="col"><!-- empty column --></div>
       </div>

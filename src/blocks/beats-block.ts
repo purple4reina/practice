@@ -20,7 +20,7 @@ export default class BeatsBlock extends Block {
         <div class="col">
           <div class="container">
             <div class="row-col">
-              Count:
+              Beats:
             </div>
             <div class="row-col input-group">
               <button class="btn" id="${this.id}-beats-minus" type="button" tabindex="-1">-</button>
