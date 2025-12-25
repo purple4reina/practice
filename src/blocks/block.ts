@@ -155,10 +155,10 @@ export abstract class Block implements IBlock {
     for (let i = 1; i <=4; i++) {
       const col = document.createElement("div");
       blockDiv.appendChild(col);
-      if (i === 1 || i === 4) {
-        col.classList.add("col-2");
-      } else {
+      if (i === 3) {
         col.classList.add("col");
+      } else {
+        col.classList.add("col-2");
       }
       if (opts) {
         col.innerHTML = opts[`col_${i}` as keyof typeof opts] || "";
