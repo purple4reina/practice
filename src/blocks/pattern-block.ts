@@ -15,20 +15,16 @@ export default class PatternBlock extends Block {
       col_2: `
         <div class="container">
           <div class="row-col input-group pattern-div" id="${this.id}-pattern">
-            <button class="btn" id="${this.id}-beats-minus" type="button" tabindex="-1">-</button>
+            <div class="btn-group-vertical" role="group">
+              <button class="btn" id="${this.id}-beats-minus" type="button" tabindex="-1">-</button>
+              <button class="btn" id="${this.id}-start-minus" type="button" tabindex="-1">-</button>
+            </div>
             <input type="text" class="form-control" id="${this.id}-beats-val" hidden>
-            <button class="btn" id="${this.id}-beats-plus" type="button" tabindex="-1">+</button>
-          </div>
-        </div>`,
-      col_3: `
-        <div class="container">
-          <div class="row-col">
-            Starting Beat:
-          </div>
-          <div class="row-col input-group">
-            <button class="btn" id="${this.id}-start-minus" type="button" tabindex="-1">-</button>
-            <input type="text" class="form-control" id="${this.id}-start-val" value="4" pattern="[0-9]*">
-            <button class="btn" id="${this.id}-start-plus" type="button" tabindex="-1">+</button>
+            <input type="text" class="form-control" id="${this.id}-start-val" hidden>
+            <div class="btn-group-vertical" role="group">
+              <button class="btn" id="${this.id}-beats-plus" type="button" tabindex="-1">+</button>
+              <button class="btn" id="${this.id}-start-plus" type="button" tabindex="-1">+</button>
+            </div>
           </div>
         </div>`,
     });
@@ -36,11 +32,18 @@ export default class PatternBlock extends Block {
     this.start = plusMinusControls(`${this.id}-start`, { initial: opts.start || 1, min: 1, max: 16 });
 
     const initPattern = (opts.pattern || '1,2,2,2').split(',').map((v: string) => parseInt(v));
-    this.pattern = new PatternControls(`${this.id}-pattern`, { initial: initPattern });
+    this.pattern = new PatternControls(`${this.id}-pattern`, {
+      initial: initPattern,
+      start: parseInt(opts.start || "1"),
+    });
+
     div.addEventListener("input", (e) => {
       const target = e.target as HTMLInputElement;
       if (target.id === `${this.id}-beats-val`) {
         this.pattern.setBeatCount(parseInt(target.value));
+      }
+      if (target.id === `${this.id}-start-val`) {
+        this.pattern.setStartBeat(parseInt(target.value));
       }
     });
   }

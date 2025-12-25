@@ -194,4 +194,11 @@ input[type=range] {
   .pattern-level-0:active {
     border-color: #ffffff !important;  /* white */
   }
+
+  .start-beat {
+    height: 12px;
+    font-size: 12px;
+    margin: 0px;
+    padding: 0px;
+  }
 }
