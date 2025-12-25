@@ -447,6 +447,7 @@ export default class Visualizer {
       for (const click of this.metronomeClicks) {
         fastestClick = Math.min(fastestClick, click.delay);
       }
+      fastestClick /= this.recordSpeed;
       this.statsDiv.innerText += `, Click Dur: ${Math.round(fastestClick)}ms`;
     }
   }
