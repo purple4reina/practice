@@ -108,10 +108,13 @@ input[type=range] {
   border-radius: 6px;
   margin: 10px 0px 10px 0px;;
   padding: 10px 0px 5px 0px;
-}
 
-.block-element input {
-  text-align: center;
+  input {
+    text-align: center;
+  }
+  .container {
+    padding: 0px;
+  }
 }
 
 .save-link {
