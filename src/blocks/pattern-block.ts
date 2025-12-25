@@ -16,18 +16,7 @@ export default class PatternBlock extends Block {
         <div class="col text-left">
           <strong>Set Beat Pattern</strong>
         </div>
-        <div class="col">
-          <div class="container">
-            <div class="row-col">
-              Beats per Measure:
-            </div>
-            <div class="row-col input-group">
-              <button class="btn" id="${this.id}-beats-minus" type="button" tabindex="-1">-</button>
-              <input type="text" class="form-control" id="${this.id}-beats-val" value="4" pattern="[0-9]*">
-              <button class="btn" id="${this.id}-beats-plus" type="button" tabindex="-1">+</button>
-            </div>
-          </div>
-        </div>
+        <div class="col"><!-- empty column --></div>
         <div class="col">
           <div class="container">
             <div class="row-col">
@@ -40,8 +29,14 @@ export default class PatternBlock extends Block {
             </div>
           </div>
         </div>
-        <div class="col align-items-center">
-          <div class="row pattern-div" id="${this.id}-pattern"></div>
+        <div class="col">
+          <div class="container">
+            <div class="row-col input-group pattern-div" id="${this.id}-pattern">
+              <button class="btn" id="${this.id}-beats-minus" type="button" tabindex="-1">-</button>
+              <input type="text" class="form-control" id="${this.id}-beats-val" hidden>
+              <button class="btn" id="${this.id}-beats-plus" type="button" tabindex="-1">+</button>
+            </div>
+          </div>
         </div>
         <div class="col"><!-- empty column --></div>
       </div>

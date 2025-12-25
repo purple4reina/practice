@@ -17,7 +17,7 @@ class PatternButton {
 
     div.innerText = `${index+1}`;
     div.id = `${name}-${index}`;
-    parent.appendChild(div);
+    parent.insertBefore(div, parent.children[parent.children.length-1]);
 
     div.addEventListener("click", this.cycle.bind(this));
   }
