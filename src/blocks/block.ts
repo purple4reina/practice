@@ -148,7 +148,8 @@ export abstract class Block implements IBlock {
 
     const title = document.createElement("div");
     blockDiv.appendChild(title);
-    title.classList.add("col");
+    title.classList.add("col-1");
+    title.classList.add("block-title");
     title.innerHTML = `<strong>${opts?.title}</strong>`;
 
     for (let i = 1; i <=4; i++) {

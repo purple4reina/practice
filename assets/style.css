@@ -115,6 +115,9 @@ input[type=range] {
   .container {
     padding: 0px;
   }
+  .block-title {
+    margin-right: 30px;
+  }
 }
 
 .save-link {
