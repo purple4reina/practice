@@ -8,29 +8,20 @@ export default class DurationBlock extends Block {
 
   constructor(parent: HTMLElement, opts: any) {
     super();
-    const div = this.newBlockDiv(parent);
-    div.innerHTML = `
-      <div class="row g-0 p-0 align-items-center">
-        <div class="col text-left">
-          <strong>Duration</strong>
-        </div>
-        <div class="col"><!-- empty column --></div>
-        <div class="col"><!-- empty column --></div>
-        <div class="col"><!-- empty column --></div>
-        <div class="col">
-          <div class="container">
-            <div class="row-col">
-              Seconds:
-            </div>
-            <div class="row-col input-group">
-              <button class="btn" id="${this.id}-duration-minus" type="button" tabindex="-1">-</button>
-              <input type="text" class="form-control" id="${this.id}-duration-val" value="0" pattern="[0-9]*">
-              <button class="btn" id="${this.id}-duration-plus" type="button" tabindex="-1">+</button>
-            </div>
+    const div = this.newBlockDiv(parent, {
+      title: "Duration",
+      col_4: `
+        <div class="container">
+          <div class="row-col">
+            Seconds:
           </div>
-        </div>
-      </div>
-    `;
+          <div class="row-col input-group">
+            <button class="btn" id="${this.id}-duration-minus" type="button" tabindex="-1">-</button>
+            <input type="text" class="form-control" id="${this.id}-duration-val" value="0" pattern="[0-9]*">
+            <button class="btn" id="${this.id}-duration-plus" type="button" tabindex="-1">+</button>
+          </div>
+        </div>`,
+    });
     this.seconds = plusMinusControls(`${this.id}-duration`, { initial: opts.seconds || 0, min: 0, max: 60 * 10 });  // max 10m
   }
 

@@ -8,29 +8,19 @@ export default class BeatsBlock extends Block {
 
   constructor(parent: HTMLElement, opts: any) {
     super();
-    const div = this.newBlockDiv(parent);
-    div.innerHTML = `
-      <div class="row g-0 p-0 align-items-center">
-        <div class="col text-left">
-          <strong>Beats</strong>
-        </div>
-        <div class="col"><!-- empty column --></div>
-        <div class="col"><!-- empty column --></div>
-        <div class="col"><!-- empty column --></div>
-        <div class="col">
-          <div class="container">
-            <div class="row-col">
-              Beats:
-            </div>
-            <div class="row-col input-group">
-              <button class="btn" id="${this.id}-beats-minus" type="button" tabindex="-1">-</button>
-              <input type="text" class="form-control" id="${this.id}-beats-val" value="0" pattern="[0-9]*">
-              <button class="btn" id="${this.id}-beats-plus" type="button" tabindex="-1">+</button>
-            </div>
+    this.newBlockDiv(parent, {
+      title: "Beats",
+      col_4: `
+        <div class="container">
+          <div class="row-col">
+            Beats:
           </div>
-        </div>
-      </div>
-    `;
+          <div class="row-col input-group">
+            <button class="btn" id="${this.id}-beats-minus" type="button" tabindex="-1">-</button>
+            <input type="text" class="form-control" id="${this.id}-beats-val" value="0" pattern="[0-9]*">
+            <button class="btn" id="${this.id}-beats-plus" type="button" tabindex="-1">+</button>
+          </div>`,
+    });
     this.count = plusMinusControls(`${this.id}-beats`, { initial: opts.count || 0, min: 0, max: 256 });
   }
 

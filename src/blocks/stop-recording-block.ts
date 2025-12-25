@@ -6,18 +6,9 @@ export default class StopRecordingBlock extends Block {
 
   constructor(parent: HTMLElement) {
     super();
-    const div = this.newBlockDiv(parent);
-    div.innerHTML = `
-      <div class="row g-0 p-0 align-items-center">
-        <div class="col text-left">
-          <strong>Stop Recording</strong>
-        </div>
-        <div class="col"><!-- empty column --></div>
-        <div class="col"><!-- empty column --></div>
-        <div class="col"><!-- empty column --></div>
-        <div class="col"><!-- empty column --></div>
-      </div>
-    `;
+    const div = this.newBlockDiv(parent, {
+      title: "Stop Recording",
+    });
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {

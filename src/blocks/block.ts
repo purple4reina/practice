@@ -76,7 +76,7 @@ export abstract class Block implements IBlock {
     this.remove = this.moveUp = this.moveDown = function(block: IBlock): void {};
   }
 
-  protected newBlockDiv(parent: HTMLElement): HTMLElement {
+  protected newBlockDiv(parent: HTMLElement, opts?: any): HTMLElement {
     const type = (<typeof Block> this.constructor).type;
 
     const envelope = document.createElement("div");
@@ -139,11 +139,26 @@ export abstract class Block implements IBlock {
     envelope.appendChild(block);
     block.classList.add("col");
 
-    const blockBody = document.createElement("div");
-    block.appendChild(blockBody);
-    blockBody.classList.add("row");
-    blockBody.classList.add("block-body");
-    blockBody.classList.add(type);
+    const blockDiv = document.createElement("div");
+    block.appendChild(blockDiv);
+    blockDiv.classList.add("row");
+    blockDiv.classList.add("g-0");
+    blockDiv.classList.add("p-0");
+    blockDiv.classList.add("align-items-center");
+
+    const title = document.createElement("div");
+    blockDiv.appendChild(title);
+    title.classList.add("col");
+    title.innerHTML = `<strong>${opts?.title}</strong>`;
+
+    for (let i = 1; i <=4; i++) {
+      const col = document.createElement("div");
+      blockDiv.appendChild(col);
+      col.classList.add("col");
+      if (opts) {
+        col.innerHTML = opts[`col_${i}` as keyof typeof opts] || "";
+      }
+    }
 
     // right controls
     const rightControls = document.createElement("div");
