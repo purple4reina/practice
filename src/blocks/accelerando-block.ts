@@ -9,7 +9,7 @@ export default class AccelerandoBlock extends Block {
 
   constructor(parent: HTMLElement, opts: any) {
     super();
-    const div = this.newBlockDiv(parent, {
+    this.newBlockDiv(parent, {
       title: "Accelerando",
       col_1: (() => {
         let col = `

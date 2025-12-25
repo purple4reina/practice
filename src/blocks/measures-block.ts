@@ -8,7 +8,7 @@ export default class MeasuresBlock extends Block {
 
   constructor(parent: HTMLElement, opts: any) {
     super();
-    const div = this.newBlockDiv(parent, {
+    this.newBlockDiv(parent, {
       title: "Measures",
       col_4: `
         <div class="container">

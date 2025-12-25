@@ -13,7 +13,7 @@ export default class MetronomeBlock extends Block {
 
   constructor(parent: HTMLElement, opts: any) {
     super();
-    const div = this.newBlockDiv(parent, {
+    this.newBlockDiv(parent, {
       title: "Set Metronome",
       col_1: `
         <div class="container">

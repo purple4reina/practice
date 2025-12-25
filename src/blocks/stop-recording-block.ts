@@ -6,7 +6,7 @@ export default class StopRecordingBlock extends Block {
 
   constructor(parent: HTMLElement) {
     super();
-    const div = this.newBlockDiv(parent, {
+    this.newBlockDiv(parent, {
       title: "Stop Recording",
     });
   }
