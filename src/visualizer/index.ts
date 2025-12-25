@@ -442,6 +442,12 @@ export default class Visualizer {
       }
 
       this.statsDiv.innerText = `Max Vol: ${value}${statusInfo}`;
+
+      let fastestClick = Infinity;
+      for (const click of this.metronomeClicks) {
+        fastestClick = Math.min(fastestClick, click.delay);
+      }
+      this.statsDiv.innerText += `, Click Dur: ${Math.round(fastestClick)}ms`;
     }
   }
 
