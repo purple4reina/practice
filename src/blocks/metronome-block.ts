@@ -6,8 +6,6 @@ export default class MetronomeBlock extends Block {
   static readonly type = "metronome";
 
   private bpm;
-  private recordSubdivisions;
-  private playbackSubdivisions;
   private bpmLabel;
   private recSpeed;
 
@@ -26,32 +24,8 @@ export default class MetronomeBlock extends Block {
             <button class="btn" id="${this.id}-bpm-plus" type="button" tabindex="-1">+</button>
           </div>
         </div>`,
-      col_2: `
-        <div class="container">
-          <div class="row-col">
-            Subdivisions:
-          </div>
-          <div class="row-col input-group">
-            <button class="btn" id="${this.id}-rec-subdivisions-minus" type="button" tabindex="-1">-</button>
-            <input type="text" class="form-control" id="${this.id}-rec-subdivisions-val" value="1" pattern="[0-9]*">
-            <button class="btn" id="${this.id}-rec-subdivisions-plus" type="button" tabindex="-1">+</button>
-          </div>
-        </div>`,
-      col_3: `
-        <div class="container">
-          <div class="row-col">
-            Subdivisions:
-          </div>
-          <div class="row-col input-group">
-            <button class="btn" id="${this.id}-play-subdivisions-minus" type="button" tabindex="-1">-</button>
-            <input type="text" class="form-control" id="${this.id}-play-subdivisions-val" value="1" pattern="[0-9]*">
-            <button class="btn" id="${this.id}-play-subdivisions-plus" type="button" tabindex="-1">+</button>
-          </div>
-        </div>`,
     });
     this.bpm = plusMinusControls(`${this.id}-bpm`, { initial: opts.bpm || 60, min: 5, max: 512 });
-    this.recordSubdivisions = plusMinusControls(`${this.id}-rec-subdivisions`, { initial: opts.recordSubdivisions || 1, min: 1, max: 64 });
-    this.playbackSubdivisions = plusMinusControls(`${this.id}-play-subdivisions`, { initial: opts.playbackSubdivisions || 1, min: 1, max: 64 });
 
     this.bpmLabel = document.getElementById(`${this.id}-bpm-label`) as HTMLElement;
     this.recSpeed = document.getElementById("rec-speed") as HTMLInputElement;
@@ -91,27 +65,15 @@ export default class MetronomeBlock extends Block {
 
     state.accel.reset();
     state.bpm = this.bpm();
-    switch (phase) {
-      case "record":
-        state.subdivisions = this.recordSubdivisions();
-        break;
-      case "play":
-        state.subdivisions = this.playbackSubdivisions();
-        break;
-      default:
-        throw new Error(`Unknown phase type "${phase}"`);
-    }
   }
 
   getOpts(): any {
     return {
       bpm: this.bpm(),
-      recordSubdivisions: this.recordSubdivisions(),
-      playbackSubdivisions: this.playbackSubdivisions(),
     };
   }
 
   queryString(): string {
-    return `bpm:${this.bpm()} recordSubdivisions:${this.recordSubdivisions()} playbackSubdivisions:${this.playbackSubdivisions()}`;
+    return `bpm:${this.bpm()}`;
   }
 }
