@@ -15,6 +15,7 @@ class PatternButton {
     const level = document.createElement("div") as HTMLElement;
     div.appendChild(level);
     level.classList.add("btn");
+    level.classList.add("pattern-level");
     level.classList.add(`pattern-level-${value}`);
     level.classList.add("d-flex");
     level.classList.add("align-items-center");

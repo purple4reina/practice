@@ -148,7 +148,11 @@ input[type=range] {
     height: 100%;
     margin-top: auto;
     margin-bottom: auto;
+    margin-right: 0px;
     padding: 0px;
+  }
+  .pattern-level {
+    margin-right: 0.01vw;
   }
 
   .pattern-level-1 {
