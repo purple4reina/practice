@@ -12,7 +12,7 @@ export default class PatternBlock extends Block {
     super();
     const div = this.newBlockDiv(parent);
     div.innerHTML = `
-      <div class="row g-0 p-0">
+      <div class="row g-0 p-0 align-items-center">
         <div class="col text-left">
           <strong>Set Beat Pattern</strong>
         </div>
