@@ -61,6 +61,10 @@ export default class PlayRecordControls {
     this.setState(State.STOPPED);
   }
 
+  reset() {
+    this.setState(State.UNKNOWN);
+  }
+
   private setState(state: State) {
     if (state === State.RECORDING) {
       this.showControls([this.recordingIcon]);
@@ -74,6 +78,10 @@ export default class PlayRecordControls {
       this.showControls([this.playingIcon]);
       this.state = State.PLAYING;
       this.nextState = State.STOPPED;
+    } else if (state == State.UNKNOWN) {
+      this.showControls([this.recordIcon]);
+      this.state = State.STOPPED;
+      this.nextState = State.RECORDING;
     }
   }
 

@@ -120,6 +120,7 @@ class WebAudioRecorderController {
     const audioBuffer = this.recorder.getAudioBuffer();
     if (!audioBuffer) {
       console.error("No audio buffer available for playback");
+      this.playRecordControls.reset();
       return;
     }
 
