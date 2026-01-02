@@ -99,8 +99,7 @@ class WebAudioRecorderController {
     this.clipSettings = this.getClipSettings();
 
     if (this.recordingMetronome.enabled()) {
-      const startTime = this.audioContext.currentTime + this.clipSettings.recordingPrelay;
-      this.recordingMetronome.start(startTime, this.clipSettings);
+      this.recordingMetronome.start(this.audioContext.currentTime, this.clipSettings);
     }
 
     this.startRecordingTimeout = setTimeout(() => this.recorder.start(), this.clipSettings.startRecordingDelay);

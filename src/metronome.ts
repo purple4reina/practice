@@ -131,7 +131,7 @@ export class RecordingMetronome extends Metronome {
   }
 
   start(startTime: number, clipSettings: ClipSettings) {
-    super._start(startTime, clipSettings.recordClicks, clipSettings.recordSpeed);
+    super._start(startTime + clipSettings.recordingPrelay, clipSettings.recordClicks, clipSettings.recordSpeed);
   }
 }
 
