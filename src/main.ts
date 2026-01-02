@@ -48,6 +48,7 @@ class WebAudioRecorderController {
   private drone = new Drone(this.audioContext);
 
   private startRecordingTimeout: number = 0;
+  private stopRecorderTimeout: number = 0;
   private stopRecordingTimeout: number = 0;
 
   private clipSettings: ClipSettings;
@@ -103,15 +104,16 @@ class WebAudioRecorderController {
     }
 
     this.startRecordingTimeout = setTimeout(() => this.recorder.start(), this.clipSettings.startRecordingDelay);
+    this.stopRecorderTimeout = setTimeout(() => this.recorder.stop(), this.clipSettings.stopRecordingDelay);
     this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), this.clipSettings.stopDelay);
     this.playRecordControls.markRecording();
   }
 
   stopRecording() {
     clearTimeout(this.startRecordingTimeout);
+    clearTimeout(this.stopRecorderTimeout);
     clearTimeout(this.stopRecordingTimeout);
     this.stopMetronomes();
-    this.recorder.stop();
     this.playRecordControls.markStopped();
 
     const audioBuffer = this.recorder.getAudioBuffer();
