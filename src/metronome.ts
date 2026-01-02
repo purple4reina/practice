@@ -139,10 +139,9 @@ export class RecordingMetronome extends Metronome {
 export class PlaybackMetronome extends Metronome {
   private latency = plusMinusControls("play-latency", { initial: -75, min: -500, max: 500 });
 
-  getPlaybackStartTime(audioStartTime: number, playbackRate: number = 1.0): number {
+  getPlaybackStartTime(audioStartTime: number, playbackRate: number): number {
     const scaledCompensation = this.latency() / playbackRate;
     let startTime = audioStartTime - (scaledCompensation / 1000);
-    // TODO: only add this if there are count offs
     startTime += (this.countOffAllowance / playbackRate / 1000);
     return startTime;
   }
@@ -152,6 +151,7 @@ export class PlaybackMetronome extends Metronome {
   }
 
   start(startTime: number, clip: Clip, playbackRate: number) {
+    const compensatedStartTime = this.getPlaybackStartTime(startTime, playbackRate);
     super._start(startTime, clip.playClicks, playbackRate * clip.recordSpeed);
   }
 }
