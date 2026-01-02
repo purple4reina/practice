@@ -141,8 +141,7 @@ class WebAudioRecorderController {
     });
 
     if (this.playbackMetronome.enabled()) {
-      const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, playbackSpeed);
-      this.playbackMetronome.start(compensatedStartTime, this.clip, playbackSpeed);
+      this.playbackMetronome.start(startTime, this.clip, playbackSpeed);
     }
 
     this.visualizer.startPlayback(playbackSpeed);
