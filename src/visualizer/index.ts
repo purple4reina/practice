@@ -352,7 +352,7 @@ export default class Visualizer {
 
   drawVisualization(
     audioBuffer: AudioBuffer,
-    clickGen: Generator<Click>,
+    clickGen: Click[],
     recordSpeed: number,
   ) {
     this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);

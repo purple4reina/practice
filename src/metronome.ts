@@ -28,7 +28,7 @@ abstract class Metronome {
 
   private isPlaying: boolean = false;
   private nextClickTime: number = 0;
-  private clickGen: Generator<Click> | null = null;
+  private clickGen: Iterator<Click> | null = null;
   private playbackRate: number = 1;
 
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
@@ -94,7 +94,7 @@ abstract class Metronome {
     }
   };
 
-  start(startTime: number, clickGen: Generator<Click>, playbackRate: number, withCountOff: boolean): void {
+  start(startTime: number, clickGen: Click[], playbackRate: number, withCountOff: boolean): void {
     if (!this.enabled()) {
       return;
     }
@@ -104,7 +104,7 @@ abstract class Metronome {
     }
 
     this.nextClickTime = startTime;
-    this.clickGen = clickGen;
+    this.clickGen = clickGen[Symbol.iterator]();
     this.playbackRate = playbackRate;
     this.isPlaying = true;
     this.scheduler();

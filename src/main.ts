@@ -85,7 +85,7 @@ class WebAudioRecorderController {
     const recordSpeed = this.recordSpeed() / 100;
     if (this.recordingMetronome.enabled()) {
       const startTime = this.audioContext.currentTime + this.recordingPrelay / 1000;
-      const clickGen = this.blockManager.recordClickGen();
+      const clickGen = Array.from(this.blockManager.recordClickGen());
       this.recordingMetronome.start(startTime, clickGen, recordSpeed, true);
     }
 
@@ -105,7 +105,7 @@ class WebAudioRecorderController {
     // Analyze the recorded audio buffer and show visualization
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
-      const clickGen = this.blockManager.playClickGen();
+      const clickGen = Array.from(this.blockManager.playClickGen());
       this.visualizer.drawVisualization(audioBuffer, clickGen, this.recordSpeed() / 100);
 
       sendRecordingEvent({ duration: audioBuffer.duration });
@@ -135,7 +135,7 @@ class WebAudioRecorderController {
     if (this.playbackMetronome.enabled()) {
       // Apply latency compensation scaled by playback rate
       const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
-      const clickGen = this.blockManager.playClickGen();
+      const clickGen = Array.from(this.blockManager.playClickGen());
       const playbackSpeed = this.playbackSpeed() * recordSpeed;
       this.playbackMetronome.start(compensatedStartTime, clickGen, playbackSpeed, false);
     }
