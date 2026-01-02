@@ -7,7 +7,7 @@ import PatternBlock from "./pattern-block";
 import StartRecordingBlock from "./start-recording-block";
 import StopRecordingBlock from "./stop-recording-block";
 import { Block, IBlock } from "./block";
-import { ClickState } from "./clicks";
+import { ClickState, Click } from "./clicks";
 import { sleep } from "../utils";
 
 export default class BlockManager {
@@ -151,7 +151,15 @@ export default class BlockManager {
     }
   }
 
-  *clickIntervalGen(phase: "record" | "play") {
+  public recordClickGen(): Generator<Click> {
+    return this.clickIntervalGen("record");
+  }
+
+  public playClickGen(): Generator<Click> {
+    return this.clickIntervalGen("play");
+  }
+
+  private *clickIntervalGen(phase: "record" | "play") {
     const state = new ClickState(phase);
     for (const block of this.blocks) {
       for (const click of block.clickIntervalGen(phase, state)) {
