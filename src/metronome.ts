@@ -94,7 +94,7 @@ abstract class Metronome {
     }
   };
 
-  start(startTime: number, clicks: Click[], playbackRate: number, withCountOff: boolean): void {
+  start(startTime: number, clicks: Click[], playbackRate: number) {
     if (!this.enabled()) {
       return;
     }

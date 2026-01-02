@@ -104,7 +104,6 @@ class WebAudioRecorderController {
         startTime,
         this.clipSettings.recordClicks,
         this.clipSettings.recordSpeed,
-        true,
       );
     }
 
@@ -149,7 +148,7 @@ class WebAudioRecorderController {
       // Apply latency compensation scaled by playback rate
       const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
       const playbackSpeed = this.playbackSpeed() * this.clip.recordSpeed;
-      this.playbackMetronome.start(compensatedStartTime, this.clip.playClicks, playbackSpeed, false);
+      this.playbackMetronome.start(compensatedStartTime, this.clip.playClicks, playbackSpeed);
     }
 
     // The visualization already shows the recorded data from when recording stopped
