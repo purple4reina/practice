@@ -7,6 +7,10 @@ import Tapper from "./tapper";
 import Visualizer from "./visualizer";
 import googleLogin from "./login";
 import {
+  ClipSettings,
+  Clip,
+} from "./clips";
+import {
   PlayRecordControls,
   boolSwitchControls,
   fractionControls,
@@ -43,9 +47,10 @@ class WebAudioRecorderController {
   private tapper = new Tapper();
   private drone = new Drone(this.audioContext);
 
-  private recordingPrelay = 100;  // ms before first click
+  private recordingPrelay = 0.1;  // sec before first click
   private startRecordingTimeout: number = 0;
   private stopRecordingTimeout: number = 0;
+  private clipSettings: ClipSettings;
 
   private recordSpeed = slideControls("rec-speed", {
     initial: 100,
@@ -69,10 +74,18 @@ class WebAudioRecorderController {
     this.recorder.initialize().catch(error => {
       console.error("Failed to initialize recorder:", error);
     });
+    this.clipSettings = this.getClipSettings();
+  }
+
+  private getClipSettings(): ClipSettings {
+    return new ClipSettings(
+      this.blockManager.recordClicks(),
+      this.blockManager.playClicks(),
+      this.recordSpeed() / 100,
+    );
   }
 
   async record(): Promise<void> {
-    // Resume AudioContext if suspended
     if (this.audioContext.state === "suspended") {
       await this.audioContext.resume();
     }
@@ -82,16 +95,21 @@ class WebAudioRecorderController {
     this.visualizer.clear();
     await sleep(100);
 
-    const recordSpeed = this.recordSpeed() / 100;
+    this.clipSettings = this.getClipSettings();
+
     if (this.recordingMetronome.enabled()) {
-      const startTime = this.audioContext.currentTime + this.recordingPrelay / 1000;
-      const recordClicks = this.blockManager.recordClicks();
-      this.recordingMetronome.start(startTime, recordClicks, recordSpeed, true);
+      const startTime = this.audioContext.currentTime + this.recordingPrelay;
+      this.recordingMetronome.start(
+        startTime,
+        this.clipSettings.recordClicks,
+        this.clipSettings.recordSpeed,
+        true,
+      );
     }
 
     const { startRecordingDelay, stopDelay } = this.blockManager.getRecordDelays();
-    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), startRecordingDelay / recordSpeed);
-    this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), (stopDelay / recordSpeed) + (this.recordingPrelay * 2 / 1000));
+    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), startRecordingDelay / this.clipSettings.recordSpeed);
+    this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), (stopDelay / this.clipSettings.recordSpeed) + (this.recordingPrelay * 2));
     this.playRecordControls.markRecording();
   }
 
