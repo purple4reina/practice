@@ -668,6 +668,9 @@ export default class Visualizer {
       if (currentTime > this.viewStartTime + this.viewDuration) {
         return;
       }
+      if (!click.recording) {
+        continue;
+      }
 
       // Only draw if within the visible viewport
       if (currentTime >= this.viewStartTime && currentTime <= this.viewStartTime + this.viewDuration) {
