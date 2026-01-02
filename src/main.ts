@@ -100,11 +100,7 @@ class WebAudioRecorderController {
 
     if (this.recordingMetronome.enabled()) {
       const startTime = this.audioContext.currentTime + this.clipSettings.recordingPrelay;
-      this.recordingMetronome.start(
-        startTime,
-        this.clipSettings.recordClicks,
-        this.clipSettings.recordSpeed,
-      );
+      this.recordingMetronome.start(startTime, this.clipSettings);
     }
 
     this.startRecordingTimeout = setTimeout(() => this.recorder.start(), this.clipSettings.startRecordingDelay);
@@ -139,24 +135,18 @@ class WebAudioRecorderController {
 
     this.stopMetronomes();
 
-    // Start playback and metronome at the same time
     const startTime = this.player.play(this.clip.audioBuffer, this.playbackSpeed(), () => {
       this.stopPlaying();
     });
 
     if (this.playbackMetronome.enabled()) {
-      // Apply latency compensation scaled by playback rate
       const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
       const playbackSpeed = this.playbackSpeed() * this.clip.recordSpeed;
-      this.playbackMetronome.start(compensatedStartTime, this.clip.playClicks, playbackSpeed);
+      this.playbackMetronome.start(compensatedStartTime, this.clip, playbackSpeed);
     }
 
-    // The visualization already shows the recorded data from when recording stopped
-    // Start playback position animation
     this.visualizer.startPlayback(this.playbackSpeed());
-
     sendPlaybackEvent({ duration: this.clip.audioBuffer.duration, playbackSpeed: this.playbackSpeed() });
-
     this.playRecordControls.markPlaying();
   }
 

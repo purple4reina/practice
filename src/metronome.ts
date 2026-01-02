@@ -1,4 +1,5 @@
 import { Click } from "./blocks/clicks";
+import { ClipSettings, Clip } from "./clips";
 import {
   boolSwitchControls,
   plusMinusControls,
@@ -94,7 +95,7 @@ abstract class Metronome {
     }
   };
 
-  start(startTime: number, clicks: Click[], playbackRate: number) {
+  _start(startTime: number, clicks: Click[], playbackRate: number) {
     if (!this.enabled()) {
       return;
     }
@@ -129,6 +130,10 @@ export class RecordingMetronome extends Metronome {
   constructor(audioContext: AudioContext) {
     super("rec", audioContext);
   }
+
+  start(startTime: number, clipSettings: ClipSettings) {
+    super._start(startTime, clipSettings.recordClicks, clipSettings.recordSpeed);
+  }
 }
 
 export class PlaybackMetronome extends Metronome {
@@ -144,5 +149,9 @@ export class PlaybackMetronome extends Metronome {
 
   constructor(audioContext: AudioContext) {
     super("play", audioContext);
+  }
+
+  start(startTime: number, clip: Clip, playbackRate: number) {
+    super._start(startTime, clip.playClicks, playbackRate);
   }
 }
