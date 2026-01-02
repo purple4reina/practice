@@ -30,7 +30,7 @@ export abstract class Block implements IBlock {
     this.remove = this.moveUp = this.moveDown = function(block: IBlock): void {};
   }
 
-  protected newBlockDiv(parent: HTMLElement, opts?: any): HTMLElement {
+  protected newBlockDiv(parent: HTMLElement, opts: any): HTMLElement {
     const type = (<typeof Block> this.constructor).type;
 
     const envelope = document.createElement("div");
@@ -38,6 +38,7 @@ export abstract class Block implements IBlock {
     envelope.classList.add("container");
     envelope.classList.add("row");
     envelope.classList.add("block-element");
+    envelope.classList.add(`block-${type}`);
     envelope.setAttribute("id", this.id);
     let highlightTimeout = 0;
     this.highlight = () => {
@@ -104,7 +105,7 @@ export abstract class Block implements IBlock {
     blockDiv.appendChild(title);
     title.classList.add("col-1");
     title.classList.add("block-title");
-    title.innerHTML = `<strong>${opts?.title}</strong>`;
+    title.innerHTML = `<strong>${opts.title}</strong>`;
 
     for (let i = 1; i <=4; i++) {
       const col = document.createElement("div");
@@ -114,9 +115,7 @@ export abstract class Block implements IBlock {
       } else {
         col.classList.add("col-2");
       }
-      if (opts) {
-        col.innerHTML = opts[`col_${i}` as keyof typeof opts] || "";
-      }
+      col.innerHTML = opts[`col_${i}` as keyof typeof opts] || "";
     }
 
     // right controls
