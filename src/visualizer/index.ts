@@ -34,7 +34,7 @@ export default class Visualizer {
   private options: Required<VisualizerOptions>;
   private loudnessData: LoudnessData[] = [];
   private intonationData: IntonationData | null = null;
-  private metronomeClicks: Click[] = [];
+  private clicks: Click[] = [];
   private recordSpeed: number = 1;
   private playbackStartTime: number = 0;
   private playbackRate: number = 1;
@@ -352,12 +352,12 @@ export default class Visualizer {
 
   drawVisualization(
     audioBuffer: AudioBuffer,
-    clickGen: Click[],
+    clicks: Click[],
     recordSpeed: number,
   ) {
     this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
     this.intonationData = this.tuner.analyze(audioBuffer);
-    this.metronomeClicks = Array.from(clickGen);
+    this.clicks = clicks;
     this.recordSpeed = recordSpeed;
     this.updateScrollingState();
     this.draw();
@@ -421,7 +421,7 @@ export default class Visualizer {
   clear(): void {
     this.loudnessData = [];
     this.intonationData = null;
-    this.metronomeClicks = [];
+    this.clicks = [];
     this.totalDuration = 0;
     this.isScrollingEnabled = false;
     this.viewStartTime = 0;
@@ -444,7 +444,7 @@ export default class Visualizer {
       this.statsDiv.innerText = `Max Vol: ${value}${statusInfo}`;
 
       let fastestClick = Infinity;
-      for (const click of this.metronomeClicks) {
+      for (const click of this.clicks) {
         fastestClick = Math.min(fastestClick, click.delay);
       }
       fastestClick /= this.recordSpeed;
@@ -472,7 +472,7 @@ export default class Visualizer {
     this.drawWaveform(this.loudnessData);
 
     // Draw metronome beat markers on top
-    if (this.metronomeClicks) {
+    if (this.clicks) {
       this.drawMetronomeBeats();
     }
 
@@ -662,7 +662,7 @@ export default class Visualizer {
     let currentTime = 175; // XXX: TODO: This needs to be dynamic!
 
     // Draw beats within the viewport
-    for (const click of this.metronomeClicks) {
+    for (const click of this.clicks) {
       // Stop if we've gone past the end of the visible viewport
       if (currentTime > this.viewStartTime + this.viewDuration) {
         return;

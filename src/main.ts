@@ -79,14 +79,14 @@ class WebAudioRecorderController {
 
     await this.recorder.reset();
     this.stopMetronomes();
-    this.visualizer.clear(); // Clear visualization when starting new recording
+    this.visualizer.clear();
     await sleep(100);
 
     const recordSpeed = this.recordSpeed() / 100;
     if (this.recordingMetronome.enabled()) {
       const startTime = this.audioContext.currentTime + this.recordingPrelay / 1000;
-      const clickGen = this.blockManager.recordClickGen();
-      this.recordingMetronome.start(startTime, clickGen, recordSpeed, true);
+      const recordClicks = this.blockManager.recordClicks();
+      this.recordingMetronome.start(startTime, recordClicks, recordSpeed, true);
     }
 
     const { startRecordingDelay, stopDelay } = this.blockManager.getRecordDelays();
@@ -105,8 +105,8 @@ class WebAudioRecorderController {
     // Analyze the recorded audio buffer and show visualization
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
-      const clickGen = this.blockManager.playClickGen();
-      this.visualizer.drawVisualization(audioBuffer, clickGen, this.recordSpeed() / 100);
+      const playClicks = this.blockManager.playClicks();
+      this.visualizer.drawVisualization(audioBuffer, playClicks, this.recordSpeed() / 100);
 
       sendRecordingEvent({ duration: audioBuffer.duration });
     }
@@ -135,9 +135,9 @@ class WebAudioRecorderController {
     if (this.playbackMetronome.enabled()) {
       // Apply latency compensation scaled by playback rate
       const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
-      const clickGen = this.blockManager.playClickGen();
+      const playClicks = this.blockManager.playClicks();
       const playbackSpeed = this.playbackSpeed() * recordSpeed;
-      this.playbackMetronome.start(compensatedStartTime, clickGen, playbackSpeed, false);
+      this.playbackMetronome.start(compensatedStartTime, playClicks, playbackSpeed, false);
     }
 
     // The visualization already shows the recorded data from when recording stopped

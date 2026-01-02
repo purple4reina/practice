@@ -151,11 +151,11 @@ export default class BlockManager {
     }
   }
 
-  public recordClickGen(): Click[] {
+  public recordClicks(): Click[] {
     return this.clickIntervalGen("record");
   }
 
-  public playClickGen(): Click[] {
+  public playClicks(): Click[] {
     return this.clickIntervalGen("play");
   }
 
