@@ -28,7 +28,7 @@ abstract class Metronome {
 
   private isPlaying: boolean = false;
   private nextClickTime: number = 0;
-  private clickGen: Iterator<Click> | null = null;
+  private clickIter: Iterator<Click> | null = null;
   private playbackRate: number = 1;
 
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
@@ -81,9 +81,9 @@ abstract class Metronome {
   }
 
   private scheduler = (): void => {
-    if (!this.clickGen) return;
+    if (!this.clickIter) return;
     while (this.nextClickTime < this.audioContext.currentTime + (this.scheduleLookahead / 1000)) {
-      const { value, done } = this.clickGen.next();
+      const { value, done } = this.clickIter.next();
       if (done) return;
       this.createClickSound(this.nextClickTime, value);
       this.nextClickTime += (value.delay / this.playbackRate / 1000);
@@ -94,7 +94,7 @@ abstract class Metronome {
     }
   };
 
-  start(startTime: number, clickGen: Click[], playbackRate: number, withCountOff: boolean): void {
+  start(startTime: number, clicks: Click[], playbackRate: number, withCountOff: boolean): void {
     if (!this.enabled()) {
       return;
     }
@@ -104,7 +104,7 @@ abstract class Metronome {
     }
 
     this.nextClickTime = startTime;
-    this.clickGen = clickGen[Symbol.iterator]();
+    this.clickIter = clicks[Symbol.iterator]();
     this.playbackRate = playbackRate;
     this.isPlaying = true;
     this.scheduler();
