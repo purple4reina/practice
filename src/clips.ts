@@ -39,14 +39,13 @@ export class ClipSettings {
 }
 
 export class Clip {
-  private settings: ClipSettings;
   public audioBuffer: AudioBuffer;
-
-  get playClicks(): Click[] { return this.settings.playClicks }
-  get recordSpeed(): number { return this.settings.recordSpeed }
+  public playClicks: Click[];
+  public recordSpeed: number;
 
   constructor(settings: ClipSettings, audioBuffer: AudioBuffer) {
-    this.settings = settings;
     this.audioBuffer = audioBuffer;
+    this.playClicks = settings.playClicks;
+    this.recordSpeed = settings.recordSpeed;
   }
 }

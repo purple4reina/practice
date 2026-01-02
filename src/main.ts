@@ -125,16 +125,14 @@ class WebAudioRecorderController {
       this.clip = new Clip(this.clipSettings, audioBuffer);
       this.visualizer.drawVisualization(audioBuffer, this.clip.playClicks, this.clip.recordSpeed);
       sendRecordingEvent({ duration: this.clip.audioBuffer.duration });
-    }
-
-    if (this.autoPlay()) {
-      setTimeout(() => this.play(), 500);
+      if (this.autoPlay()) {
+        setTimeout(() => this.play(), 500);
+      }
     }
   }
 
   play() {
-    const audioBuffer = this.recorder.getAudioBuffer();
-    if (!audioBuffer) {
+    if (!this.clip?.audioBuffer) {
       console.error("No audio buffer available for playback");
       this.playRecordControls.reset();
       return;
@@ -143,24 +141,22 @@ class WebAudioRecorderController {
     this.stopMetronomes();
 
     // Start playback and metronome at the same time
-    const startTime = this.player.play(audioBuffer, this.playbackSpeed(), () => {
+    const startTime = this.player.play(this.clip.audioBuffer, this.playbackSpeed(), () => {
       this.stopPlaying();
     });
 
-    const recordSpeed = this.recordSpeed() / 100;
     if (this.playbackMetronome.enabled()) {
       // Apply latency compensation scaled by playback rate
       const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
-      const playClicks = this.blockManager.playClicks();
-      const playbackSpeed = this.playbackSpeed() * recordSpeed;
-      this.playbackMetronome.start(compensatedStartTime, playClicks, playbackSpeed, false);
+      const playbackSpeed = this.playbackSpeed() * this.clip.recordSpeed;
+      this.playbackMetronome.start(compensatedStartTime, this.clip.playClicks, playbackSpeed, false);
     }
 
     // The visualization already shows the recorded data from when recording stopped
     // Start playback position animation
     this.visualizer.startPlayback(this.playbackSpeed());
 
-    sendPlaybackEvent({ duration: audioBuffer.duration, playbackSpeed: this.playbackSpeed() });
+    sendPlaybackEvent({ duration: this.clip.audioBuffer.duration, playbackSpeed: this.playbackSpeed() });
 
     this.playRecordControls.markPlaying();
   }
