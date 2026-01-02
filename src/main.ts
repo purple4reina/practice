@@ -49,7 +49,9 @@ class WebAudioRecorderController {
 
   private startRecordingTimeout: number = 0;
   private stopRecordingTimeout: number = 0;
+
   private clipSettings: ClipSettings;
+  private clip: Clip | null = null;
 
   private recordSpeed = slideControls("rec-speed", {
     initial: 100,
@@ -118,13 +120,11 @@ class WebAudioRecorderController {
     this.recorder.stop();
     this.playRecordControls.markStopped();
 
-    // Analyze the recorded audio buffer and show visualization
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
-      const playClicks = this.blockManager.playClicks();
-      this.visualizer.drawVisualization(audioBuffer, playClicks, this.recordSpeed() / 100);
-
-      sendRecordingEvent({ duration: audioBuffer.duration });
+      this.clip = new Clip(this.clipSettings, audioBuffer);
+      this.visualizer.drawVisualization(audioBuffer, this.clip.playClicks, this.clip.recordSpeed);
+      sendRecordingEvent({ duration: this.clip.audioBuffer.duration });
     }
 
     if (this.autoPlay()) {
