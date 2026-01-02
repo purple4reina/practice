@@ -165,9 +165,9 @@ export default class BlockManager {
     let lastRecording = false;
     for (const block of this.blocks) {
       for (const click of block.clickIntervalGen(phase, state)) {
-        if (phase == "record" || state.recording) {
+        if (phase == "record" || click.recording) {
           clicks.push(click);
-          lastRecording = state.recording;
+          lastRecording = click.recording;
         }
       }
     }
