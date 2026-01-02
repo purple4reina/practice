@@ -1,4 +1,8 @@
-import { Click, ClickState } from "./clicks";
+import {
+  Click,
+  ClickState,
+  ClickGen,
+} from "./clicks";
 import { randomId } from "../utils";
 
 export interface IBlock {

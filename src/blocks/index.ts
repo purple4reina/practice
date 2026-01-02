@@ -7,7 +7,7 @@ import PatternBlock from "./pattern-block";
 import StartRecordingBlock from "./start-recording-block";
 import StopRecordingBlock from "./stop-recording-block";
 import { Block, IBlock } from "./block";
-import { ClickState } from "./clicks";
+import { ClickState, ClickGen } from "./clicks";
 import { sleep } from "../utils";
 
 export default class BlockManager {
@@ -151,17 +151,19 @@ export default class BlockManager {
     }
   }
 
-  *clickIntervalGen(phase: "record" | "play") {
+  clickIntervalGen(phase: "record" | "play"): ClickGen {
+    const clickGen = new ClickGen();
     const state = new ClickState(phase);
     for (const block of this.blocks) {
       for (const click of block.clickIntervalGen(phase, state)) {
         if (phase == "record" || state.recording) {
-          yield click;
+          clickGen.push(click);
         }
       }
     }
     // yield one final click
-    yield { delay: 350, level: state.getLevel(), recording: state.recording };
+    clickGen.push({ delay: 350, level: state.getLevel(), recording: state.recording });
+    return clickGen;
   }
 
   getRecordDelays() {

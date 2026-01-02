@@ -44,3 +44,42 @@ export interface Click {
   level: number,
   recording: boolean,
 }
+
+export class ClickGen {
+  private index = 0;
+  private clicks = [] as Click[];
+
+  protected lastClick = { delay: 0, level: 0, recording: false };
+
+  push(click: Click) {
+    this.clicks.push(click);
+  }
+
+  next(): { click: Click, done: boolean } {
+    const done = this.index >= this.clicks.length;
+    let click = this.lastClick;
+    if (done) {
+      click = this.clicks[this.index];
+      this.index++;
+    }
+    return { click, done }
+  }
+
+  [Symbol.iterator](): Iterator<Click> {
+    return {
+      next(): IteratorResult<Click> {
+        return this.next();
+      }
+    };
+  }
+
+  clone(): ClickGen {
+    const clickGen = new ClickGen();
+    clickGen.clicks = this.clicks.slice();
+    return clickGen;
+  }
+
+  reset() {
+    this.index = 0;
+  }
+}

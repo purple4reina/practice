@@ -1,4 +1,7 @@
-import { Click } from "./blocks/clicks";
+import {
+  Click,
+  ClickGen,
+} from "./blocks/clicks";
 import {
   boolSwitchControls,
   plusMinusControls,
@@ -28,7 +31,7 @@ abstract class Metronome {
 
   private isPlaying: boolean = false;
   private nextClickTime: number = 0;
-  private clickGen: Generator<Click> | null = null;
+  private clickGen: ClickGen = new ClickGen();
   private playbackRate: number = 1;
 
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
@@ -83,10 +86,10 @@ abstract class Metronome {
   private scheduler = (): void => {
     if (!this.clickGen) return;
     while (this.nextClickTime < this.audioContext.currentTime + (this.scheduleLookahead / 1000)) {
-      const { value, done } = this.clickGen.next();
+      const { click, done } = this.clickGen.next();
       if (done) return;
-      this.createClickSound(this.nextClickTime, value);
-      this.nextClickTime += (value.delay / this.playbackRate / 1000);
+      this.createClickSound(this.nextClickTime, click);
+      this.nextClickTime += (click.delay / this.playbackRate / 1000);
     }
 
     if (this.isPlaying) {
@@ -94,7 +97,12 @@ abstract class Metronome {
     }
   };
 
-  start(startTime: number, clickGen: Generator<Click>, playbackRate: number, withCountOff: boolean): void {
+  start(
+    startTime: number,
+    clickGen: ClickGen,
+    playbackRate: number,
+    withCountOff: boolean,
+  ): void {
     if (!this.enabled()) {
       return;
     }
