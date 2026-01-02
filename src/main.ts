@@ -47,7 +47,6 @@ class WebAudioRecorderController {
   private tapper = new Tapper();
   private drone = new Drone(this.audioContext);
 
-  private recordingPrelay = 0.1;  // sec before first click
   private startRecordingTimeout: number = 0;
   private stopRecordingTimeout: number = 0;
   private clipSettings: ClipSettings;
@@ -98,7 +97,7 @@ class WebAudioRecorderController {
     this.clipSettings = this.getClipSettings();
 
     if (this.recordingMetronome.enabled()) {
-      const startTime = this.audioContext.currentTime + this.recordingPrelay;
+      const startTime = this.audioContext.currentTime + this.clipSettings.recordingPrelay;
       this.recordingMetronome.start(
         startTime,
         this.clipSettings.recordClicks,
@@ -107,8 +106,8 @@ class WebAudioRecorderController {
       );
     }
 
-    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), this.clipSettings.startRecordingDelay / this.clipSettings.recordSpeed);
-    this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), (this.clipSettings.stopDelay / this.clipSettings.recordSpeed) + (this.recordingPrelay * 2));
+    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), this.clipSettings.startRecordingDelay);
+    this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), this.clipSettings.stopDelay);
     this.playRecordControls.markRecording();
   }
 

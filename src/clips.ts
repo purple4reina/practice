@@ -3,7 +3,9 @@ import { Click } from "./blocks/clicks";
 export class ClipSettings {
   public recordClicks: Click[];
   public playClicks: Click[];
+
   public recordSpeed: number;
+  public recordingPrelay = 0.1;  // sec before first click
   public startRecordingDelay: number;
   public stopDelay: number;
 
@@ -17,8 +19,8 @@ export class ClipSettings {
     this.recordSpeed = recordSpeed;
 
     const { startRecordingDelay, stopDelay } = this.getRecordDelays();
-    this.startRecordingDelay = startRecordingDelay;
-    this.stopDelay = stopDelay;
+    this.startRecordingDelay = startRecordingDelay / this.recordSpeed;
+    this.stopDelay = (stopDelay / this.recordSpeed) + (this.recordingPrelay * 2);
   }
 
   private getRecordDelays() {
