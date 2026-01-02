@@ -151,25 +151,26 @@ export default class BlockManager {
     }
   }
 
-  public recordClickGen(): Generator<Click> {
+  public recordClickGen(): Click[] {
     return this.clickIntervalGen("record");
   }
 
-  public playClickGen(): Generator<Click> {
+  public playClickGen(): Click[] {
     return this.clickIntervalGen("play");
   }
 
-  private *clickIntervalGen(phase: "record" | "play") {
+  private clickIntervalGen(phase: "record" | "play"): Click[] {
+    const clicks: Click[] = [];
     const state = new ClickState(phase);
     for (const block of this.blocks) {
       for (const click of block.clickIntervalGen(phase, state)) {
         if (phase == "record" || state.recording) {
-          yield click;
+          clicks.push(click);
         }
       }
     }
-    // yield one final click
-    yield { delay: 350, level: state.getLevel(), recording: state.recording };
+    clicks.push({ delay: 350, level: state.getLevel(), recording: state.recording });
+    return clicks;
   }
 
   getRecordDelays() {
