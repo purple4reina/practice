@@ -107,9 +107,8 @@ class WebAudioRecorderController {
       );
     }
 
-    const { startRecordingDelay, stopDelay } = this.blockManager.getRecordDelays();
-    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), startRecordingDelay / this.clipSettings.recordSpeed);
-    this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), (stopDelay / this.clipSettings.recordSpeed) + (this.recordingPrelay * 2));
+    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), this.clipSettings.startRecordingDelay / this.clipSettings.recordSpeed);
+    this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), (this.clipSettings.stopDelay / this.clipSettings.recordSpeed) + (this.recordingPrelay * 2));
     this.playRecordControls.markRecording();
   }
 

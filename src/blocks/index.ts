@@ -173,20 +173,6 @@ export default class BlockManager {
     return clicks;
   }
 
-  getRecordDelays() {
-    let startRecordingDelay = 0;
-    let stopDelay = 0;
-    let started = false;
-    for (const click of this.clickIntervalGen("record")) {
-      started = started || click.recording;
-      stopDelay += click.delay;
-      if (!click.recording && !started) {
-        startRecordingDelay += click.delay;
-      }
-    }
-    return { startRecordingDelay, stopDelay };
-  }
-
   private updateQueryParams() {
     const url = new URL(window.location.origin + window.location.pathname);
     [...this.blocks].forEach(block => {
