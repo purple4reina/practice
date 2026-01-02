@@ -1,4 +1,5 @@
 import { Click } from "../blocks/clicks";
+import { Clip } from "../clips";
 import { boolSwitchControls } from "../controls";
 import {
   LoudnessAnalyzer,
@@ -350,15 +351,11 @@ export default class Visualizer {
     this.draw();
   }
 
-  drawVisualization(
-    audioBuffer: AudioBuffer,
-    clicks: Click[],
-    recordSpeed: number,
-  ) {
-    this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(audioBuffer);
-    this.intonationData = this.tuner.analyze(audioBuffer);
-    this.clicks = clicks;
-    this.recordSpeed = recordSpeed;
+  drawVisualization(clip: Clip) {
+    this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(clip.audioBuffer);
+    this.intonationData = this.tuner.analyze(clip.audioBuffer);
+    this.clicks = clip.playClicks;
+    this.recordSpeed = clip.recordSpeed;
     this.updateScrollingState();
     this.draw();
   }
