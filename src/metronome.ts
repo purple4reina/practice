@@ -152,6 +152,6 @@ export class PlaybackMetronome extends Metronome {
   }
 
   start(startTime: number, clip: Clip, playbackRate: number) {
-    super._start(startTime, clip.playClicks, playbackRate);
+    super._start(startTime, clip.playClicks, playbackRate * clip.recordSpeed);
   }
 }

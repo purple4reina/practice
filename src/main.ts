@@ -135,18 +135,18 @@ class WebAudioRecorderController {
 
     this.stopMetronomes();
 
-    const startTime = this.player.play(this.clip.audioBuffer, this.playbackSpeed(), () => {
+    const playbackSpeed = this.playbackSpeed();
+    const startTime = this.player.play(this.clip.audioBuffer, playbackSpeed, () => {
       this.stopPlaying();
     });
 
     if (this.playbackMetronome.enabled()) {
-      const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, this.playbackSpeed());
-      const playbackSpeed = this.playbackSpeed() * this.clip.recordSpeed;
+      const compensatedStartTime = this.playbackMetronome.getPlaybackStartTime(startTime, playbackSpeed);
       this.playbackMetronome.start(compensatedStartTime, this.clip, playbackSpeed);
     }
 
-    this.visualizer.startPlayback(this.playbackSpeed());
-    sendPlaybackEvent({ duration: this.clip.audioBuffer.duration, playbackSpeed: this.playbackSpeed() });
+    this.visualizer.startPlayback(playbackSpeed);
+    sendPlaybackEvent({ duration: this.clip.audioBuffer.duration, playbackSpeed });
     this.playRecordControls.markPlaying();
   }
 
