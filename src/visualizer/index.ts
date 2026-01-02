@@ -1,6 +1,9 @@
 import { Click } from "../blocks/clicks";
 import { Clip } from "../clips";
-import { boolSwitchControls } from "../controls";
+import {
+  boolSwitchControls,
+  plusMinusControls,
+} from "../controls";
 import {
   LoudnessAnalyzer,
   LoudnessData,
@@ -68,6 +71,7 @@ export default class Visualizer {
   private savedZoomPercent: number = 100; // 100% = default zoom level
 
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
+  private latency = plusMinusControls("play-latency", { initial: 175, min: -500, max: 500 });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
   constructor(audioContext: AudioContext) {
@@ -656,7 +660,7 @@ export default class Visualizer {
     this.ctx.lineWidth = 1;
 
     // Start from the first beat that's visible in the viewport
-    let currentTime = 175; // XXX: TODO: This needs to be dynamic!
+    let currentTime = this.latency();
 
     // Draw beats within the viewport
     for (const click of this.clicks) {

@@ -34,7 +34,6 @@ abstract class Metronome {
 
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
   private scheduleInterval: number = 25.0; // Schedule every 25ms
-  protected countOffAllowance: number = 100; // Allow 100ms before the first click
 
   public enabled;
   protected clickSilencing = () => 0;
@@ -137,14 +136,14 @@ export class RecordingMetronome extends Metronome {
 }
 
 export class PlaybackMetronome extends Metronome {
-  private latency = plusMinusControls("play-latency", { initial: -75, min: -500, max: 500 });
+  private latency = plusMinusControls("play-latency", { initial: 175, min: -500, max: 500 });
 
   constructor(audioContext: AudioContext) {
     super("play", audioContext);
   }
 
   start(audioStartTime: number, clip: Clip, playbackRate: number) {
-    const startTime = audioStartTime + (this.countOffAllowance - this.latency()) / playbackRate / 1000;
+    const startTime = audioStartTime + this.latency() / playbackRate / 1000;
     super._start(startTime, clip.playClicks, playbackRate * clip.recordSpeed);
   }
 }
