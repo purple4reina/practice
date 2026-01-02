@@ -1,5 +1,6 @@
+import { Block } from "./block";
+import { Click, ClickState } from "./clicks";
 import { plusMinusControls } from "../controls";
-import { Block, ClickState, Click } from "./block";
 
 export default class BeatsBlock extends Block {
   static readonly type = "beats";

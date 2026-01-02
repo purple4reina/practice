@@ -1,4 +1,4 @@
-import { Click } from "./blocks/block";
+import { Click } from "./blocks/clicks";
 import {
   boolSwitchControls,
   plusMinusControls,

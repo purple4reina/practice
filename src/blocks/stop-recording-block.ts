@@ -1,4 +1,5 @@
-import { Block, ClickState } from "./block";
+import { Block } from "./block";
+import { ClickState } from "./clicks";
 
 export default class StopRecordingBlock extends Block {
   readonly removable: boolean = false;

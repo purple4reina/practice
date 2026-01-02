@@ -1,5 +1,6 @@
+import { Block } from "./block";
+import { ClickState } from "./clicks";
 import { accelFunctions } from "./accel-functions";
-import { Block, ClickState } from "./block";
 import { toTitleCase } from "../utils";
 
 export default class AccelerandoBlock extends Block {

@@ -1,6 +1,7 @@
+import { Block } from "./block";
+import { Click, ClickState } from "./clicks";
 import { accelFunctions } from "./accel-functions";
 import { plusMinusControls } from "../controls";
-import { Block, ClickState, Click } from "./block";
 
 export default class MetronomeBlock extends Block {
   static readonly type = "metronome";

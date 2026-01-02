@@ -1,5 +1,6 @@
+import { Block } from "./block";
+import { ClickState, Click } from "./clicks";
 import { PatternControls, plusMinusControls } from "../controls";
-import { Block, ClickState, Click } from "./block";
 
 export default class PatternBlock extends Block {
   static readonly type = "pattern";

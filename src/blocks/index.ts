@@ -6,7 +6,8 @@ import MetronomeBlock from "./metronome-block";
 import PatternBlock from "./pattern-block";
 import StartRecordingBlock from "./start-recording-block";
 import StopRecordingBlock from "./stop-recording-block";
-import { Block, IBlock, ClickState } from "./block";
+import { Block, IBlock } from "./block";
+import { ClickState } from "./clicks";
 import { sleep } from "../utils";
 
 export default class BlockManager {
