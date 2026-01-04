@@ -58,9 +58,9 @@ export default class BlockManager {
       }
     } else {
       this.newBlock("metronome");
+      this.newBlock("pattern");
       this.newBlock("beats", { count: 4 });
       this.newBlock("record");
-      this.newBlock("metronome");
       this.newBlock("beats", { count: 16 });
       this.newBlock("stop");
     }
