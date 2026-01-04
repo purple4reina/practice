@@ -155,7 +155,6 @@ export default class RecorderDevice {
 
   stop() {
     if (this.state !== State.RECORDING) {
-      console.error("Recorder is not in a recording state, cannot stop recording");
       return;
     }
 
