@@ -48,8 +48,8 @@ class WebAudioRecorderController {
   private drone = new Drone(this.audioContext);
 
   private startRecordingTimeout: number = 0;
-  private stopRecorderTimeout: number = 0;
   private stopRecordingTimeout: number = 0;
+  private stopTimeout: number = 0;
 
   private clipSettings: ClipSettings;
   private clip: Clip | null = null;
@@ -104,15 +104,15 @@ class WebAudioRecorderController {
     }
 
     this.startRecordingTimeout = setTimeout(() => this.recorder.start(), this.clipSettings.startRecordingDelay);
-    this.stopRecorderTimeout = setTimeout(() => this.recorder.stop(), this.clipSettings.stopRecordingDelay);
-    this.stopRecordingTimeout = setTimeout(() => this.stopRecording(), this.clipSettings.stopDelay);
+    this.stopRecordingTimeout = setTimeout(() => this.recorder.stop(), this.clipSettings.stopRecordingDelay);
+    this.stopTimeout = setTimeout(() => this.stopRecording(), this.clipSettings.stopDelay);
     this.playRecordControls.markRecording();
   }
 
   stopRecording() {
     clearTimeout(this.startRecordingTimeout);
-    clearTimeout(this.stopRecorderTimeout);
     clearTimeout(this.stopRecordingTimeout);
+    clearTimeout(this.stopTimeout);
     // ensure recorder is stopped, when space bar hit before stop recorder detay
     this.recorder.stop();
     this.stopMetronomes();

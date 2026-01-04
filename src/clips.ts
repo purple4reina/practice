@@ -5,7 +5,7 @@ export class ClipSettings {
   public playClicks: Click[];
 
   public recordSpeed: number;
-  public recordingPrelay = 0.1;  // sec before first click
+  public recordingPrelay = 100;  // ms before first click
   public startRecordingDelay: number;
   public stopRecordingDelay: number;
   public stopDelay: number;
@@ -21,7 +21,7 @@ export class ClipSettings {
 
     const { startRecordingDelay, stopRecordingDelay, stopDelay } = this.getRecordDelays();
     this.startRecordingDelay = startRecordingDelay / this.recordSpeed;
-    this.stopRecordingDelay = stopRecordingDelay / this.recordSpeed;
+    this.stopRecordingDelay = (stopRecordingDelay / this.recordSpeed) + (this.recordingPrelay * 4);
     this.stopDelay = (stopDelay / this.recordSpeed) + (this.recordingPrelay * 2);
   }
 
