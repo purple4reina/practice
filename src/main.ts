@@ -113,6 +113,8 @@ class WebAudioRecorderController {
     clearTimeout(this.startRecordingTimeout);
     clearTimeout(this.stopRecorderTimeout);
     clearTimeout(this.stopRecordingTimeout);
+    // ensure recorder is stopped, when space bar hit before stop recorder detay
+    this.recorder.stop();
     this.stopMetronomes();
     this.playRecordControls.markStopped();
 
