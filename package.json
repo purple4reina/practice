@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "vite",
+    "test": "vitest",
     "build": "tsc && vite build --outDir docs",
     "preview": "vite preview"
   },
   "devDependencies": {
     "@types/audiobuffer-to-wav": "^1.0.4",
     "typescript": "~5.8.3",
-    "vite": "^7.1.2"
+    "vite": "^7.1.2",
+    "vitest": "^4.0.16"
   },
   "dependencies": {
     "@datadog/browser-rum": "^6.18.1",
