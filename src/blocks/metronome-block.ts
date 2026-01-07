@@ -48,14 +48,15 @@ export default class MetronomeBlock extends Block {
         throw new Error(`${state.accel.kind} accelerando kind not found`);
       }
 
-      const totalClicks = state.accel.clicks.length;
-      const finalTempo = this.bpm() / 60 / 1000 * state.subdivisions;  // clicks per ms
-      const initialTempo = state.bpm / 60 / 1000 * state.subdivisions;  // clicks per ms
+      const finalTempo = this.bpm() / 60 / 1000;  // beats per ms
+      const initialTempo = state.bpm / 60 / 1000;  // beats per ms
+      const totalBeats = state.accel.clicks.reduce((sum, click) => sum + click.delay, 0) * initialTempo;
 
       let prevTime = 0;
-      for (let thisClick = 1; thisClick <= totalClicks; thisClick++) {
-        const click = state.accel.clicks.shift() as Click;
-        const thisTime = timeFn({ thisClick, totalClicks, initialTempo, finalTempo });
+      let accumulatedBeats = 0;
+      for (const click of state.accel.clicks) {
+        accumulatedBeats += click.delay * initialTempo;
+        const thisTime = timeFn({ thisClick: accumulatedBeats, totalClicks: totalBeats, initialTempo, finalTempo });
         if (thisTime) {
           click.delay = thisTime - prevTime;
           prevTime = thisTime;
