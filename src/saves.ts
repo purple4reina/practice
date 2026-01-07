@@ -80,28 +80,47 @@ export default class Saves {
   private loadSaves() {
     this.savesDiv.innerText = "";
     this.addSave("Default", window.location.origin + window.location.pathname);
+
+    const saves: Array<[string, string, boolean]> = [];
+
+    // Load from Cookies
     for (const key of Object.keys(Cookies.getAll())) {
       if (key.startsWith(this.savesPrefix)) {
         const value = Cookies.get(key);
-        const [name, url] = value.split(",");
-        const div = this.addSave(name, url);
-
-        const trash = document.createElement("i");
-        this.trashIcons.push(trash);
-        trash.classList.add("bi");
-        trash.classList.add("bi-trash");
-        trash.classList.add("bi-tiny");
-        trash.classList.add("block-control");
-        trash.style.marginLeft = "10px";
-        trash.style.color = "red";
-        trash.hidden = !this.isDeletingOn();
-        div.appendChild(trash);
-
-        trash.addEventListener("click", () => {
-          this.deleteSave(key);
-          this.loadSaves();
-        });
+        if (value) saves.push([key, value, true]);
       }
+    }
+
+    // Load from localStorage
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(this.savesPrefix)) {
+        const value = localStorage.getItem(key);
+        if (value) saves.push([key, value, false]);
+      }
+    }
+
+    // Render all saves
+    for (const [key, value, isFromCookie] of saves) {
+      const [name, url] = value.split(",");
+      const displayName = isFromCookie ? `${name} *` : name;
+      const div = this.addSave(displayName, url);
+
+      const trash = document.createElement("i");
+      this.trashIcons.push(trash);
+      trash.classList.add("bi");
+      trash.classList.add("bi-trash");
+      trash.classList.add("bi-tiny");
+      trash.classList.add("block-control");
+      trash.style.marginLeft = "10px";
+      trash.style.color = "red";
+      trash.hidden = !this.isDeletingOn();
+      div.appendChild(trash);
+
+      trash.addEventListener("click", () => {
+        this.deleteSave(key);
+        this.loadSaves();
+      });
     }
   }
 
@@ -120,11 +139,12 @@ export default class Saves {
   }
 
   private newSave(name: string, url: string) {
-    Cookies.set(`${this.savesPrefix}${randomId(6)}`, `${name},${url}`);
+    localStorage.setItem(`${this.savesPrefix}${randomId(6)}`, `${name},${url}`);
     this.loadSaves()
   }
 
   private deleteSave(key: string) {
+    localStorage.removeItem(key);
     Cookies.delete(key);
   }
 }
