@@ -36,10 +36,7 @@ export default class QueryParams {
 
   public static has(key: string): boolean {
     const decompressedParams = this.getDecompressedParams();
-    if (decompressedParams.has(key)) {
-      return true;
-    }
-    return this.params.has(key);
+    return decompressedParams.has(key) || this.params.has(key);
   }
 
   public static set(key: string, value: string): void {
@@ -47,21 +44,14 @@ export default class QueryParams {
     this.updateURL();
   }
 
-  public static setAll(params: Map<string, string>): void {
-    params.forEach((value, key) => {
-      this.params.set(key, value);
-    });
-    this.updateURL();
-  }
-
-  public static delete(key: string): void {
-    this.params.delete(key);
+  public static replace(params: URLSearchParams): void {
+    this.params = params;
     this.updateURL();
   }
 
   private static updateURL(): void {
     const newUrl = `${window.location.pathname}?${this.params.toString()}`;
-    if (newUrl.length > 2000) {
+    if (newUrl.length > 1000) {
       const params = new URLSearchParams();
       params.set(this.compressedKey, compressToEncodedURIComponent(this.params.toString()));
       const compressedUrl = `${window.location.pathname}?${params.toString()}`;

@@ -175,16 +175,17 @@ export default class BlockManager {
   }
 
   private updateQueryParams() {
-    const params = new Map<string, string>();
+    const params = new URLSearchParams();
     [...this.blocks].forEach(block => {
       const type = (<typeof Block> block.constructor).type;
-      const paramStr = block.queryString();
-      if (paramStr.length > 0) {
-        params.set(type, encodeURIComponent(paramStr));
-      } else {
-        params.set(type, '');
-      }
+      const param = encodeURIComponent(block.queryString());
+      params.append(type, param);
     });
-    QueryParams.setAll(params);
+    for (const [key, value] of QueryParams.getAll()) {
+      if (!this.blockTypes.includes(key)) {
+        params.append(key, value);
+      }
+    }
+    QueryParams.replace(params);
   }
 }
