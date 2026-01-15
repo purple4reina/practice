@@ -1,3 +1,5 @@
+import QueryParams from "../query-params";
+
 class BoolSwitchControls {
   private name: string;
   private elem: HTMLInputElement;
@@ -9,13 +11,13 @@ class BoolSwitchControls {
     this.elem.addEventListener("click", () => { this.setValue(this.elem.checked) });
 
     this._value = false;
-    for (const [key, value] of new URLSearchParams(window.location.search)) {
-      if (key == name) {
-        this.setValue(value === "true");
-        return;
-      }
+
+    const value = QueryParams.get(name);
+    if (value !== null) {
+      this.setValue(value === "true");
+    } else {
+      this.setValue(opts?.initial || false);
     }
-    this.setValue(opts?.initial || false);
   }
 
   public value(): boolean {
@@ -28,15 +30,7 @@ class BoolSwitchControls {
       this.elem.checked = val;
       this.elem.dispatchEvent(new Event("click"));
     }
-
-    const url = new URL(window.location.origin + window.location.pathname);
-    url.searchParams.append(this.name, val.toString());
-    for (const [paramKey, paramValue] of new URLSearchParams(window.location.search)) {
-      if (paramKey !== this.name) {
-        url.searchParams.append(paramKey, paramValue);
-      }
-    }
-    window.history.pushState(null, '', url.toString());
+    QueryParams.set(this.name, val.toString());
   }
 }
 

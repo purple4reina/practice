@@ -6,6 +6,7 @@ import MetronomeBlock from "./metronome-block";
 import PatternBlock from "./pattern-block";
 import StartRecordingBlock from "./start-recording-block";
 import StopRecordingBlock from "./stop-recording-block";
+import QueryParams from "../query-params";
 import { Block, IBlock } from "./block";
 import { ClickState, Click } from "./clicks";
 import { sleep } from "../utils";
@@ -42,9 +43,9 @@ export default class BlockManager {
       }
     }).observe(this.blockDiv, { childList: true, subtree: true });
 
-    const params = new URLSearchParams(window.location.search);
-    if (params.has("record")) {
-      for (const [key, value] of params) {
+    if (QueryParams.has("record")) {
+      for (const [key, value] of QueryParams.getAll()) {
+        if (!this.blockTypes.includes(key)) continue;
         const opts: { [key: string]: string } = {};
         for (let val of decodeURIComponent(value).split(' ')) {
           const [k, v] = val.split(':');
@@ -52,9 +53,7 @@ export default class BlockManager {
             opts[k] = v;
           }
         }
-        if (this.blockTypes.includes(key)) {
-          this.newBlock(key, opts);
-        }
+        this.newBlock(key, opts);
       }
     } else {
       this.newBlock("metronome");
@@ -176,17 +175,16 @@ export default class BlockManager {
   }
 
   private updateQueryParams() {
-    const url = new URL(window.location.origin + window.location.pathname);
+    const params = new Map<string, string>();
     [...this.blocks].forEach(block => {
       const type = (<typeof Block> block.constructor).type;
-      const params = encodeURIComponent(block.queryString());
-      url.searchParams.append(type, params);
-    });
-    for (const [key, value] of new URLSearchParams(window.location.search)) {
-      if (!this.blockTypes.includes(key)) {
-        url.searchParams.append(key, value);
+      const paramStr = block.queryString();
+      if (paramStr.length > 0) {
+        params.set(type, encodeURIComponent(paramStr));
+      } else {
+        params.set(type, '');
       }
-    }
-    window.history.pushState(null, '', url.toString());
+    });
+    QueryParams.setAll(params);
   }
 }

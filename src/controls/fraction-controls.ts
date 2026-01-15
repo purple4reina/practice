@@ -1,3 +1,5 @@
+import QueryParams from "../query-params";
+
 class FractionControls {
   private numerator: number = 1;
   private denominator: number = 4;
@@ -17,12 +19,9 @@ class FractionControls {
     this.numerName = `${name}-numer`;
     this.denomName = `${name}-denom`;
 
-    for (const [key, value] of new URLSearchParams(window.location.search)) {
-      if (key == this.numerName) {
-        this.numerator = parseInt(value);
-      } else if (key == this.denomName) {
-        this.denominator = parseInt(value);
-      }
+    if (QueryParams.has(this.numerName) && QueryParams.has(this.denomName)) {
+      this.numerator = parseInt(QueryParams.get(this.numerName)!);
+      this.denominator = parseInt(QueryParams.get(this.denomName)!);
     }
 
     this.numerValueInput = document.getElementById(this.numerName) as HTMLInputElement;
@@ -66,15 +65,8 @@ class FractionControls {
     }
     this._value = this.numerator / this.denominator;
 
-    const url = new URL(window.location.origin + window.location.pathname);
-    url.searchParams.append(this.numerName, this.numerator.toString());
-    url.searchParams.append(this.denomName, this.denominator.toString());
-    for (const [paramKey, paramValue] of new URLSearchParams(window.location.search)) {
-      if (paramKey !== this.numerName && paramKey !== this.denomName) {
-        url.searchParams.append(paramKey, paramValue);
-      }
-    }
-    window.history.pushState(null, '', url.toString());
+    QueryParams.set(this.numerName, this.numerator.toString());
+    QueryParams.set(this.denomName, this.denominator.toString());
   }
 
   private setNumerator(event: Event): void {
