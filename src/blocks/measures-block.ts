@@ -35,16 +35,16 @@ export default class MeasuresBlock extends Block {
       }
     }
 
-    let { bpm, subdivisions, recording } = state;
+    let { bpm, subdivisions, started, recording } = state;
     if (bpm === 0 || subdivisions === 0) return;
 
     const delay = 60 / bpm / subdivisions * 1000;
     for (let i = 0; i < this.count(); i++) {
       for (let j = 0; j < state.beatsPerMeasure; j++) {
         const level = state.getLevel();
-        yield* addClick({ delay, level: level, recording });
+        yield* addClick({ delay, level: level, started, recording });
         for (let k = 0; k < subdivisions - 1; k++) {
-          yield* addClick({ delay, level: 4, recording });
+          yield* addClick({ delay, level: 4, started, recording });
         }
         state.beatIndex++;
       }

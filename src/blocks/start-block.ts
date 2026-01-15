@@ -3,17 +3,16 @@ import { ClickState } from "./clicks";
 
 export default class StartRecordingBlock extends Block {
   readonly removable: boolean = false;
-  static readonly type = "record";
+  static readonly type = "start";
 
   constructor(parent: HTMLElement) {
     super();
     this.newBlockDiv(parent, {
-      title: "Start Recording",
+      title: "Start",
     });
   }
 
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
     state.started = true;
-    state.recording = true;
   }
 }

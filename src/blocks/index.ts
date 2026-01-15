@@ -4,6 +4,7 @@ import DurationBlock from "./duration-block";
 import MeasuresBlock from "./measures-block";
 import MetronomeBlock from "./metronome-block";
 import PatternBlock from "./pattern-block";
+import StartBlock from "./start-block";
 import StartRecordingBlock from "./start-recording-block";
 import StopRecordingBlock from "./stop-recording-block";
 import QueryParams from "../query-params";
@@ -25,6 +26,7 @@ export default class BlockManager {
     MeasuresBlock.type,
     MetronomeBlock.type,
     PatternBlock.type,
+    StartBlock.type,
     StartRecordingBlock.type,
     StopRecordingBlock.type,
   ];
@@ -56,6 +58,7 @@ export default class BlockManager {
         this.newBlock(key, opts);
       }
     } else {
+      this.newBlock("start");
       this.newBlock("metronome");
       this.newBlock("pattern");
       this.newBlock("beats", { count: 4 });
@@ -94,6 +97,9 @@ export default class BlockManager {
         break;
       case PatternBlock.type:
         block = new PatternBlock(this.blockDiv, opts);
+        break;
+      case StartBlock.type:
+        block = new StartBlock(this.blockDiv);
         break;
       case StartRecordingBlock.type:
         block = new StartRecordingBlock(this.blockDiv);
@@ -164,13 +170,14 @@ export default class BlockManager {
     let lastRecording = false;
     for (const block of this.blocks) {
       for (const click of block.clickIntervalGen(phase, state)) {
+        if (!click.started) continue;
         if (phase == "record" || click.recording) {
           clicks.push(click);
           lastRecording = click.recording;
         }
       }
     }
-    clicks.push({ delay: 350, level: state.getLevel(), recording: lastRecording });
+    clicks.push({ delay: 350, level: state.getLevel(), started: true, recording: lastRecording });
     return clicks;
   }
 

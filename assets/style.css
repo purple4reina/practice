@@ -123,6 +123,10 @@ input[type=range] {
     margin-right: 30px;
   }
 }
+.block-element.block-start {
+  border-color: #99cca4; /* light green */
+  border-width: 1.5px;
+}
 .block-element.block-record {
   border-color: #02b025;  /* green */
   border-width: 1.5px;

@@ -23,6 +23,7 @@ export class ClickState {
   subdivisions: number = 1;
   beatIndex: number = 1;
   beatPattern: number[] = [1];
+  started: boolean = false;
   recording: boolean = false;
   accel = new ClickStateAccel();
 
@@ -42,5 +43,6 @@ export class ClickState {
 export interface Click {
   delay: number,
   level: number,
+  started: boolean,
   recording: boolean,
 }
