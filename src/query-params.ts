@@ -50,14 +50,12 @@ export default class QueryParams {
   }
 
   private static updateURL(): void {
-    const newUrl = `${window.location.pathname}?${this.params.toString()}`;
-    if (newUrl.length > 1000) {
+    let newUrl = `${window.location.pathname}?${this.params.toString()}`;
+    if (newUrl.length > 2000) {
       const params = new URLSearchParams();
       params.set(this.compressedKey, compressToEncodedURIComponent(this.params.toString()));
-      const compressedUrl = `${window.location.pathname}?${params.toString()}`;
-      window.history.replaceState({}, '', compressedUrl);
-    } else {
-      window.history.replaceState({}, '', newUrl);
+      newUrl = `${window.location.pathname}?${params.toString()}`;
     }
+    window.history.replaceState({}, '', newUrl);
   }
 }
