@@ -16,6 +16,7 @@
   "dependencies": {
     "@datadog/browser-rum": "^6.18.1",
     "audiobuffer-to-wav": "^1.0.0",
+    "lz-string": "^1.5.0",
     "pitchfinder": "^2.3.2"
   }
 }
