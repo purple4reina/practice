@@ -48,6 +48,7 @@ export default class BlockManager {
     }).observe(this.blockDiv, { childList: true, subtree: true });
 
     if (QueryParams.has("record")) {
+      const blockConfigs: [string, { [key: string]: string }][] = [];
       for (const [key, value] of QueryParams.getAll()) {
         if (!this.blockTypes.includes(key)) continue;
         const opts: { [key: string]: string } = {};
@@ -57,7 +58,22 @@ export default class BlockManager {
             opts[k] = v;
           }
         }
+        blockConfigs.push([key, opts]);
+      }
+      if (!blockConfigs.some(([key, _]) => key == "start")) {
+        this.newBlock("start");
+      }
+      if (!blockConfigs.some(([key, _]) => key == "record")) {
+        this.newBlock("record");
+      }
+      for (const [key, opts] of blockConfigs) {
         this.newBlock(key, opts);
+      }
+      if (!blockConfigs.some(([key, _]) => key == "stop")) {
+        this.newBlock("stop");
+      }
+      if (!blockConfigs.some(([key, _]) => key == "done")) {
+        this.newBlock("done");
       }
     } else {
       this.newBlock("start");
