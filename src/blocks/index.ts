@@ -4,10 +4,11 @@ import DurationBlock from "./duration-block";
 import MeasuresBlock from "./measures-block";
 import MetronomeBlock from "./metronome-block";
 import PatternBlock from "./pattern-block";
+import QueryParams from "../query-params";
 import StartBlock from "./start-block";
 import StartRecordingBlock from "./start-recording-block";
+import StopBlock from "./stop-block";
 import StopRecordingBlock from "./stop-recording-block";
-import QueryParams from "../query-params";
 import { Block, IBlock } from "./block";
 import { ClickState, Click } from "./clicks";
 import { sleep } from "../utils";
@@ -28,6 +29,7 @@ export default class BlockManager {
     PatternBlock.type,
     StartBlock.type,
     StartRecordingBlock.type,
+    StopBlock.type,
     StopRecordingBlock.type,
   ];
 
@@ -65,6 +67,7 @@ export default class BlockManager {
       this.newBlock("record");
       this.newBlock("beats", { count: 16 });
       this.newBlock("stop");
+      this.newBlock("done");
     }
 
     // add button
@@ -103,6 +106,9 @@ export default class BlockManager {
         break;
       case StartRecordingBlock.type:
         block = new StartRecordingBlock(this.blockDiv);
+        break;
+      case StopBlock.type:
+        block = new StopBlock(this.blockDiv);
         break;
       case StopRecordingBlock.type:
         block = new StopRecordingBlock(this.blockDiv);
