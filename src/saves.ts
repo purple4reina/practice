@@ -1,8 +1,7 @@
 import Cookies from "./cookies";
-import { randomId } from "./utils";
 
 export default class Saves {
-  private savesPrefix = "practice-recorder-saved-save-";
+  private savesPrefix = "practice-recorder-saved-save";
 
   private savesDiv = document.getElementById("saves") as HTMLElement;
   private buttonGroup1 = document.getElementById("save-new-group-1") as HTMLElement;
@@ -100,6 +99,12 @@ export default class Saves {
       }
     }
 
+    saves.sort((a, b) => {
+      if (a[0] < b[0]) return -1;
+      if (a[0] > b[0]) return 1;
+      return 0;
+    });
+
     // Render all saves
     for (const [key, value, isFromCookie] of saves) {
       const [name, url] = value.split(",");
@@ -139,7 +144,7 @@ export default class Saves {
   }
 
   private newSave(name: string, url: string) {
-    localStorage.setItem(`${this.savesPrefix}${randomId(6)}`, `${name},${url}`);
+    localStorage.setItem(`${this.savesPrefix}-zzz-${Date.now()}`, `${name},${url}`);
     this.loadSaves()
   }
 
