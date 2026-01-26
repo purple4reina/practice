@@ -4,6 +4,7 @@ import DurationBlock from "./duration-block";
 import MeasuresBlock from "./measures-block";
 import MetronomeBlock from "./metronome-block";
 import PatternBlock from "./pattern-block";
+import PauseBlock from "./pause-block";
 import QueryParams from "../query-params";
 import StartBlock from "./start-block";
 import StartRecordingBlock from "./start-recording-block";
@@ -27,6 +28,7 @@ export default class BlockManager {
     MeasuresBlock.type,
     MetronomeBlock.type,
     PatternBlock.type,
+    PauseBlock.type,
     StartBlock.type,
     StartRecordingBlock.type,
     StopBlock.type,
@@ -116,6 +118,9 @@ export default class BlockManager {
         break;
       case PatternBlock.type:
         block = new PatternBlock(this.blockDiv, opts);
+        break;
+      case PauseBlock.type:
+        block = new PauseBlock(this.blockDiv, opts);
         break;
       case StartBlock.type:
         block = new StartBlock(this.blockDiv);
