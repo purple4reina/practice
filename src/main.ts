@@ -1,5 +1,6 @@
 import BlockManager from "./blocks";
 import Drone from "./drone";
+import LatencyCompensator from "./latency";
 import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
 import Saves from "./saves";
@@ -42,6 +43,7 @@ class WebAudioRecorderController {
   private recordingMetronome = new RecordingMetronome(this.audioContext);
   private playbackMetronome = new PlaybackMetronome(this.audioContext);
   private visualizer = new Visualizer(this.audioContext);
+  private latencyCompensator = new LatencyCompensator();
 
   // tools
   private tapper = new Tapper();
@@ -84,6 +86,7 @@ class WebAudioRecorderController {
       this.blockManager.recordClicks(),
       this.blockManager.playClicks(),
       this.recordSpeed() / 100,
+      this.latencyCompensator.getLatency(),
     );
   }
 

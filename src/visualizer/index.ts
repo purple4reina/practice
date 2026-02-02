@@ -40,6 +40,7 @@ export default class Visualizer {
   private intonationData: IntonationData | null = null;
   private clicks: Click[] = [];
   private recordSpeed: number = 1;
+  private latency: number = 0;
   private playbackStartTime: number = 0;
   private playbackRate: number = 1;
   private isPlaybackActive: boolean = false;
@@ -71,7 +72,6 @@ export default class Visualizer {
   private savedZoomPercent: number = 100; // 100% = default zoom level
 
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
-  private latency = plusMinusControls("play-latency", { initial: 175, min: -500, max: 500 });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
   constructor(audioContext: AudioContext) {
@@ -360,6 +360,7 @@ export default class Visualizer {
     this.intonationData = this.tuner.analyze(clip.audioBuffer);
     this.clicks = clip.playClicks;
     this.recordSpeed = clip.recordSpeed;
+    this.latency = clip.latency;
     this.updateScrollingState();
     this.draw();
   }
@@ -660,7 +661,7 @@ export default class Visualizer {
     this.ctx.lineWidth = 1;
 
     // Start from the first beat that's visible in the viewport
-    let currentTime = this.latency();
+    let currentTime = this.latency;
 
     // Draw beats within the viewport
     for (const click of this.clicks) {

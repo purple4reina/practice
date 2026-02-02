@@ -9,11 +9,13 @@ export class ClipSettings {
   public startRecordingDelay: number;
   public stopRecordingDelay: number;
   public stopDelay: number;
+  public latency: number;
 
   constructor(
     recordClicks: Click[],
     playClicks: Click[],
     recordSpeed: number,
+    latency: number,
   ) {
     this.recordClicks = recordClicks;
     this.playClicks = playClicks;
@@ -23,6 +25,8 @@ export class ClipSettings {
     this.startRecordingDelay = startRecordingDelay / this.recordSpeed;
     this.stopRecordingDelay = (stopRecordingDelay / this.recordSpeed) + (this.recordingPrelay * 4);
     this.stopDelay = (stopDelay / this.recordSpeed) + (this.recordingPrelay * 2);
+
+    this.latency = latency;
   }
 
   private getRecordDelays() {
@@ -50,10 +54,12 @@ export class Clip {
   public audioBuffer: AudioBuffer;
   public playClicks: Click[];
   public recordSpeed: number;
+  public latency: number = 0;
 
   constructor(settings: ClipSettings, audioBuffer: AudioBuffer) {
     this.audioBuffer = audioBuffer;
     this.playClicks = settings.playClicks;
     this.recordSpeed = settings.recordSpeed;
+    this.latency = settings.latency;
   }
 }

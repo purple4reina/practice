@@ -140,14 +140,12 @@ export class RecordingMetronome extends Metronome {
 }
 
 export class PlaybackMetronome extends Metronome {
-  private latency = plusMinusControls("play-latency", { initial: 175, min: -500, max: 500 });
-
   constructor(audioContext: AudioContext) {
     super("play", audioContext);
   }
 
   start(audioStartTime: number, clip: Clip, playbackRate: number) {
-    const startTime = audioStartTime + this.latency() / playbackRate / 1000;
+    const startTime = audioStartTime + clip.latency / playbackRate / 1000;
     super._start(startTime, clip.playClicks.filter(c => c.recording), playbackRate * clip.recordSpeed);
   }
 }
