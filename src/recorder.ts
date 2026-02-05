@@ -199,7 +199,11 @@ export default class RecorderDevice {
   }
 
   getAudioBuffer(): AudioBuffer | null {
-    return this.recordedBuffer;
+    try {
+      return this.recordedBuffer;
+    } finally {
+      this.recordedBuffer = null; // Clear after retrieval
+    }
   }
 
   reset() {

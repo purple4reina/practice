@@ -128,11 +128,13 @@ class WebAudioRecorderController {
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
       this.clip = new Clip(this.clipSettings, audioBuffer);
-      this.visualizer.drawVisualization(this.clip);
       sendRecordingEvent({ duration: this.clip.audioBuffer.duration });
-      if (this.autoPlay()) {
-        setTimeout(() => this.play(), 500);
-      }
+    }
+    if (this.clip) {
+      this.visualizer.drawVisualization(this.clip);
+    }
+    if (audioBuffer && this.autoPlay()) {
+      setTimeout(() => this.play(), 500);
     }
   }
 
