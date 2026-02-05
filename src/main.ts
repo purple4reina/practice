@@ -79,6 +79,10 @@ class WebAudioRecorderController {
       console.error("Failed to initialize recorder:", error);
     });
     this.clipSettings = this.getClipSettings();
+
+    document.getElementById("download")?.addEventListener("click", () => {
+      this.clip ? this.clip.download() : console.error("No clip available for download");
+    });
   }
 
   private getClipSettings(): ClipSettings {

@@ -1,3 +1,4 @@
+import audioBufferToWav from 'audiobuffer-to-wav';
 import { Click } from "./blocks/clicks";
 
 export class ClipSettings {
@@ -61,5 +62,18 @@ export class Clip {
     this.playClicks = settings.playClicks;
     this.recordSpeed = settings.recordSpeed;
     this.latency = settings.latency;
+  }
+
+  public download() {
+    const wavArray = audioBufferToWav(this.audioBuffer);
+    const wavBlob = new Blob([wavArray], { type: 'audio/wav' });
+    const url = URL.createObjectURL(wavBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.wav`;
+    a.click();
+
+    // Clean up
+    setTimeout(() => { URL.revokeObjectURL(url) }, 1000);
   }
 }
