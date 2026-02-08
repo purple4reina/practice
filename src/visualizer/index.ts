@@ -461,17 +461,26 @@ export default class Visualizer {
     this.ctx.fillStyle = backgroundColor;
     this.ctx.fillRect(0, 0, width, height);
 
-    // Draw grid
-    if (showGrid) {
-      this.drawGrid();
+    // Draw pitch-colored background bands
+    if (this.loudnessData.length >= 2) {
+      this.drawPitchBackground(this.loudnessData);
     }
 
     if (this.loudnessData.length === 0) {
+      // Draw grid
+      if (showGrid) {
+        this.drawGrid();
+      }
       this.drawEmptyState();
       return;
     }
 
     this.drawWaveform(this.loudnessData);
+
+    // Draw grid on top of waveform fill so lines remain visible
+    if (showGrid) {
+      this.drawGrid();
+    }
 
     // Draw metronome beat markers on top
     if (this.clicks) {
@@ -557,10 +566,88 @@ export default class Visualizer {
     return ((timestamp - this.viewStartTime) / this.viewDuration) * this.options.width;
   }
 
+  private static readonly PITCH_COLORS = ['#a55dfc', '#4eb8d4', '#e8645a', '#58c462'];
+  private static readonly PITCH_BG_LOUDNESS_THRESHOLD = 0.015; // RMS below this = no background color
+
+  private getWaveformColors(visibleData: LoudnessData[]): (string | null)[] {
+    if (!this.intonationData || this.intonationData.points.length === 0) {
+      return visibleData.map(() => null);
+    }
+
+    const toneIntervalMs = (60 / this.intonationData.sampleRate) * 1000;
+    const colors = Visualizer.PITCH_COLORS;
+
+    // Cycle color when pitch resumes after a gap or when the pitch name changes
+    const pitchColorIndices: (number | null)[] = [];
+    let colorIndex = 0;
+    let inGap = true;
+    let lastPitchName: string | null = null;
+
+    for (const point of this.intonationData.points) {
+      if (!point) {
+        inGap = true;
+        pitchColorIndices.push(null);
+      } else {
+        if (inGap || point.name !== lastPitchName) {
+          colorIndex = (colorIndex + 1) % colors.length;
+          inGap = false;
+        }
+        lastPitchName = point.name;
+        pitchColorIndices.push(colorIndex);
+      }
+    }
+
+    // Map each loudness data point to its corresponding intonation color
+    const loudnessThreshold = Visualizer.PITCH_BG_LOUDNESS_THRESHOLD;
+    return visibleData.map(point => {
+      if (point.loudness < loudnessThreshold) return null;
+      const intonationIndex = Math.round(point.timestamp / toneIntervalMs);
+      if (intonationIndex >= 0 && intonationIndex < pitchColorIndices.length) {
+        const idx = pitchColorIndices[intonationIndex];
+        return idx !== null ? colors[idx] : null;
+      }
+      return null;
+    });
+  }
+
+  private drawPitchBackground(data: LoudnessData[]): void {
+    const visibleData = data.filter(point =>
+      point.timestamp >= this.viewStartTime &&
+      point.timestamp <= this.viewStartTime + this.viewDuration
+    );
+    if (visibleData.length < 2) return;
+
+    const { height } = this.options;
+    const colors = this.getWaveformColors(visibleData);
+
+    // Build segments of consecutive same-colored points
+    let segStart = 0;
+    while (segStart < visibleData.length) {
+      const color = colors[segStart];
+      let segEnd = segStart;
+      while (segEnd < visibleData.length && colors[segEnd] === color) {
+        segEnd++;
+      }
+
+      // Skip segments where no pitch was detected
+      if (color !== null) {
+        const x1 = Math.max(0, this.timeToX(visibleData[segStart].timestamp));
+        const x2 = segEnd < visibleData.length
+          ? this.timeToX(visibleData[segEnd].timestamp)
+          : this.timeToX(visibleData[segEnd - 1].timestamp) + 1;
+
+        this.ctx.fillStyle = color + '20';
+        this.ctx.fillRect(x1, 0, x2 - x1, height);
+      }
+
+      segStart = segEnd;
+    }
+  }
+
   private drawWaveform(data: LoudnessData[]): void {
     if (data.length < 2) return;
 
-    const { width, height, waveformColor } = this.options;
+    const { width, height, waveformColor, backgroundColor } = this.options;
 
     // Filter data to only include points in the current viewport
     const visibleData = data.filter(point =>
@@ -579,6 +666,43 @@ export default class Visualizer {
     const centerY = height / 2;
     const maxAmplitude = height * 0.4; // Use 40% of height for each side (80% total)
 
+    // Mask pitch background bands under the waveform with opaque background,
+    // then draw translucent waveform fill on top
+    for (const fillColor of [backgroundColor, waveformColor + '20']) {
+      this.ctx.fillStyle = fillColor;
+      this.ctx.beginPath();
+
+      // Upper path
+      let firstPoint = true;
+      for (const point of visibleData) {
+        const x = this.timeToX(point.timestamp);
+        const normalizedLoudness = point.loudness / maxLoudness;
+        const amplitude = normalizedLoudness * maxAmplitude;
+        const y = centerY - amplitude;
+
+        if (firstPoint) {
+          this.ctx.moveTo(Math.max(0, x), y);
+          firstPoint = false;
+        } else {
+          this.ctx.lineTo(Math.max(0, x), y);
+        }
+      }
+
+      // Lower path (in reverse)
+      for (let i = visibleData.length - 1; i >= 0; i--) {
+        const point = visibleData[i];
+        const x = this.timeToX(point.timestamp);
+        const normalizedLoudness = point.loudness / maxLoudness;
+        const amplitude = normalizedLoudness * maxAmplitude;
+        const y = centerY + amplitude;
+        this.ctx.lineTo(Math.max(0, x), y);
+      }
+
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
+
+    // Draw outline on top of fills
     this.ctx.strokeStyle = waveformColor;
     this.ctx.lineWidth = 1;
     this.ctx.lineCap = 'round';
@@ -619,39 +743,6 @@ export default class Visualizer {
       }
     }
     this.ctx.stroke();
-
-    // Draw filled area between the mirrored waveforms
-    this.ctx.fillStyle = waveformColor + '20'; // Add transparency
-    this.ctx.beginPath();
-
-    // Upper path
-    firstPoint = true;
-    for (const point of visibleData) {
-      const x = this.timeToX(point.timestamp);
-      const normalizedLoudness = point.loudness / maxLoudness;
-      const amplitude = normalizedLoudness * maxAmplitude;
-      const y = centerY - amplitude;
-
-      if (firstPoint) {
-        this.ctx.moveTo(Math.max(0, x), y);
-        firstPoint = false;
-      } else {
-        this.ctx.lineTo(Math.max(0, x), y);
-      }
-    }
-
-    // Lower path (in reverse)
-    for (let i = visibleData.length - 1; i >= 0; i--) {
-      const point = visibleData[i];
-      const x = this.timeToX(point.timestamp);
-      const normalizedLoudness = point.loudness / maxLoudness;
-      const amplitude = normalizedLoudness * maxAmplitude;
-      const y = centerY + amplitude;
-      this.ctx.lineTo(Math.max(0, x), y);
-    }
-
-    this.ctx.closePath();
-    this.ctx.fill();
   }
 
   private drawMetronomeBeats(): void {
