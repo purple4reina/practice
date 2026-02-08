@@ -6,8 +6,8 @@
     <title>Practice Recorder</title>
 
     <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
-    <script type="module" crossorigin src="/practice/assets/index-BcoaCybI.js"></script>
-    <link rel="stylesheet" crossorigin href="/practice/assets/index-jQENc-Kr.css">
+    <script type="module" crossorigin src="/practice/assets/index-PvKIdAZ1.js"></script>
+    <link rel="stylesheet" crossorigin href="/practice/assets/index-nQkJ9VsY.css">
   </head>
   <body>
     <div class="container">
@@ -31,31 +31,16 @@
           <i id="playing" class="bi bi-play-circle blinking" style="display:none"></i>
         </div>
       </div>
-      <div class="row text-right">
-        <div class="col" id="visualization-stats"></div>
-      </div>
       <div class="collapse show" id="visualization">
-        <div class="card card-body">
+        <div class="row text-right">
+          <div class="col" id="visualization-stats"></div>
+        </div>
+        <div class="card card-body visualization-body">
           <div class="row">
             <div class="col">
               <canvas id="waveform-canvas" width="800" style="height:300px"></canvas>
             </div>
           </div>
-        </div>
-      </div>
-      <hr/>
-      <div class="row">
-        <div class="col-3">
-          Waveform:
-        </div>
-        <div class="col input-group form-check form-switch">
-          <input class="form-check-input" id="visualization-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#visualization" tabindex="10" checked>
-        </div>
-        <div class="col-3">
-          Tuner:
-        </div>
-        <div class="col input-group form-check form-switch">
-          <input class="form-check-input" id="tuner-enabled" type="checkbox" role="switch" tabindex="11">
         </div>
       </div>
       <div class="row">
@@ -80,20 +65,6 @@
       </div>
       <div class="row">
         <div class="container">
-          <div class="row">
-            <div class="col-3">
-              Recording Metronome:
-            </div>
-            <div class="col input-group form-check form-switch">
-              <input class="form-check-input" id="rec-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target=".rec-metronome" tabindex="3" checked>
-            </div>
-            <div class="col-3">
-              Playback Metronome:
-            </div>
-            <div class="col input-group form-check form-switch">
-              <input class="form-check-input" id="play-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target=".play-metronome" tabindex="4" checked>
-            </div>
-          </div>
           <div class="row">
             <div class="container" id="blocks">
             </div>
@@ -126,10 +97,9 @@
         <h5 class="offcanvas-title" id="offcanvasRightLabel">Welcome to Practice Recorder!</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
-      <div class="offcanvas-body">
-        <div class="container">
-          <hr></hr>
-          <h6>Settings</h6>
+      <div class="offcanvas-body container">
+        <h6>General</h6>
+        <div class="offcanvas-section">
           <!-- auto play -->
           <div class="row">
             <div class="col-8">
@@ -137,6 +107,28 @@
             </div>
             <div class="col input-group form-check form-switch">
               <input class="form-check-input" id="auto-play" type="checkbox" role="switch" checked>
+            </div>
+          </div>
+        </div>
+        <hr></hr>
+        <h6>Metronome</h6>
+        <div class="offcanvas-section">
+          <!-- recording metronome -->
+          <div class="row">
+            <div class="col-8">
+              Recording Metronome:
+            </div>
+            <div class="col input-group form-check form-switch">
+              <input class="form-check-input" id="rec-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target=".rec-metronome" tabindex="3" checked>
+            </div>
+          </div>
+          <!-- playback metronome -->
+          <div class="row">
+            <div class="col-8">
+              Playback Metronome:
+            </div>
+            <div class="col input-group form-check form-switch">
+              <input class="form-check-input" id="play-metronome-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target=".play-metronome" tabindex="4" checked>
             </div>
           </div>
           <!-- click flash -->
@@ -159,19 +151,31 @@
               <button class="btn" id="rec-silencing-plus" type="button" tabindex="-1">+</button>
             </div>
           </div>
-          <!-- latency -->
+        </div>
+        <hr></hr>
+        <h6>Visualization</h6>
+        <div class="offcanvas-section">
+          <!-- waveform -->
           <div class="row">
-            <div class="col-5">
-              Latency Compensation:
+            <div class="col-8">
+              Waveform:
             </div>
-            <div class="col input-group">
-              <button class="btn" id="latency-compensator-minus" type="button" tabindex="-1">-</button>
-              <input type="text" class="form-control" id="latency-compensator-val" value="145" pattern="[0-9]*" tabindex="9">
-              <button class="btn" id="latency-compensator-plus" type="button" tabindex="-1">+</button>
+            <div class="col input-group form-check form-switch">
+              <input class="form-check-input" id="visualization-enabled" type="checkbox" role="switch" data-bs-toggle="collapse" data-bs-target="#visualization" tabindex="10" checked>
             </div>
           </div>
-          <hr></hr>
-          <h6>Tools</h6>
+          <div class="row">
+            <div class="col-8">
+              Tuner:
+            </div>
+            <div class="col input-group form-check form-switch">
+              <input class="form-check-input" id="tuner-enabled" type="checkbox" role="switch" tabindex="11">
+            </div>
+          </div>
+        </div>
+        <hr></hr>
+        <h6>Tools</h6>
+        <div class="offcanvas-section">
           <!-- tapper -->
           <button id="tapper" class="btn btn-outline-secondary">
             Metronome Tapper
@@ -202,8 +206,10 @@
               <option value="6">6</option>
             </select>
           </div>
-          <hr></hr>
-          <h6>Saves</h6>
+        </div>
+        <hr></hr>
+        <h6>Saves</h6>
+        <div class="offcanvas-section">
           <div id="saves"></div>
           <div class="input-group" id="save-new-group-1">
             <button class="btn btn-outline-secondary" id="save-new" type="button">
@@ -223,6 +229,22 @@
             </button>
           </div>
         </div>
+        <hr></hr>
+        <h6>Advanced</h6>
+        <div class="offcanvas-section">
+          <!-- latency -->
+          <div class="row">
+            <div class="col-5">
+              Latency Compensation:
+            </div>
+            <div class="col input-group">
+              <button class="btn" id="latency-compensator-minus" type="button" tabindex="-1">-</button>
+              <input type="text" class="form-control" id="latency-compensator-val" value="145" pattern="[0-9]*" tabindex="9">
+              <button class="btn" id="latency-compensator-plus" type="button" tabindex="-1">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
     <div id="click-flash-box" hidden></div>

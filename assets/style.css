@@ -78,13 +78,15 @@ input[type=range] {
   touch-action: none;
 }
 
-.visualization-section {
-  margin-top: 2rem;
-  padding-top: 1rem;
-}
+#visualization {
+  margin-bottom: 25px;
 
-#visualization-stats {
-  margin: 0px 10%;;
+  #visualization-stats {
+    margin: 0px 10%;
+  }
+  .visualization-body {
+    padding: 8px 6px 0px 6px;
+  }
 }
 
 #click-flash-box {
@@ -141,7 +143,7 @@ input[type=range] {
 }
 
 .save-link {
-  margin: 0px 0px 5px 10px;
+  margin: 0px 0px 5px 0px;
   color: grey;
   text-decoration: none;
 }
@@ -221,5 +223,21 @@ input[type=range] {
     font-size: 12px;
     margin: 0px;
     padding: 0px;
+  }
+}
+
+.offcanvas {
+  .offcanvas-header {
+    padding-bottom: 0px;
+    margin: 0px;
+  }
+  .offcanvas-body {
+    padding-top: 10px;
+  }
+  .offcanvas-section {
+    margin: 0px 0px 0px 8px;
+  }
+  hr {
+    margin: 16px 0px 10px 0px;
   }
 }
