@@ -5,9 +5,9 @@ export default class StartRecordingBlock extends Block {
   readonly removable: boolean = false;
   static readonly type = "start";
 
-  constructor(parent: HTMLElement) {
+  constructor(parent: HTMLElement, opts: any) {
     super();
-    this.newBlockDiv(parent, {
+    this.newBlockDiv(parent, opts.index, {
       title: "Start",
     });
   }

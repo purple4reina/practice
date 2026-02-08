@@ -5,9 +5,9 @@ export default class StopRecordingBlock extends Block {
   readonly removable: boolean = false;
   static readonly type = "done";
 
-  constructor(parent: HTMLElement) {
+  constructor(parent: HTMLElement, opts: any) {
     super();
-    this.newBlockDiv(parent, {
+    this.newBlockDiv(parent, opts.index, {
       title: "Stop",
     });
   }

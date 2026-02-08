@@ -100,7 +100,8 @@ export default class BlockManager {
   }
 
   newBlock(type: string, opts={}) {
-    opts = Object.keys(opts).length ? opts : this.getLastBlockOpts(type);
+    // get most recent opts then overwrite with given opts
+    opts = { ...this.getLastBlockOpts(type), ...opts };
     let block: IBlock;
     switch (type) {
       case AccelerandoBlock.type:
@@ -125,16 +126,16 @@ export default class BlockManager {
         block = new PauseBlock(this.blockDiv, opts);
         break;
       case StartBlock.type:
-        block = new StartBlock(this.blockDiv);
+        block = new StartBlock(this.blockDiv, opts);
         break;
       case StartRecordingBlock.type:
-        block = new StartRecordingBlock(this.blockDiv);
+        block = new StartRecordingBlock(this.blockDiv, opts);
         break;
       case StopBlock.type:
-        block = new StopBlock(this.blockDiv);
+        block = new StopBlock(this.blockDiv, opts);
         break;
       case StopRecordingBlock.type:
-        block = new StopRecordingBlock(this.blockDiv);
+        block = new StopRecordingBlock(this.blockDiv, opts);
         break;
       case SubdivisionBlock.type:
         block = new SubdivisionBlock(this.blockDiv, opts);
@@ -152,11 +153,17 @@ export default class BlockManager {
   }
 
   private getLastBlockOpts(type: string): any {
-    return this.blocks.reduceRight((opts, block) => {
+    // copy opts from most recent block of same type, if it exists
+    const opts: any = this.blocks.reduceRight((opts, block) => {
       if (opts) return opts;
       const btype = (<typeof Block> block.constructor).type;
       if (type == btype) return block.getOpts();
     }, null) || {};
+
+    // determine index position for new block
+    opts.index = this.blocks.length;
+
+    return opts;
   }
 
   removeBlock(block: IBlock) {

@@ -11,7 +11,7 @@ export default class PatternBlock extends Block {
 
   constructor(parent: HTMLElement, opts: any) {
     super();
-    const div = this.newBlockDiv(parent, {
+    const div = this.newBlockDiv(parent, opts.index, {
       title: "Set Beat Pattern",
       col_2: `
         <div class="container">

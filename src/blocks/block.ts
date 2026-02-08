@@ -30,11 +30,16 @@ export abstract class Block implements IBlock {
     this.remove = this.moveUp = this.moveDown = function(block: IBlock): void {};
   }
 
-  protected newBlockDiv(parent: HTMLElement, opts: any): HTMLElement {
+  protected newBlockDiv(parent: HTMLElement, index: number, opts: any): HTMLElement {
     const type = (<typeof Block> this.constructor).type;
 
     const envelope = document.createElement("div");
-    parent.appendChild(envelope);
+    if (index >= parent.children.length) {
+      parent.appendChild(envelope);
+    } else {
+      parent.insertBefore(envelope, parent.children[index]);
+    }
+
     envelope.classList.add("container");
     envelope.classList.add("row");
     envelope.classList.add("block-element");

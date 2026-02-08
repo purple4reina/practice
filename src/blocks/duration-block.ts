@@ -9,7 +9,7 @@ export default class DurationBlock extends Block {
 
   constructor(parent: HTMLElement, opts: any) {
     super();
-    this.newBlockDiv(parent, {
+    this.newBlockDiv(parent, opts.index, {
       title: "Duration",
       col_4: `
         <div class="container">

@@ -10,7 +10,7 @@ export default class SubdivisionBlock extends Block {
 
   constructor(parent: HTMLElement, opts: any) {
     super();
-    const div = this.newBlockDiv(parent, {
+    const div = this.newBlockDiv(parent, opts.index, {
       title: "Set Subdivision",
       col_3: `
         <div class="container">
