@@ -115,6 +115,23 @@ input[type=range] {
   margin: 10px 0px 10px 0px;;
   padding: 10px 0px 5px 0px;
 
+  &.block-start {
+    border-color: #99cca4; /* light green */
+    border-width: 1.5px;
+  }
+  &.block-record {
+    border-color: #02b025;  /* green */
+    border-width: 1.5px;
+  }
+  &.block-stop {
+    border-color: #f50505;  /* red */
+    border-width: 1.5px;
+  }
+  &.block-done {
+    border-color: #f5b8b8;  /* light red */
+    border-width: 1.5px;
+  }
+
   input {
     text-align: center;
   }
@@ -128,22 +145,6 @@ input[type=range] {
   .block-title {
     margin-right: 30px;
   }
-}
-.block-element.block-start {
-  border-color: #99cca4; /* light green */
-  border-width: 1.5px;
-}
-.block-element.block-record {
-  border-color: #02b025;  /* green */
-  border-width: 1.5px;
-}
-.block-element.block-stop {
-  border-color: #f50505;  /* red */
-  border-width: 1.5px;
-}
-.block-element.block-done {
-  border-color: #f5b8b8;  /* light red */
-  border-width: 1.5px;
 }
 
 .save-link {
