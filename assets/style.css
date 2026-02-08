@@ -63,6 +63,10 @@ div {
   text-align: right;
 }
 
+.hanging-left {
+  margin-left: -100px;
+}
+
 input[type=range] {
   height: auto;
   border: none;

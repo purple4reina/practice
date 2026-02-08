@@ -10,6 +10,7 @@ import StartBlock from "./start-block";
 import StartRecordingBlock from "./start-recording-block";
 import StopBlock from "./stop-block";
 import StopRecordingBlock from "./stop-recording-block";
+import SubdivisionBlock from "./subdivision-block";
 import { Block, IBlock } from "./block";
 import { ClickState, Click } from "./clicks";
 import { sleep } from "../utils";
@@ -33,6 +34,7 @@ export default class BlockManager {
     StartRecordingBlock.type,
     StopBlock.type,
     StopRecordingBlock.type,
+    SubdivisionBlock.type,
   ];
 
   constructor() {
@@ -133,6 +135,9 @@ export default class BlockManager {
         break;
       case StopRecordingBlock.type:
         block = new StopRecordingBlock(this.blockDiv);
+        break;
+      case SubdivisionBlock.type:
+        block = new SubdivisionBlock(this.blockDiv, opts);
         break;
       default:
         return;
