@@ -21,7 +21,8 @@ export class Tuner {
   private windowSize: number = 2048;
   private hopSize: number = 512;
 
-  public enabled = boolSwitchControls("tuner-enabled", { initial: false });
+  public tunerEnabled = boolSwitchControls("tuner-enabled", { initial: false });
+  public detectionEnabled = boolSwitchControls("pitch-detection-enabled", { initial: false });
 
   constructor(audioContext: AudioContext) {
     this.audioContextSampleRate = audioContext.sampleRate;
@@ -47,7 +48,7 @@ export class Tuner {
       points: [],
     }
 
-    if (this.enabled()) {
+    if (this.tunerEnabled() || this.detectionEnabled()) {
       const float32Array = audioBuffer.getChannelData(0);
       const pitches = this.slidingWindowAnalysis(float32Array);
       data.points = pitches.map(f => this.frequencyToIntonationPoint(f));

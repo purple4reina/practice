@@ -462,7 +462,7 @@ export default class Visualizer {
     this.ctx.fillRect(0, 0, width, height);
 
     // Draw pitch-colored background bands
-    if (this.loudnessData.length >= 2) {
+    if (this.loudnessData.length >= 2 && this.tuner.detectionEnabled()) {
       this.drawPitchBackground(this.loudnessData);
     }
 
@@ -488,7 +488,7 @@ export default class Visualizer {
     }
 
     // Draw intonation line
-    if (this.intonationData) {
+    if (this.tuner.tunerEnabled()) {
       this.drawIntonation();
     }
 
@@ -783,7 +783,7 @@ export default class Visualizer {
   }
 
   private drawIntonation(): void {
-    if (!this.intonationData) return;
+    if (!this.tuner.tunerEnabled() || !this.intonationData) return;
 
     // Time between each intonation sample, in ms
     const toneIntervalMs = (60 / this.intonationData.sampleRate) * 1000;
