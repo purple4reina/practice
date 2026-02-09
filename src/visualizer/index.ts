@@ -566,7 +566,21 @@ export default class Visualizer {
     return ((timestamp - this.viewStartTime) / this.viewDuration) * this.options.width;
   }
 
-  private static readonly PITCH_COLORS = ['#a55dfc', '#4eb8d4', '#e8645a', '#58c462'];
+  // Chromatic scale colors: C=red → B=purple in ROYGBIV order
+  private static readonly CHROMATIC_COLORS: { [key: string]: string } = {
+    'C': '#FF0000',   // Red
+    'C#': '#FF4500',  // Red-Orange
+    'D': '#FF8C00',   // Orange
+    'D#': '#FFD700',  // Yellow-Orange
+    'E': '#FFFF00',   // Yellow
+    'F': '#7FFF00',   // Yellow-Green
+    'F#': '#00FF00',  // Green
+    'G': '#00FFFF',   // Cyan (Blue-Green)
+    'G#': '#0080FF',  // Light Blue
+    'A': '#0000FF',   // Blue
+    'A#': '#8000FF',  // Indigo
+    'B': '#FF00FF',   // Purple/Violet
+  };
   private static readonly PITCH_BG_LOUDNESS_THRESHOLD = 0.015; // RMS below this = no background color
 
   private getWaveformColors(visibleData: LoudnessData[]): (string | null)[] {
@@ -575,36 +589,45 @@ export default class Visualizer {
     }
 
     const toneIntervalMs = (60 / this.intonationData.sampleRate) * 1000;
-    const colors = Visualizer.PITCH_COLORS;
-
-    // Cycle color when pitch resumes after a gap or when the pitch name changes
-    const pitchColorIndices: (number | null)[] = [];
-    let colorIndex = 0;
-    let inGap = true;
-    let lastPitchName: string | null = null;
-
-    for (const point of this.intonationData.points) {
-      if (!point) {
-        inGap = true;
-        pitchColorIndices.push(null);
-      } else {
-        if (inGap || point.name !== lastPitchName) {
-          colorIndex = (colorIndex + 1) % colors.length;
-          inGap = false;
-        }
-        lastPitchName = point.name;
-        pitchColorIndices.push(colorIndex);
-      }
-    }
+    const loudnessThreshold = Visualizer.PITCH_BG_LOUDNESS_THRESHOLD;
 
     // Map each loudness data point to its corresponding intonation color
-    const loudnessThreshold = Visualizer.PITCH_BG_LOUDNESS_THRESHOLD;
     return visibleData.map(point => {
       if (point.loudness < loudnessThreshold) return null;
+
       const intonationIndex = Math.round(point.timestamp / toneIntervalMs);
-      if (intonationIndex >= 0 && intonationIndex < pitchColorIndices.length) {
-        const idx = pitchColorIndices[intonationIndex];
-        return idx !== null ? colors[idx] : null;
+      if (intonationIndex >= 0 && intonationIndex < this.intonationData!.points.length) {
+        const intonationPoint = this.intonationData!.points[intonationIndex];
+
+        if (!intonationPoint) return null;
+
+        // Extract note name without octave (e.g., "C4" -> "C")
+        const noteName = intonationPoint.name.replace(/\d+$/, '');
+        const baseColor = Visualizer.CHROMATIC_COLORS[noteName];
+
+        if (!baseColor) return null;
+
+        // Extract octave number
+        const octaveMatch = intonationPoint.name.match(/\d+$/);
+        const octave = octaveMatch ? parseInt(octaveMatch[0]) : 4;
+
+        // Map octave to opacity: lower octaves = less opaque, higher = more opaque
+        // Typical range for instruments is octave 2-7
+        // Map octave 2 -> 0.1 opacity, octave 7 -> 0.3 opacity (pastel effect)
+        const minOctave = 2;
+        const maxOctave = 7;
+        const minOpacity = 0.1;
+        const maxOpacity = 0.3;
+
+        const clampedOctave = Math.max(minOctave, Math.min(maxOctave, octave));
+        const opacity = minOpacity + (clampedOctave - minOctave) * (maxOpacity - minOpacity) / (maxOctave - minOctave);
+
+        // Convert hex color to rgba with opacity
+        const r = parseInt(baseColor.slice(1, 3), 16);
+        const g = parseInt(baseColor.slice(3, 5), 16);
+        const b = parseInt(baseColor.slice(5, 7), 16);
+
+        return `rgba(${r}, ${g}, ${b}, ${opacity})`;
       }
       return null;
     });
@@ -636,7 +659,8 @@ export default class Visualizer {
           ? this.timeToX(visibleData[segEnd].timestamp)
           : this.timeToX(visibleData[segEnd - 1].timestamp) + 1;
 
-        this.ctx.fillStyle = color + '20';
+        // Color already includes opacity from getWaveformColors
+        this.ctx.fillStyle = color;
         this.ctx.fillRect(x1, 0, x2 - x1, height);
       }
 
