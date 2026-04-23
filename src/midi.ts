@@ -147,6 +147,49 @@ export class MidiSequencer {
     return result;
   }
 
+  // Like getNotesForPortion but uses an accel function to compute exact note
+  // timings rather than assuming equal spacing within the portion.
+  // accumBeatStart: accumulated beat position at the start of this portion.
+  // timeFnAtBeat: maps accumulated beats → wall-clock ms from sequence start.
+  getNotesForPortionWithAccelFn(
+    beatsToAdvance: number,
+    accumBeatStart: number,
+    timeFnAtBeat: (beat: number) => number,
+  ): MidiNote[] {
+    const result: MidiNote[] = [];
+    const clickStartMs = timeFnAtBeat(accumBeatStart);
+    let pos = 0;
+
+    while (pos < beatsToAdvance && this.noteIndex < this.notes.length) {
+      const currentNote = this.notes[this.noteIndex];
+      const beatsRemainingInNote = currentNote.durationBeats - this.beatsIntoCurrentNote;
+      const beatsRemainingInPortion = beatsToAdvance - pos;
+
+      if (this.beatsIntoCurrentNote === 0 && currentNote.frequency !== null) {
+        const noteStartBeat = accumBeatStart + pos;
+        const noteEndBeat = noteStartBeat + currentNote.durationBeats;
+        const noteStartMs = timeFnAtBeat(noteStartBeat);
+        const noteEndMs = timeFnAtBeat(noteEndBeat);
+        result.push({
+          frequency: currentNote.frequency,
+          offsetMs: noteStartMs - clickStartMs,
+          durationMs: noteEndMs - noteStartMs,
+        });
+      }
+
+      if (beatsRemainingInNote <= beatsRemainingInPortion) {
+        pos += beatsRemainingInNote;
+        this.beatsIntoCurrentNote = 0;
+        this.noteIndex++;
+      } else {
+        this.beatsIntoCurrentNote += beatsRemainingInPortion;
+        pos = beatsToAdvance;
+      }
+    }
+
+    return result;
+  }
+
   get done(): boolean {
     return this.noteIndex >= this.notes.length;
   }

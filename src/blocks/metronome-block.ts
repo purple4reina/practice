@@ -64,15 +64,23 @@ export default class MetronomeBlock extends Block {
         }
       }
 
-      // Pass 2: attach MIDI notes and yield — each sub-beat click gets its own
-      // portion of the sequencer (1/subdivisions beat-units), so MIDI note timing
-      // follows the accelerando curve through the subdivision, not equal spacing.
+      // Pass 2: attach MIDI notes and yield — each click gets its own portion of
+      // the sequencer (1/subdivisions beat-units). The accel function is evaluated
+      // at each note boundary so timing follows the curve exactly, even when
+      // multiple notes fall within a single subdivision click (e.g. subdivision=1
+      // with 16th notes).
       const subBeatFraction = 1 / state.subdivisions;
+      const timeFnAtBeat = (beat: number): number => {
+        if (beat <= 0) return 0;
+        return timeFn({ thisClick: beat, totalClicks: totalBeats, initialTempo, finalTempo });
+      };
+      let accumBeat = 0;
       for (let i = 0; i < state.accel.clicks.length; i++) {
         const click = state.accel.clicks[i];
         if (state.midiSequencers.length > 0) {
-          click.midiNotes = state.getMidiNotesForPortion(subBeatFraction, click.delay);
+          click.midiNotes = state.getMidiNotesForPortionWithAccelFn(subBeatFraction, accumBeat, timeFnAtBeat);
         }
+        accumBeat += subBeatFraction;
         yield click;
       }
     }

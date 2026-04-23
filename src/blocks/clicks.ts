@@ -61,6 +61,20 @@ export class ClickState {
     }
     return result;
   }
+
+  getMidiNotesForPortionWithAccelFn(
+    beatsToAdvance: number,
+    accumBeatStart: number,
+    timeFnAtBeat: (beat: number) => number,
+  ): MidiNote[] {
+    const result: MidiNote[] = [];
+    for (const sequencer of this.midiSequencers) {
+      for (const note of sequencer.getNotesForPortionWithAccelFn(beatsToAdvance, accumBeatStart, timeFnAtBeat)) {
+        result.push(note);
+      }
+    }
+    return result;
+  }
 }
 
 export interface Click {
