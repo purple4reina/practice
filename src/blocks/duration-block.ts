@@ -41,9 +41,13 @@ export default class DurationBlock extends Block {
       // into account when calculating number of beats.
       const beats = this.seconds() / 60 * state.bpm;
       const delay = 60 / bpm / subdivisions * 1000;
+      const beatMs = 60 / bpm * 1000;
       for (let i = 0; i < beats; i++) {
         const level = state.getLevel();
-        yield* addClick({ delay, level: level, started, recording });
+        const midiNotes = state.accel.enabled
+          ? undefined
+          : state.getMidiNotesForBeat(beatMs);
+        yield* addClick({ delay, level, started, recording, isBeat: true, midiNotes });
         for (let j = 0; j < subdivisions - 1; j++) {
           yield* addClick({ delay, level: 4, started, recording });
         }

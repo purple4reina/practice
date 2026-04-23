@@ -61,6 +61,11 @@ export default class MetronomeBlock extends Block {
           click.delay = thisTime - prevTime;
           prevTime = thisTime;
         }
+        if (click.isBeat && state.midiSequencers.length > 0) {
+          // Approximate full beat duration from subdivision delay × subdivision count
+          const beatMs = click.delay * state.subdivisions;
+          click.midiNotes = state.getMidiNotesForBeat(beatMs);
+        }
         yield click;
       }
     }

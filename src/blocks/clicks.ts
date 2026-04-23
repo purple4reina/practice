@@ -1,3 +1,5 @@
+import { MidiNote, MidiSequencer } from "../midi";
+
 class ClickStateAccel {
   enabled: boolean = false;
   kind: string | undefined;
@@ -26,6 +28,7 @@ export class ClickState {
   started: boolean = false;
   recording: boolean = false;
   accel = new ClickStateAccel();
+  midiSequencers: MidiSequencer[] = [];
 
   constructor(phase: "record" | "play") {
     this.phase = phase;
@@ -38,6 +41,16 @@ export class ClickState {
     }
     return level;
   }
+
+  getMidiNotesForBeat(beatMs: number): MidiNote[] {
+    const result: MidiNote[] = [];
+    for (const sequencer of this.midiSequencers) {
+      for (const note of sequencer.getNotesForBeat(beatMs)) {
+        result.push(note);
+      }
+    }
+    return result;
+  }
 }
 
 export interface Click {
@@ -45,4 +58,6 @@ export interface Click {
   level: number,
   started: boolean,
   recording: boolean,
+  isBeat?: boolean,
+  midiNotes?: MidiNote[],
 }

@@ -3,6 +3,7 @@ import BeatsBlock from "./beats-block";
 import DurationBlock from "./duration-block";
 import MeasuresBlock from "./measures-block";
 import MetronomeBlock from "./metronome-block";
+import MidiBlock from "./midi-block";
 import PatternBlock from "./pattern-block";
 import PauseBlock from "./pause-block";
 import QueryParams from "../query-params";
@@ -28,6 +29,7 @@ export default class BlockManager {
     DurationBlock.type,
     MeasuresBlock.type,
     MetronomeBlock.type,
+    MidiBlock.type,
     PatternBlock.type,
     PauseBlock.type,
     StartBlock.type,
@@ -118,6 +120,9 @@ export default class BlockManager {
         break;
       case MetronomeBlock.type:
         block = new MetronomeBlock(this.blockDiv, opts);
+        break;
+      case MidiBlock.type:
+        block = new MidiBlock(this.blockDiv, opts);
         break;
       case PatternBlock.type:
         block = new PatternBlock(this.blockDiv, opts);

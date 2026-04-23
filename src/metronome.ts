@@ -31,6 +31,7 @@ abstract class Metronome {
   private nextClickTime: number = 0;
   private clickIter: Iterator<Click> | null = null;
   private playbackRate: number = 1;
+  private activeMidiNodes: { masterGain: GainNode, oscillators: OscillatorNode[] }[] = [];
 
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
   private scheduleInterval: number = 25.0; // Schedule every 25ms
@@ -78,6 +79,72 @@ abstract class Metronome {
 
     oscillator.start(when);
     oscillator.stop(when + 0.05);
+
+    // Schedule any MIDI notes attached to this click
+    if (click.midiNotes) {
+      for (const note of click.midiNotes) {
+        const noteWhen = when + note.offsetMs / this.playbackRate / 1000;
+        const noteDuration = note.durationMs / this.playbackRate / 1000;
+        this.createMidiNoteSound(noteWhen, note.frequency, noteDuration);
+      }
+    }
+  }
+
+  // Same overtone series as the drone for a consistent timbre
+  private midiOvertones = [
+    { ratio: 1,  volume: 0.45  },
+    { ratio: 2,  volume: 0.25  },
+    { ratio: 3,  volume: 0.05  },
+    { ratio: 4,  volume: 0.10  },
+    { ratio: 5,  volume: 0.04  },
+    { ratio: 6,  volume: 0.03  },
+    { ratio: 8,  volume: 0.02  },
+    { ratio: 16, volume: 0.005 },
+  ];
+
+  private createMidiNoteSound(when: number, frequency: number, durationSec: number): void {
+    const minDuration = 0.02;
+    const duration = Math.max(durationSec, minDuration);
+
+    const attackTime = Math.min(0.005, duration * 0.1);
+    const releaseTime = Math.min(0.08, duration * 0.25);
+
+    // Master gain carries the amplitude envelope; individual oscillator gains
+    // set the overtone mix (matching the drone's volume of 0.25).
+    const masterGain = this.audioContext.createGain();
+    masterGain.gain.setValueAtTime(0, when);
+    masterGain.gain.linearRampToValueAtTime(0.25, when + attackTime);
+    masterGain.gain.setValueAtTime(0.25, when + duration - releaseTime);
+    masterGain.gain.linearRampToValueAtTime(0, when + duration);
+    masterGain.connect(this.audioContext.destination);
+
+    const oscillators: OscillatorNode[] = [];
+    for (const { ratio, volume } of this.midiOvertones) {
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency * ratio, when);
+      gainNode.gain.value = volume;
+
+      oscillator.connect(gainNode);
+      gainNode.connect(masterGain);
+
+      oscillator.start(when);
+      oscillator.stop(when + duration + 0.01);
+      oscillators.push(oscillator);
+    }
+
+    // Track this note so stop() can cancel it if needed
+    const nodeSet = { masterGain, oscillators };
+    this.activeMidiNodes.push(nodeSet);
+
+    // Auto-remove from tracking list once the note has naturally finished
+    const cleanupDelay = Math.max((when - this.audioContext.currentTime + duration + 0.1) * 1000, 0);
+    setTimeout(() => {
+      const idx = this.activeMidiNodes.indexOf(nodeSet);
+      if (idx !== -1) this.activeMidiNodes.splice(idx, 1);
+    }, cleanupDelay);
   }
 
   private scheduler = (): void => {
@@ -112,6 +179,15 @@ abstract class Metronome {
 
   stop(): void {
     this.isPlaying = false;
+    const now = this.audioContext.currentTime;
+    for (const { masterGain, oscillators } of this.activeMidiNodes) {
+      masterGain.gain.cancelScheduledValues(now);
+      masterGain.gain.setValueAtTime(0, now);
+      for (const osc of oscillators) {
+        try { osc.stop(now); } catch (_) {}
+      }
+    }
+    this.activeMidiNodes = [];
   }
 }
 
