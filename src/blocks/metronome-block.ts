@@ -52,6 +52,7 @@ export default class MetronomeBlock extends Block {
       const initialTempo = state.bpm / 60 / 1000;  // beats per ms
       const totalBeats = state.accel.clicks.reduce((sum, click) => sum + click.delay, 0) * initialTempo;
 
+      // Pass 1: compute adjusted delays for all accel clicks
       let prevTime = 0;
       let accumulatedBeats = 0;
       for (const click of state.accel.clicks) {
@@ -61,9 +62,19 @@ export default class MetronomeBlock extends Block {
           click.delay = thisTime - prevTime;
           prevTime = thisTime;
         }
+      }
+
+      // Pass 2: attach MIDI notes and yield — true beat duration is the sum of
+      // this click's delay plus the delays of its (subdivisions-1) sub-clicks
+      for (let i = 0; i < state.accel.clicks.length; i++) {
+        const click = state.accel.clicks[i];
         if (click.isBeat && state.midiSequencers.length > 0) {
-          // Approximate full beat duration from subdivision delay × subdivision count
-          const beatMs = click.delay * state.subdivisions;
+          let beatMs = click.delay;
+          for (let j = 1; j < state.subdivisions; j++) {
+            if (i + j < state.accel.clicks.length) {
+              beatMs += state.accel.clicks[i + j].delay;
+            }
+          }
           click.midiNotes = state.getMidiNotesForBeat(beatMs);
         }
         yield click;
