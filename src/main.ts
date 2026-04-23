@@ -106,9 +106,7 @@ class WebAudioRecorderController {
 
     this.clipSettings = this.getClipSettings();
 
-    if (this.recordingMetronome.enabled()) {
-      this.recordingMetronome.start(this.audioContext.currentTime, this.clipSettings);
-    }
+    this.recordingMetronome.start(this.audioContext.currentTime, this.clipSettings);
 
     this.startRecordingTimeout = setTimeout(() => this.recorder.start(), this.clipSettings.startRecordingDelay);
     this.stopRecordingTimeout = setTimeout(() => this.recorder.stop(), this.clipSettings.stopRecordingDelay);
@@ -152,9 +150,7 @@ class WebAudioRecorderController {
       this.stopPlaying();
     });
 
-    if (this.playbackMetronome.enabled()) {
-      this.playbackMetronome.start(startTime, this.clip, playbackSpeed);
-    }
+    this.playbackMetronome.start(startTime, this.clip, playbackSpeed);
 
     this.visualizer.startPlayback(playbackSpeed);
     sendPlaybackEvent({ duration: this.clip.audioBuffer.duration, playbackSpeed });

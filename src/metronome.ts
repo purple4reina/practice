@@ -46,42 +46,42 @@ abstract class Metronome {
     this.enabled = boolSwitchControls(`${prefix}-metronome-enabled`, { initial: true });
   }
 
-  private createClickSound(when: number, click: Click) { //clickHz: number, gain: number): void {
-    // show flash even if volume all the way down or click is silenced
-    if (this.flash()) {
-      const delay = when - this.audioContext.currentTime;
-      setTimeout(() => this.flashBox.hidden = false, delay);
-      setTimeout(() => this.flashBox.hidden = true, delay + 50);
+  private createClickSound(when: number, click: Click) {
+    if (this.enabled()) {
+      // Show flash even if volume all the way down or click is silenced
+      if (this.flash()) {
+        const delay = when - this.audioContext.currentTime;
+        setTimeout(() => this.flashBox.hidden = false, delay);
+        setTimeout(() => this.flashBox.hidden = true, delay + 50);
+      }
+
+      // Random click silencing — skips both the click sound and MIDI for this beat
+      if (click.recording && Math.random() * 100 < this.clickSilencing()) {
+        return;
+      }
+
+      const clickSound = this.clickSounds[click.level];
+      if (clickSound.vol > 0) {
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.type = this.oscillatorType;
+        oscillator.frequency.setValueAtTime(clickSound.hz, when);
+
+        // Create a sharp click envelope
+        gainNode.gain.setValueAtTime(0, when);
+        gainNode.gain.linearRampToValueAtTime(clickSound.vol, when + 0.001);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, when + 0.05);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.start(when);
+        oscillator.stop(when + 0.05);
+      }
     }
 
-    // click silencing
-    if (click.recording && Math.random() * 100 < this.clickSilencing()) {
-      return;
-    }
-
-    const clickSound = this.clickSounds[click.level];
-    if (clickSound.vol === 0) {
-      return;
-    }
-
-    const oscillator = this.audioContext.createOscillator();
-    const gainNode = this.audioContext.createGain();
-
-    oscillator.type = this.oscillatorType;
-    oscillator.frequency.setValueAtTime(clickSound.hz, when);
-
-    // Create a sharp click envelope
-    gainNode.gain.setValueAtTime(0, when);
-    gainNode.gain.linearRampToValueAtTime(clickSound.vol, when + 0.001);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, when + 0.05);
-
-    oscillator.connect(gainNode);
-    gainNode.connect(this.audioContext.destination);
-
-    oscillator.start(when);
-    oscillator.stop(when + 0.05);
-
-    // Schedule any MIDI notes attached to this click
+    // Schedule any MIDI notes attached to this click — independent of metronome enabled
     if (click.midiNotes) {
       for (const note of click.midiNotes) {
         const noteWhen = when + note.offsetMs / this.playbackRate / 1000;
@@ -163,10 +163,6 @@ abstract class Metronome {
   };
 
   _start(startTime: number, clicks: Click[], playbackRate: number, pitchMultiplier: number = 1) {
-    if (!this.enabled()) {
-      return;
-    }
-
     if (this.isPlaying) {
       this.stop();
     }
