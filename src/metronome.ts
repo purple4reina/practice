@@ -31,6 +31,7 @@ abstract class Metronome {
   private nextClickTime: number = 0;
   private clickIter: Iterator<Click> | null = null;
   private playbackRate: number = 1;
+  private pitchMultiplier: number = 1;
   private activeMidiNodes: { masterGain: GainNode, oscillators: OscillatorNode[] }[] = [];
 
   private scheduleLookahead: number = 25.0; // Look ahead 25ms
@@ -85,7 +86,7 @@ abstract class Metronome {
       for (const note of click.midiNotes) {
         const noteWhen = when + note.offsetMs / this.playbackRate / 1000;
         const noteDuration = note.durationMs / this.playbackRate / 1000;
-        this.createMidiNoteSound(noteWhen, note.frequency, noteDuration);
+        this.createMidiNoteSound(noteWhen, note.frequency * this.pitchMultiplier, noteDuration);
       }
     }
   }
@@ -161,7 +162,7 @@ abstract class Metronome {
     }
   };
 
-  _start(startTime: number, clicks: Click[], playbackRate: number) {
+  _start(startTime: number, clicks: Click[], playbackRate: number, pitchMultiplier: number = 1) {
     if (!this.enabled()) {
       return;
     }
@@ -173,6 +174,7 @@ abstract class Metronome {
     this.nextClickTime = startTime;
     this.clickIter = clicks[Symbol.iterator]();
     this.playbackRate = playbackRate;
+    this.pitchMultiplier = pitchMultiplier;
     this.isPlaying = true;
     this.scheduler();
   }
@@ -222,6 +224,6 @@ export class PlaybackMetronome extends Metronome {
 
   start(audioStartTime: number, clip: Clip, playbackRate: number) {
     const startTime = audioStartTime + clip.latency / playbackRate / 1000;
-    super._start(startTime, clip.playClicks.filter(c => c.recording), playbackRate * clip.recordSpeed);
+    super._start(startTime, clip.playClicks.filter(c => c.recording), playbackRate * clip.recordSpeed, playbackRate);
   }
 }
