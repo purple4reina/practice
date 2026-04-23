@@ -107,7 +107,7 @@ abstract class Metronome {
     const minDuration = 0.02;
     const duration = Math.max(durationSec, minDuration);
 
-    const attackTime = Math.min(0.005, duration * 0.1);
+    const attackTime = Math.min(0.001, duration * 0.1);
     const releaseTime = Math.min(0.08, duration * 0.25);
 
     // Master gain carries the amplitude envelope; individual oscillator gains
