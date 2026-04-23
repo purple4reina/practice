@@ -108,30 +108,39 @@ export class MidiSequencer {
   // beatDurationMs is the actual wall-clock duration of this beat (ms).
   // Advances internal position by exactly one beat-unit.
   getNotesForBeat(beatDurationMs: number): MidiNote[] {
-    const result: MidiNote[] = [];
-    let beatPos = 0;  // position within this beat, in beat-units [0, 1)
+    return this.getNotesForPortion(1.0, beatDurationMs);
+  }
 
-    while (beatPos < 1 && this.noteIndex < this.notes.length) {
+  // Returns MidiNote events that start during the next `beatsToAdvance` beat-units.
+  // durationMs is the actual wall-clock duration of that portion (ms).
+  // Advances internal position by exactly beatsToAdvance beat-units.
+  // durationMs for a note spanning beyond this portion is approximated as
+  // (note.durationBeats / beatsToAdvance) * durationMs.
+  getNotesForPortion(beatsToAdvance: number, durationMs: number): MidiNote[] {
+    const result: MidiNote[] = [];
+    let pos = 0;  // position within this portion, in beat-units [0, beatsToAdvance)
+
+    while (pos < beatsToAdvance && this.noteIndex < this.notes.length) {
       const currentNote = this.notes[this.noteIndex];
       const beatsRemainingInNote = currentNote.durationBeats - this.beatsIntoCurrentNote;
-      const beatsRemainingInBeat = 1 - beatPos;
+      const beatsRemainingInPortion = beatsToAdvance - pos;
 
       // Emit the note only when it starts (beatsIntoCurrentNote === 0)
       if (this.beatsIntoCurrentNote === 0 && currentNote.frequency !== null) {
         result.push({
           frequency: currentNote.frequency,
-          offsetMs: beatPos * beatDurationMs,
-          durationMs: currentNote.durationBeats * beatDurationMs,
+          offsetMs: (pos / beatsToAdvance) * durationMs,
+          durationMs: (currentNote.durationBeats / beatsToAdvance) * durationMs,
         });
       }
 
-      if (beatsRemainingInNote <= beatsRemainingInBeat) {
-        beatPos += beatsRemainingInNote;
+      if (beatsRemainingInNote <= beatsRemainingInPortion) {
+        pos += beatsRemainingInNote;
         this.beatsIntoCurrentNote = 0;
         this.noteIndex++;
       } else {
-        this.beatsIntoCurrentNote += beatsRemainingInBeat;
-        beatPos = 1;
+        this.beatsIntoCurrentNote += beatsRemainingInPortion;
+        pos = beatsToAdvance;
       }
     }
 

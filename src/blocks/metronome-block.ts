@@ -64,18 +64,14 @@ export default class MetronomeBlock extends Block {
         }
       }
 
-      // Pass 2: attach MIDI notes and yield — true beat duration is the sum of
-      // this click's delay plus the delays of its (subdivisions-1) sub-clicks
+      // Pass 2: attach MIDI notes and yield — each sub-beat click gets its own
+      // portion of the sequencer (1/subdivisions beat-units), so MIDI note timing
+      // follows the accelerando curve through the subdivision, not equal spacing.
+      const subBeatFraction = 1 / state.subdivisions;
       for (let i = 0; i < state.accel.clicks.length; i++) {
         const click = state.accel.clicks[i];
-        if (click.isBeat && state.midiSequencers.length > 0) {
-          let beatMs = click.delay;
-          for (let j = 1; j < state.subdivisions; j++) {
-            if (i + j < state.accel.clicks.length) {
-              beatMs += state.accel.clicks[i + j].delay;
-            }
-          }
-          click.midiNotes = state.getMidiNotesForBeat(beatMs);
+        if (state.midiSequencers.length > 0) {
+          click.midiNotes = state.getMidiNotesForPortion(subBeatFraction, click.delay);
         }
         yield click;
       }
