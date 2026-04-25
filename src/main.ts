@@ -5,6 +5,8 @@ import PlayerDevice from "./player";
 import RecorderDevice from "./recorder";
 import Saves from "./saves";
 import Tapper from "./tapper";
+import VideoPlayerDevice from "./video-player";
+import VideoRecorderDevice from "./video-recorder";
 import Visualizer from "./visualizer";
 import googleLogin from "./login";
 import {
@@ -43,7 +45,10 @@ class WebAudioRecorderController {
   private recordingMetronome = new RecordingMetronome(this.audioContext);
   private playbackMetronome = new PlaybackMetronome(this.audioContext);
   private visualizer = new Visualizer(this.audioContext);
-  private latencyCompensator = new LatencyCompensator();
+  private audioLatencyCompensator = new LatencyCompensator("audio-latency-compensator", "latency-compensation", 145);
+  private videoLatencyCompensator = new LatencyCompensator("video-latency-compensator", "video-latency-compensation", 0);
+  private videoRecorder = new VideoRecorderDevice();
+  private videoPlayer = new VideoPlayerDevice();
 
   // tools
   private tapper = new Tapper();
@@ -52,6 +57,7 @@ class WebAudioRecorderController {
   private startRecordingTimeout: number = 0;
   private stopRecordingTimeout: number = 0;
   private stopTimeout: number = 0;
+  private videoStopPromise: Promise<Blob | null> | null = null;
 
   private clipSettings: ClipSettings;
   private clip: Clip | null = null;
@@ -67,6 +73,7 @@ class WebAudioRecorderController {
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
   private autoPlay = boolSwitchControls("auto-play", { initial: true });
+  private videoEnabled = boolSwitchControls("video-enabled", { initial: false });
 
   constructor() {
     this.playRecordControls.initializeEventListeners({
@@ -83,6 +90,38 @@ class WebAudioRecorderController {
     document.getElementById("download")?.addEventListener("click", () => {
       this.clip ? this.clip.download() : console.error("No clip available for download");
     });
+
+    this.setupVideoToggle();
+  }
+
+  private setupVideoToggle(): void {
+    const videoToggle = document.getElementById("video-enabled") as HTMLInputElement | null;
+    if (!videoToggle) return;
+    videoToggle.addEventListener("click", () => this.handleVideoToggle());
+    if (this.videoEnabled()) {
+      this.handleVideoToggle();
+    }
+  }
+
+  private async handleVideoToggle(): Promise<void> {
+    const videoCol = document.getElementById("video-col");
+    if (this.videoEnabled()) {
+      if (!this.videoRecorder.isInitialized()) {
+        try {
+          await this.videoRecorder.initialize();
+          this.videoPlayer.setLiveStream(this.videoRecorder.getMediaStream());
+        } catch (err) {
+          console.error("Failed to initialize video recorder:", err);
+          const toggle = document.getElementById("video-enabled") as HTMLInputElement;
+          toggle.checked = false;
+          toggle.dispatchEvent(new Event("click"));
+          return;
+        }
+      }
+      if (videoCol) videoCol.hidden = false;
+    } else {
+      if (videoCol) videoCol.hidden = true;
+    }
   }
 
   private getClipSettings(): ClipSettings {
@@ -90,7 +129,9 @@ class WebAudioRecorderController {
       this.blockManager.recordClicks(),
       this.blockManager.playClicks(),
       this.recordSpeed() / 100,
-      this.latencyCompensator.getLatency(),
+      this.audioLatencyCompensator.getLatency(),
+      this.videoEnabled() && this.videoRecorder.isInitialized(),
+      this.videoLatencyCompensator.getLatency(),
     );
   }
 
@@ -99,7 +140,10 @@ class WebAudioRecorderController {
       await this.audioContext.resume();
     }
 
+    this.videoPlayer.stop();
     await this.recorder.reset();
+    this.videoRecorder.reset();
+    this.videoStopPromise = null;
     this.stopMetronomes();
     this.visualizer.clear();
     await sleep(100);
@@ -108,13 +152,24 @@ class WebAudioRecorderController {
 
     this.recordingMetronome.start(this.audioContext.currentTime, this.clipSettings);
 
-    this.startRecordingTimeout = setTimeout(() => this.recorder.start(), this.clipSettings.startRecordingDelay);
-    this.stopRecordingTimeout = setTimeout(() => this.recorder.stop(), this.clipSettings.stopRecordingDelay);
+    this.startRecordingTimeout = setTimeout(() => {
+      const audioStartPerfTime = performance.now();
+      this.recorder.start();
+      if (this.clipSettings.videoEnabled) {
+        this.videoRecorder.start(audioStartPerfTime);
+      }
+    }, this.clipSettings.startRecordingDelay);
+    this.stopRecordingTimeout = setTimeout(() => {
+      this.recorder.stop();
+      if (this.clipSettings.videoEnabled && !this.videoStopPromise) {
+        this.videoStopPromise = this.videoRecorder.stop();
+      }
+    }, this.clipSettings.stopRecordingDelay);
     this.stopTimeout = setTimeout(() => this.stopRecording(), this.clipSettings.stopDelay);
     this.playRecordControls.markRecording();
   }
 
-  stopRecording() {
+  async stopRecording() {
     clearTimeout(this.startRecordingTimeout);
     clearTimeout(this.stopRecordingTimeout);
     clearTimeout(this.stopTimeout);
@@ -123,9 +178,20 @@ class WebAudioRecorderController {
     this.stopMetronomes();
     this.playRecordControls.markStopped();
 
+    if (this.clipSettings.videoEnabled && !this.videoStopPromise) {
+      this.videoStopPromise = this.videoRecorder.stop();
+    }
+    const videoBlob = this.videoStopPromise ? await this.videoStopPromise : null;
+    this.videoStopPromise = null;
+
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
       this.clip = new Clip(this.clipSettings, audioBuffer);
+      if (videoBlob) {
+        this.clip.videoBlob = videoBlob;
+        this.clip.videoOffsetMs = this.videoRecorder.getVideoOffsetMs();
+        this.clip.videoFileExtension = this.videoRecorder.getFileExtension();
+      }
       sendRecordingEvent({ duration: this.clip.audioBuffer.duration });
     }
     if (this.clip) {
@@ -152,6 +218,17 @@ class WebAudioRecorderController {
 
     this.playbackMetronome.start(startTime, this.clip, playbackSpeed);
 
+    if (this.clip.videoBlob) {
+      this.videoPlayer.play(
+        this.clip.videoBlob,
+        playbackSpeed,
+        this.audioContext,
+        startTime,
+        this.clip.videoOffsetMs,
+        this.clip.videoLatencyMs,
+      ).catch(err => console.error("Video playback error:", err));
+    }
+
     this.visualizer.startPlayback(playbackSpeed);
     sendPlaybackEvent({ duration: this.clip.audioBuffer.duration, playbackSpeed });
     this.playRecordControls.markPlaying();
@@ -159,6 +236,7 @@ class WebAudioRecorderController {
 
   stopPlaying(): void {
     this.player.stop();
+    this.videoPlayer.stop();
     this.stopMetronomes();
     this.visualizer.stopPlayback();
     this.playRecordControls.markStopped();

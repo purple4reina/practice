@@ -11,12 +11,16 @@ export class ClipSettings {
   public stopRecordingDelay: number;
   public stopDelay: number;
   public latency: number;
+  public videoEnabled: boolean;
+  public videoLatencyMs: number;
 
   constructor(
     recordClicks: Click[],
     playClicks: Click[],
     recordSpeed: number,
     latency: number,
+    videoEnabled: boolean = false,
+    videoLatencyMs: number = 0,
   ) {
     this.recordClicks = recordClicks;
     this.playClicks = playClicks;
@@ -28,6 +32,8 @@ export class ClipSettings {
     this.stopDelay = (stopDelay / this.recordSpeed) + (this.recordingPrelay * 2);
 
     this.latency = latency;
+    this.videoEnabled = videoEnabled;
+    this.videoLatencyMs = videoLatencyMs;
   }
 
   private getRecordDelays() {
@@ -56,24 +62,37 @@ export class Clip {
   public playClicks: Click[];
   public recordSpeed: number;
   public latency: number = 0;
+  public videoBlob: Blob | null = null;
+  public videoOffsetMs: number = 0;
+  public videoLatencyMs: number = 0;
+  public videoFileExtension: string = "webm";
 
   constructor(settings: ClipSettings, audioBuffer: AudioBuffer) {
     this.audioBuffer = audioBuffer;
     this.playClicks = settings.playClicks;
     this.recordSpeed = settings.recordSpeed;
     this.latency = settings.latency;
+    this.videoLatencyMs = settings.videoLatencyMs;
   }
 
   public download() {
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+
     const wavArray = audioBufferToWav(this.audioBuffer);
     const wavBlob = new Blob([wavArray], { type: 'audio/wav' });
-    const url = URL.createObjectURL(wavBlob);
+    this.triggerDownload(wavBlob, `recording-${timestamp}.wav`);
+
+    if (this.videoBlob) {
+      this.triggerDownload(this.videoBlob, `recording-${timestamp}.${this.videoFileExtension}`);
+    }
+  }
+
+  private triggerDownload(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.wav`;
+    a.download = filename;
     a.click();
-
-    // Clean up
     setTimeout(() => { URL.revokeObjectURL(url) }, 1000);
   }
 }
