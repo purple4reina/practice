@@ -91,6 +91,7 @@ input[type=range] {
   aspect-ratio: 9 / 16;
   height: 300px;
   margin: 0 auto;
+  margin-right: 15px;
   background: #000;
   border-radius: 8px;
   overflow: hidden;
