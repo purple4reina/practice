@@ -48,16 +48,23 @@ export default class VideoRecorderDevice {
   /**
    * Start MediaRecorder. `audioStartPerfTime` is performance.now() at the moment
    * the audio recorder began capturing — used to compute the offset between the
-   * captured audio start and the first captured video frame.
+   * captured audio start and the first captured video frame. If `audioStream` is
+   * provided, its audio tracks are muxed into the recorded webm alongside video.
    */
-  start(audioStartPerfTime: number): void {
+  start(audioStartPerfTime: number, audioStream: MediaStream | null = null): void {
     if (!this.stream || this.state === State.RECORDING) return;
 
     this.chunks = [];
     this.audioStartPerfTime = audioStartPerfTime;
     this.videoFirstFramePerfTime = 0;
 
-    this.mediaRecorder = new MediaRecorder(this.stream, { mimeType: MIME_TYPE });
+    const recordStream = new MediaStream();
+    this.stream.getVideoTracks().forEach(t => recordStream.addTrack(t));
+    if (audioStream) {
+      audioStream.getAudioTracks().forEach(t => recordStream.addTrack(t));
+    }
+
+    this.mediaRecorder = new MediaRecorder(recordStream, { mimeType: MIME_TYPE });
     this.mediaRecorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) {
         this.chunks.push(e.data);

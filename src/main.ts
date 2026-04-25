@@ -187,7 +187,7 @@ class WebAudioRecorderController {
       const audioStartPerfTime = performance.now();
       this.recorder.start();
       if (this.clipSettings.videoEnabled) {
-        this.videoRecorder.start(audioStartPerfTime);
+        this.videoRecorder.start(audioStartPerfTime, this.recorder.getMediaStream());
       }
     }, this.clipSettings.startRecordingDelay);
     this.stopRecordingTimeout = setTimeout(() => {

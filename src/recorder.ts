@@ -206,6 +206,10 @@ export default class RecorderDevice {
     }
   }
 
+  getMediaStream(): MediaStream | null {
+    return this.stream;
+  }
+
   reset() {
     if (this.state === State.RECORDING) {
       this.stop();
