@@ -9,6 +9,7 @@ import VideoPlayerDevice from "./video-player";
 import VideoRecorderDevice from "./video-recorder";
 import Visualizer from "./visualizer";
 import googleLogin from "./login";
+import QueryParams from "./query-params";
 import {
   ClipSettings,
   Clip,
@@ -120,9 +121,12 @@ class WebAudioRecorderController {
         }
       }
       if (videoCol) videoCol.hidden = false;
+      const saved = QueryParams.get("video-expanded");
+      const expanded = saved === null ? true : saved === "true";
+      this.setVideoExpanded(expanded, false);
     } else {
       if (videoCol) videoCol.hidden = true;
-      this.setVideoExpanded(false);
+      this.setVideoExpanded(false, false);
     }
   }
 
@@ -136,7 +140,7 @@ class WebAudioRecorderController {
     });
   }
 
-  private setVideoExpanded(expanded: boolean): void {
+  private setVideoExpanded(expanded: boolean, persist: boolean = true): void {
     const videoCol = document.getElementById("video-col");
     const btnIcon = document.querySelector("#video-expand-toggle i");
     if (!videoCol) return;
@@ -145,6 +149,9 @@ class WebAudioRecorderController {
     if (btnIcon) {
       btnIcon.classList.toggle("bi-fullscreen", !expanded);
       btnIcon.classList.toggle("bi-fullscreen-exit", expanded);
+    }
+    if (persist) {
+      QueryParams.set("video-expanded", expanded.toString());
     }
   }
 
@@ -249,7 +256,7 @@ class WebAudioRecorderController {
         this.audioContext,
         startTime,
         this.clip.videoOffsetMs,
-        this.clip.videoLatencyMs,
+        this.videoLatencyCompensator.getLatency(),
       ).catch(err => console.error("Video playback error:", err));
     }
 

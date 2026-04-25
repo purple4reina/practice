@@ -10,6 +10,7 @@ export default class VideoPlayerDevice {
   private audioContext: AudioContext | null = null;
   private audioStartCtxTime: number = 0;
   private playbackRate: number = 1;
+  private mediaTimeOffsetSec: number = 0;
 
   constructor() {
     this.videoElement = document.getElementById("video-element") as HTMLVideoElement;
@@ -41,10 +42,8 @@ export default class VideoPlayerDevice {
     this.videoElement.playbackRate = playbackRate;
     this.videoElement.classList.remove("mirrored");
 
-    const initialOffsetSec = (videoOffsetMs + videoLatencyMs) / 1000;
-    if (initialOffsetSec > 0) {
-      this.videoElement.currentTime = initialOffsetSec;
-    }
+    this.mediaTimeOffsetSec = (videoOffsetMs + videoLatencyMs) / 1000;
+    this.videoElement.currentTime = Math.max(0, this.mediaTimeOffsetSec);
 
     try {
       await this.videoElement.play();
@@ -64,11 +63,11 @@ export default class VideoPlayerDevice {
     const callback = (_now: number, metadata: { mediaTime: number }) => {
       if (!this.isPlaying || !this.audioContext) return;
 
-      const expectedMediaTime = (this.audioContext.currentTime - this.audioStartCtxTime) * this.playbackRate;
+      const expectedMediaTime = this.mediaTimeOffsetSec + (this.audioContext.currentTime - this.audioStartCtxTime) * this.playbackRate;
       const drift = metadata.mediaTime - expectedMediaTime;
 
       if (Math.abs(drift) > DRIFT_THRESHOLD_SEC) {
-        this.videoElement.currentTime = expectedMediaTime;
+        this.videoElement.currentTime = Math.max(0, expectedMediaTime);
       }
 
       if (this.isPlaying) {
