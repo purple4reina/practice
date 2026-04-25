@@ -92,6 +92,7 @@ class WebAudioRecorderController {
     });
 
     this.setupVideoToggle();
+    this.setupVideoExpandButton();
   }
 
   private setupVideoToggle(): void {
@@ -121,6 +122,29 @@ class WebAudioRecorderController {
       if (videoCol) videoCol.hidden = false;
     } else {
       if (videoCol) videoCol.hidden = true;
+      this.setVideoExpanded(false);
+    }
+  }
+
+  private setupVideoExpandButton(): void {
+    const btn = document.getElementById("video-expand-toggle");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      const videoCol = document.getElementById("video-col");
+      const isExpanded = videoCol?.classList.contains("expanded") ?? false;
+      this.setVideoExpanded(!isExpanded);
+    });
+  }
+
+  private setVideoExpanded(expanded: boolean): void {
+    const videoCol = document.getElementById("video-col");
+    const btnIcon = document.querySelector("#video-expand-toggle i");
+    if (!videoCol) return;
+    videoCol.classList.toggle("expanded", expanded);
+    document.body.classList.toggle("video-expanded", expanded);
+    if (btnIcon) {
+      btnIcon.classList.toggle("bi-fullscreen", !expanded);
+      btnIcon.classList.toggle("bi-fullscreen-exit", expanded);
     }
   }
 

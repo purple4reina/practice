@@ -6,8 +6,8 @@
     <title>Practice Recorder</title>
 
     <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
-    <script type="module" crossorigin src="/practice/assets/index-DVhrTN_x.js"></script>
-    <link rel="stylesheet" crossorigin href="/practice/assets/index-BhHpzOxD.css">
+    <script type="module" crossorigin src="/practice/assets/index-yW8xe6Nv.js"></script>
+    <link rel="stylesheet" crossorigin href="/practice/assets/index-BxsPACan.css">
   </head>
   <body>
     <div class="container">
@@ -37,8 +37,14 @@
         </div>
         <div class="card card-body visualization-body">
           <div class="row">
-            <div class="col">
+            <div class="col" id="waveform-col">
               <canvas id="waveform-canvas" width="800" style="height:300px"></canvas>
+            </div>
+            <div class="col-auto video-container" id="video-col" hidden>
+              <video id="video-element" class="mirrored" playsinline muted autoplay></video>
+              <button id="video-expand-toggle" class="video-expand-btn" type="button" aria-label="Toggle full-height video">
+                <i class="bi bi-fullscreen"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -155,6 +161,18 @@
           </div>
         </div>
         <hr></hr>
+        <h6>Video</h6>
+        <div class="offcanvas-section">
+          <div class="row">
+            <div class="col-8">
+              Video:
+            </div>
+            <div class="col input-group form-check form-switch">
+              <input class="form-check-input" id="video-enabled" type="checkbox" role="switch">
+            </div>
+          </div>
+        </div>
+        <hr></hr>
         <h6>Visualization</h6>
         <div class="offcanvas-section">
           <!-- waveform -->
@@ -243,15 +261,26 @@
         <hr></hr>
         <h6>Advanced</h6>
         <div class="offcanvas-section">
-          <!-- latency -->
+          <!-- audio latency -->
           <div class="row">
             <div class="col-5">
-              Latency Compensation:
+              Audio Latency Compensation:
             </div>
             <div class="col input-group">
-              <button class="btn" id="latency-compensator-minus" type="button" tabindex="-1">-</button>
-              <input type="text" class="form-control" id="latency-compensator-val" value="145" pattern="[0-9]*" tabindex="9">
-              <button class="btn" id="latency-compensator-plus" type="button" tabindex="-1">+</button>
+              <button class="btn" id="audio-latency-compensator-minus" type="button" tabindex="-1">-</button>
+              <input type="text" class="form-control" id="audio-latency-compensator-val" value="145" pattern="-?[0-9]*" tabindex="9">
+              <button class="btn" id="audio-latency-compensator-plus" type="button" tabindex="-1">+</button>
+            </div>
+          </div>
+          <!-- video latency -->
+          <div class="row">
+            <div class="col-5">
+              Video Latency Compensation:
+            </div>
+            <div class="col input-group">
+              <button class="btn" id="video-latency-compensator-minus" type="button" tabindex="-1">-</button>
+              <input type="text" class="form-control" id="video-latency-compensator-val" value="0" pattern="-?[0-9]*" tabindex="9">
+              <button class="btn" id="video-latency-compensator-plus" type="button" tabindex="-1">+</button>
             </div>
           </div>
         </div>
