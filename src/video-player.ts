@@ -39,6 +39,7 @@ export default class VideoPlayerDevice {
     this.videoElement.src = this.blobUrl;
     this.videoElement.muted = true;
     this.videoElement.playbackRate = playbackRate;
+    this.videoElement.classList.remove("mirrored");
 
     const initialOffsetSec = (videoOffsetMs + videoLatencyMs) / 1000;
     if (initialOffsetSec > 0) {
@@ -106,6 +107,7 @@ export default class VideoPlayerDevice {
       this.videoElement.srcObject = this.liveStream;
       this.videoElement.muted = true;
       this.videoElement.playbackRate = 1;
+      this.videoElement.classList.add("mirrored");
       this.videoElement.play().catch(() => {});
     }
   }

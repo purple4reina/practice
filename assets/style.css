@@ -103,6 +103,10 @@ input[type=range] {
   display: block;
 }
 
+.video-container video.mirrored {
+  transform: scaleX(-1);
+}
+
 #visualization {
   margin-bottom: 25px;
 
