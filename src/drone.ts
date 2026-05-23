@@ -1,7 +1,8 @@
+import { Synth } from "./synth";
+
 export default class Drone {
-  private audioContext: AudioContext;
+  private synth: Synth;
   private oscillators: OscillatorNode[] = [];
-  private gainNodes: GainNode[] = [];
   private masterGain: GainNode;
   private isPlaying: boolean = false;
 
@@ -12,20 +13,8 @@ export default class Drone {
   private pitch: string = this.pitchSelect.value;
   private octave: string = this.octaveSelect.value;
 
-  // Just intonation ratios for common harmonious intervals
-  private justIntonationRatios = [
-    { ratio: 1, volume: 0.45 },
-    { ratio: 2, volume: 0.25 },
-    { ratio: 3, volume: 0.05 },
-    { ratio: 4, volume: 0.10 },
-    { ratio: 5, volume: 0.04 },
-    { ratio: 6, volume: 0.03 },
-    { ratio: 8, volume: 0.02 },
-    { ratio: 16, volume: 0.005 },
-  ];
-
   constructor(audioContext: AudioContext, volume: number = 0.25) {
-    this.audioContext = audioContext;
+    this.synth = new Synth(audioContext);
 
     this.masterGain = audioContext.createGain();
     this.masterGain.gain.value = volume;
@@ -91,33 +80,7 @@ export default class Drone {
 
     const fundamentalFrequency = this.getNoteFrequency(`${this.pitch}${this.octave}`);
 
-    this.oscillators = [];
-    this.gainNodes = [];
-
-    // Create oscillators for each just intonation interval
-    this.justIntonationRatios.forEach(({ ratio, volume }) => {
-      const frequency = fundamentalFrequency * ratio;
-
-      // Create oscillator
-      const oscillator = this.audioContext.createOscillator();
-      oscillator.type = 'sine'; // Pure sine waves for clean harmonics
-      oscillator.frequency.value = frequency;
-
-      // Create gain node for this oscillator
-      const gainNode = this.audioContext.createGain();
-      gainNode.gain.value = volume;
-
-      // Connect: oscillator -> gain -> master gain -> destination
-      oscillator.connect(gainNode);
-      gainNode.connect(this.masterGain);
-
-      // Start the oscillator
-      oscillator.start();
-
-      // Store references
-      this.oscillators.push(oscillator);
-      this.gainNodes.push(gainNode);
-    });
+    this.oscillators = this.synth.startOvertones(fundamentalFrequency, this.masterGain);
 
     this.isPlaying = true;
   }
@@ -134,9 +97,7 @@ export default class Drone {
       }
     });
 
-    // Clear arrays
     this.oscillators = [];
-    this.gainNodes = [];
     this.isPlaying = false;
   }
 
