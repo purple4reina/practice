@@ -5,6 +5,7 @@ import {
   plusMinusControls,
   slideControls,
 } from "./controls";
+import { Synth } from "./synth";
 
 interface ClickSound {
   hz: number,
@@ -13,6 +14,7 @@ interface ClickSound {
 
 abstract class Metronome {
   private audioContext: AudioContext;
+  private synth: Synth;
 
   private clickHz: number = 1000;
   private offbeatHz: number = 750;
@@ -43,6 +45,7 @@ abstract class Metronome {
 
   constructor(prefix: string, audioContext: AudioContext) {
     this.audioContext = audioContext;
+    this.synth = new Synth(audioContext);
     this.enabled = boolSwitchControls(`${prefix}-metronome-enabled`, { initial: true });
   }
 
@@ -62,22 +65,7 @@ abstract class Metronome {
 
       const clickSound = this.clickSounds[click.level];
       if (clickSound.vol > 0) {
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-
-        oscillator.type = this.oscillatorType;
-        oscillator.frequency.setValueAtTime(clickSound.hz, when);
-
-        // Create a sharp click envelope
-        gainNode.gain.setValueAtTime(0, when);
-        gainNode.gain.linearRampToValueAtTime(clickSound.vol, when + 0.001);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, when + 0.05);
-
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-
-        oscillator.start(when);
-        oscillator.stop(when + 0.05);
+        this.synth.scheduleClick(when, clickSound.hz, clickSound.vol, this.oscillatorType);
       }
     }
 
@@ -86,61 +74,19 @@ abstract class Metronome {
       for (const note of click.midiNotes) {
         const noteWhen = when + note.offsetMs / this.playbackRate / 1000;
         const noteDuration = note.durationMs / this.playbackRate / 1000;
-        this.createMidiNoteSound(noteWhen, note.frequency * this.pitchMultiplier, noteDuration);
+        this.scheduleMidiNote(noteWhen, note.frequency * this.pitchMultiplier, noteDuration);
       }
     }
   }
 
-  // Same overtone series as the drone for a consistent timbre
-  private midiOvertones = [
-    { ratio: 1,  volume: 0.45  },
-    { ratio: 2,  volume: 0.25  },
-    { ratio: 3,  volume: 0.05  },
-    { ratio: 4,  volume: 0.10  },
-    { ratio: 5,  volume: 0.04  },
-    { ratio: 6,  volume: 0.03  },
-    { ratio: 8,  volume: 0.02  },
-    { ratio: 16, volume: 0.005 },
-  ];
-
-  private createMidiNoteSound(when: number, frequency: number, durationSec: number): void {
-    const minDuration = 0.02;
-    const duration = Math.max(durationSec, minDuration);
-
-    const attackTime = Math.min(0.001, duration * 0.1);
-    const releaseTime = Math.min(0.08, duration * 0.25);
-
-    // Master gain carries the amplitude envelope; individual oscillator gains
-    // set the overtone mix (matching the drone's volume of 0.25).
-    const masterGain = this.audioContext.createGain();
-    masterGain.gain.setValueAtTime(0, when);
-    masterGain.gain.linearRampToValueAtTime(0.25, when + attackTime);
-    masterGain.gain.setValueAtTime(0.25, when + duration - releaseTime);
-    masterGain.gain.linearRampToValueAtTime(0, when + duration);
-    masterGain.connect(this.audioContext.destination);
-
-    const oscillators: OscillatorNode[] = [];
-    for (const { ratio, volume } of this.midiOvertones) {
-      const oscillator = this.audioContext.createOscillator();
-      const gainNode = this.audioContext.createGain();
-
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(frequency * ratio, when);
-      gainNode.gain.value = volume;
-
-      oscillator.connect(gainNode);
-      gainNode.connect(masterGain);
-
-      oscillator.start(when);
-      oscillator.stop(when + duration + 0.01);
-      oscillators.push(oscillator);
-    }
+  private scheduleMidiNote(when: number, frequency: number, durationSec: number): void {
+    const nodeSet = this.synth.scheduleNote(when, frequency, durationSec);
 
     // Track this note so stop() can cancel it if needed
-    const nodeSet = { masterGain, oscillators };
     this.activeMidiNodes.push(nodeSet);
 
     // Auto-remove from tracking list once the note has naturally finished
+    const duration = Math.max(durationSec, 0.02);
     const cleanupDelay = Math.max((when - this.audioContext.currentTime + duration + 0.1) * 1000, 0);
     setTimeout(() => {
       const idx = this.activeMidiNodes.indexOf(nodeSet);
