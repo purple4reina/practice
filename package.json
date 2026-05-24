@@ -9,12 +9,16 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@types/audiobuffer-to-wav": "^1.0.4",
     "typescript": "~5.8.3",
     "vite": "^7.1.2",
     "vitest": "^4.0.16"
   },
   "dependencies": {
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
+    "@capacitor/ios": "^8.3.4",
     "@datadog/browser-rum": "^6.18.1",
     "audiobuffer-to-wav": "^1.0.0",
     "lz-string": "^1.5.0",

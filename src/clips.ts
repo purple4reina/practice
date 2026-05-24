@@ -87,7 +87,12 @@ export class Clip {
     }
   }
 
-  private triggerDownload(blob: Blob, filename: string) {
+  private async triggerDownload(blob: Blob, filename: string) {
+    const file = new File([blob], filename, { type: blob.type });
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: filename });
+      return;
+    }
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
