@@ -33,7 +33,7 @@ import {
   sleep,
 } from "./utils";
 
-if (window.location.hostname === "purple4reina.github.io") {
+if (window.location.hostname === "purple4reina.github.io" || import.meta.env.VITE_ENABLE_MONITORING === 'true') {
   initializeMonitoring();
   googleLogin();
 }
@@ -94,6 +94,14 @@ class WebAudioRecorderController {
 
     this.setupVideoToggle();
     this.setupVideoExpandButton();
+
+    const unlockAudio = () => {
+      this.audioContext.resume();
+      document.removeEventListener('touchstart', unlockAudio);
+      document.removeEventListener('click', unlockAudio);
+    };
+    document.addEventListener('touchstart', unlockAudio);
+    document.addEventListener('click', unlockAudio);
   }
 
   private setupVideoToggle(): void {

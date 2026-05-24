@@ -1,9 +1,17 @@
 import { State } from "./state";
 
-const MIME_TYPE = "video/webm;codecs=vp9";
-const FILE_EXTENSION = "webm";
+function getSupportedVideoFormat(): { mimeType: string; extension: string } {
+  const candidates = [
+    { mimeType: 'video/mp4', extension: 'mp4' },
+    { mimeType: 'video/webm;codecs=vp9', extension: 'webm' },
+    { mimeType: 'video/webm', extension: 'webm' },
+  ];
+  return candidates.find(c => MediaRecorder.isTypeSupported(c.mimeType))
+    ?? { mimeType: '', extension: 'webm' };
+}
 
 export default class VideoRecorderDevice {
+  private readonly format = getSupportedVideoFormat();
   private videoElement: HTMLVideoElement;
   private stream: MediaStream | null = null;
   private mediaRecorder: MediaRecorder | null = null;
@@ -38,11 +46,11 @@ export default class VideoRecorderDevice {
   }
 
   getMimeType(): string {
-    return MIME_TYPE;
+    return this.format.mimeType;
   }
 
   getFileExtension(): string {
-    return FILE_EXTENSION;
+    return this.format.extension;
   }
 
   /**
@@ -64,7 +72,7 @@ export default class VideoRecorderDevice {
       audioStream.getAudioTracks().forEach(t => recordStream.addTrack(t));
     }
 
-    this.mediaRecorder = new MediaRecorder(recordStream, { mimeType: MIME_TYPE });
+    this.mediaRecorder = new MediaRecorder(recordStream, { mimeType: this.format.mimeType });
     this.mediaRecorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) {
         this.chunks.push(e.data);
@@ -95,7 +103,7 @@ export default class VideoRecorderDevice {
         return;
       }
       this.mediaRecorder.onstop = () => {
-        const blob = this.chunks.length > 0 ? new Blob(this.chunks, { type: MIME_TYPE }) : null;
+        const blob = this.chunks.length > 0 ? new Blob(this.chunks, { type: this.format.mimeType }) : null;
         this.state = State.STOPPED;
         resolve(blob);
       };

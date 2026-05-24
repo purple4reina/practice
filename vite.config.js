@@ -1,3 +1,3 @@
-export default {
-  base: '/practice/',
-}
+export default ({ mode }) => ({
+  base: mode === 'ios' ? '/' : '/practice/',
+});

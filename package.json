@@ -5,6 +5,7 @@
     "dev": "vite",
     "test": "vitest",
     "build": "tsc && vite build --outDir docs",
+    "build:ios": "tsc && vite build --outDir docs --mode ios",
     "preview": "vite preview"
   },
   "devDependencies": {
