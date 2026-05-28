@@ -79,7 +79,7 @@ input[type=range] {
 #waveform-canvas {
   width: 100%;
   max-width: 100%;
-  height: 200px;
+  height: 300px;
   border: 1px solid #dee2e6;
   border-radius: 8px;
   background-color: #f8f9fa;
@@ -322,5 +322,81 @@ body.video-expanded {
   }
   hr {
     margin: 16px 0px 10px 0px;
+  }
+}
+
+@media (max-width: 767px) {
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  body {
+    padding: 5px 8px;
+  }
+
+  div#main {
+    padding: 2% 2% 3% 2%;
+    border-radius: 8px;
+  }
+
+  .bi {
+    font-size: 44px;
+    padding: 4px;
+  }
+
+  #waveform-canvas {
+    height: 140px !important;
+  }
+
+  .video-container {
+    height: 180px;
+  }
+
+  .left-controls,
+  .right-controls {
+    width: 36px;
+  }
+
+  .left-controls .bi-tiny,
+  .right-controls .bi-tiny {
+    padding: 14px 10px !important;
+  }
+
+  .pattern-div {
+    .pattern-level-1 { height: 48px; }
+    .pattern-level-2 { height: 40px; }
+    .pattern-level-3 { height: 32px; }
+    .pattern-level-0 { height: 24px; }
+  }
+
+  .hanging-left {
+    margin-left: 0;
+  }
+
+  .block-element .block-title {
+    flex: 0 0 100%;
+    max-width: 100%;
+    text-align: center;
+    margin-right: 0 !important;
+    padding-bottom: 2px;
+  }
+
+  .block-element > .col > .row > .col-2,
+  .block-element > .col > .row > .col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .block-element > .col > .row > .col-2:empty,
+  .block-element > .col > .row > .col:empty {
+    display: none;
+  }
+
+  .btn:not(.btn-close):not(.dropdown-item):not(.video-expand-btn) {
+    min-height: 44px;
+  }
+
+  .video-expand-btn {
+    display: none !important;
   }
 }

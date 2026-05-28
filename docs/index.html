@@ -2,21 +2,21 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Practice Recorder</title>
 
     <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
-    <script type="module" crossorigin src="/practice/assets/index-BEFBm5aL.js"></script>
-    <link rel="stylesheet" crossorigin href="/practice/assets/index-CztI1KHV.css">
+    <script type="module" crossorigin src="/practice/assets/index-FrAbl63d.js"></script>
+    <link rel="stylesheet" crossorigin href="/practice/assets/index-DWDjWlZi.css">
   </head>
   <body>
     <div class="container">
-      <div class="row align-items-end">
-        <div class="col-6">
+      <div class="row align-items-center">
+        <div class="col">
           <h1>Practice Recorder</h1>
         </div>
-        <div class="col text-right align-middle" id="user"></div>
-        <div class="col-1 text-right">
+        <div class="col-auto text-right" id="user"></div>
+        <div class="col-auto">
           <button class="btn" type="button" id="hamburger" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
             <i class="bi bi-list bi-small" style="display:inline-block"></i>
           </button>
@@ -38,7 +38,7 @@
         <div class="card card-body visualization-body">
           <div class="row">
             <div class="col" id="waveform-col">
-              <canvas id="waveform-canvas" width="800" style="height:300px"></canvas>
+              <canvas id="waveform-canvas" width="800"></canvas>
             </div>
             <div class="col-auto video-container" id="video-col" hidden>
               <video id="video-element" class="mirrored" playsinline muted autoplay></video>
@@ -49,19 +49,19 @@
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col-3" id="rec-speed-label">
+      <div class="row g-1 align-items-center">
+        <div class="col-12 col-md-auto" id="rec-speed-label">
           Recording Speed:
         </div>
-        <div class="col input-group">
+        <div class="col-12 col-md input-group">
           <button class="btn" id="rec-speed-minus" type="button" tabindex="-1">-</button>
           <input type="range" class="form-range form-control" id="rec-speed" min="0" max="100" value="100" step="1">
           <button class="btn" id="rec-speed-plus" type="button" tabindex="-1">+</button>
         </div>
-        <div class="col-3">
+        <div class="col-12 col-md-auto">
           Playback Speed:
         </div>
-        <div class="col input-group">
+        <div class="col-12 col-md input-group">
           <button class="btn" id="playback-minus" type="button" tabindex="-1">-</button>
           <input type="text" class="form-control" id="playback-numer" value="1" pattern="[0-9]*" tabindex="1">
           <span class="input-group-text">/</span>
