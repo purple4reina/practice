@@ -66,6 +66,7 @@ export class Clip {
   public videoOffsetMs: number = 0;
   public videoLatencyMs: number = 0;
   public videoFileExtension: string = "webm";
+  public silenceOffsetMs: number = 0;
 
   constructor(settings: ClipSettings, audioBuffer: AudioBuffer) {
     this.audioBuffer = audioBuffer;

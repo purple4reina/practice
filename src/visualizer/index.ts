@@ -355,14 +355,19 @@ export default class Visualizer {
     this.draw();
   }
 
-  drawVisualization(clip: Clip) {
-    this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(clip.audioBuffer);
-    this.intonationData = this.tuner.analyze(clip.audioBuffer);
+  drawVisualization(clip: Clip, offsetMs: number = 0) {
+    const offsetSamples = Math.floor((offsetMs / 1000) * clip.audioBuffer.sampleRate);
+    this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(clip.audioBuffer, undefined, offsetSamples);
+    this.intonationData = this.tuner.analyze(clip.audioBuffer, offsetSamples);
     this.clicks = clip.playClicks;
     this.recordSpeed = clip.recordSpeed;
-    this.latency = clip.latency;
+    this.latency = clip.latency - offsetMs;
     this.updateScrollingState();
     this.draw();
+  }
+
+  isPlaying(): boolean {
+    return this.isPlaybackActive;
   }
 
   private updateScrollingState(): void {

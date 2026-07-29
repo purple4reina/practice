@@ -55,6 +55,27 @@ div {
   color: white;
 }
 
+.info-icon {
+  color: #6c757d;
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .info-icon {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .info-row:hover .info-icon {
+    opacity: 1;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .info-icon {
+    opacity: 0.6;
+  }
+}
+
 .center {
   text-align: center;
 }

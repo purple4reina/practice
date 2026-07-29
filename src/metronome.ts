@@ -164,8 +164,8 @@ export class PlaybackMetronome extends Metronome {
     super("play", audioContext);
   }
 
-  start(audioStartTime: number, clip: Clip, playbackRate: number) {
-    const startTime = audioStartTime + clip.latency / playbackRate / 1000;
+  start(audioStartTime: number, clip: Clip, playbackRate: number, offsetMs: number = 0) {
+    const startTime = audioStartTime + (clip.latency - offsetMs) / playbackRate / 1000;
     super._start(startTime, clip.playClicks.filter(c => c.recording), playbackRate * clip.recordSpeed, playbackRate);
   }
 }

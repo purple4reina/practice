@@ -13,7 +13,7 @@ export default class PlayerDevice {
     this.gainNode.connect(audioContext.destination);
   }
 
-  play(buffer: AudioBuffer, playbackRate: number = 1.0, onEnded?: () => void): number {
+  play(buffer: AudioBuffer, playbackRate: number = 1.0, onEnded?: () => void, offsetSec: number = 0): number {
     this.stop(); // Stop any current playback
 
     this.sourceNode = this.audioContext.createBufferSource();
@@ -32,7 +32,7 @@ export default class PlayerDevice {
 
     const startTime = this.audioContext.currentTime;
     this.startTime = startTime;
-    this.sourceNode.start(startTime);
+    this.sourceNode.start(startTime, Math.max(0, offsetSec));
 
     return startTime;
   }

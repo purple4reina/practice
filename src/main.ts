@@ -32,6 +32,9 @@ import {
 import {
   sleep,
 } from "./utils";
+import { LoudnessAnalyzer } from "./visualizer/loudness-analyzer";
+
+declare const bootstrap: any;
 
 if (window.location.hostname === "purple4reina.github.io" || import.meta.env.VITE_ENABLE_MONITORING === 'true') {
   initializeMonitoring();
@@ -41,6 +44,14 @@ if (window.location.hostname === "purple4reina.github.io" || import.meta.env.VIT
 if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
   document.body.classList.add('touch-mode');
 }
+
+document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+  new bootstrap.Tooltip(el, {
+    trigger: document.body.classList.contains('touch-mode') ? 'click' : 'hover focus',
+    placement: 'right',
+    container: 'body', // avoid clipping inside the offcanvas
+  });
+});
 
 class WebAudioRecorderController {
   private audioContext = new AudioContext();
@@ -78,6 +89,7 @@ class WebAudioRecorderController {
   private playbackSpeed = fractionControls("playback", { initNum: 1, initDen: 4, arrowKeys: true });
   private playRecordControls = new PlayRecordControls();
   private autoPlay = boolSwitchControls("auto-play", { initial: true });
+  private skipSilence = boolSwitchControls("skip-silence", { initial: false });
   private videoEnabled = boolSwitchControls("video-enabled", { initial: false });
 
   constructor() {
@@ -98,6 +110,12 @@ class WebAudioRecorderController {
 
     this.setupVideoToggle();
     this.setupVideoExpandButton();
+
+    document.getElementById("skip-silence")?.addEventListener("click", () => {
+      if (this.clip && !this.visualizer.isPlaying()) {
+        this.visualizer.drawVisualization(this.clip, this.silenceOffsetMs());
+      }
+    });
 
     const unlockAudio = () => {
       this.audioContext.resume();
@@ -167,6 +185,10 @@ class WebAudioRecorderController {
     }
   }
 
+  private silenceOffsetMs(): number {
+    return (this.clip && this.skipSilence()) ? this.clip.silenceOffsetMs : 0;
+  }
+
   private getClipSettings(): ClipSettings {
     return new ClipSettings(
       this.blockManager.recordClicks(),
@@ -230,6 +252,7 @@ class WebAudioRecorderController {
     const audioBuffer = this.recorder.getAudioBuffer();
     if (audioBuffer) {
       this.clip = new Clip(this.clipSettings, audioBuffer);
+      this.clip.silenceOffsetMs = LoudnessAnalyzer.findFirstSoundMs(audioBuffer);
       if (videoBlob) {
         this.clip.videoBlob = videoBlob;
         this.clip.videoOffsetMs = this.videoRecorder.getVideoOffsetMs();
@@ -238,7 +261,7 @@ class WebAudioRecorderController {
       sendRecordingEvent({ duration: this.clip.audioBuffer.duration });
     }
     if (this.clip) {
-      this.visualizer.drawVisualization(this.clip);
+      this.visualizer.drawVisualization(this.clip, this.silenceOffsetMs());
     }
     if (audioBuffer && this.autoPlay()) {
       setTimeout(() => this.play(), 500);
@@ -255,11 +278,12 @@ class WebAudioRecorderController {
     this.stopMetronomes();
 
     const playbackSpeed = this.playbackSpeed();
+    const offsetMs = this.silenceOffsetMs();
     const startTime = this.player.play(this.clip.audioBuffer, playbackSpeed, () => {
       this.stopPlaying();
-    });
+    }, offsetMs / 1000);
 
-    this.playbackMetronome.start(startTime, this.clip, playbackSpeed);
+    this.playbackMetronome.start(startTime, this.clip, playbackSpeed, offsetMs);
 
     if (this.clip.videoBlob) {
       this.videoPlayer.play(
@@ -267,7 +291,7 @@ class WebAudioRecorderController {
         playbackSpeed,
         this.audioContext,
         startTime,
-        this.clip.videoOffsetMs,
+        this.clip.videoOffsetMs + offsetMs,
         this.videoLatencyCompensator.getLatency(),
       ).catch(err => console.error("Video playback error:", err));
     }

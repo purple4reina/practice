@@ -37,7 +37,7 @@ export class Tuner {
     this.setInstrument('clarinet');
   }
 
-  analyze(audioBuffer: AudioBuffer): IntonationData {
+  analyze(audioBuffer: AudioBuffer, startSample = 0): IntonationData {
     // Calculate the actual temporal sample rate in BPM based on hop size
     // Time between data points = hopSize / audioContextSampleRate (seconds)
     // BPM = 60 / (time between data points) = 60 * audioContextSampleRate / hopSize
@@ -49,7 +49,7 @@ export class Tuner {
     }
 
     if (this.tunerEnabled() || this.detectionEnabled()) {
-      const float32Array = audioBuffer.getChannelData(0);
+      const float32Array = audioBuffer.getChannelData(0).subarray(startSample);
       const pitches = this.slidingWindowAnalysis(float32Array);
       data.points = pitches.map(f => this.frequencyToIntonationPoint(f));
     }
