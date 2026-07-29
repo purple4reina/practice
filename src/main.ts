@@ -38,6 +38,10 @@ if (window.location.hostname === "purple4reina.github.io" || import.meta.env.VIT
   googleLogin();
 }
 
+if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  document.body.classList.add('touch-mode');
+}
+
 class WebAudioRecorderController {
   private audioContext = new AudioContext();
   private recorder = new RecorderDevice(this.audioContext);

@@ -146,16 +146,18 @@ export abstract class Block implements IBlock {
       });
     }
 
-    // hovers
+    // hovers — skipped in touch mode (icons stay at dimmed CSS color)
     const overables = envelope.getElementsByClassName("block-control");
-    envelope.addEventListener("mouseenter", () => {
-      [...overables].forEach(e => {
-        (e as HTMLElement).style.color = (e as HTMLElement).getAttribute("hover-color") || "";
+    if (!document.body.classList.contains('touch-mode')) {
+      envelope.addEventListener("mouseenter", () => {
+        [...overables].forEach(e => {
+          (e as HTMLElement).style.color = (e as HTMLElement).getAttribute("hover-color") || "";
+        });
       });
-    });
-    envelope.addEventListener("mouseleave", () => {
-      [...overables].forEach(e => (e as HTMLElement).style.color = "white");
-    });
+      envelope.addEventListener("mouseleave", () => {
+        [...overables].forEach(e => (e as HTMLElement).style.color = "white");
+      });
+    }
 
     return block;
   }
