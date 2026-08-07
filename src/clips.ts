@@ -79,7 +79,7 @@ export class Clip {
   public download() {
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
 
-    const wavArray = audioBufferToWav(this.audioBuffer);
+    const wavArray = audioBufferToWav(this.audioBuffer, { float32: true });
     const wavBlob = new Blob([wavArray], { type: 'audio/wav' });
     this.triggerDownload(wavBlob, `recording-${timestamp}.wav`);
 

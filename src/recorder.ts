@@ -7,7 +7,8 @@ export default class RecorderDevice {
   private recordingNode: AudioWorkletNode | null = null;
   private state: State = State.UNKNOWN;
   private recordedBuffer: AudioBuffer | null = null;
-  private recordingData: Float32Array[] = [];
+  private recordingDataL: Float32Array[] = [];
+  private recordingDataR: Float32Array[] = [];
   private sampleRate: number = 44100;
   private maxRecordingLength: number = 300; // 5 minutes max
 
@@ -24,7 +25,8 @@ export default class RecorderDevice {
           echoCancellation: false,
           noiseSuppression: false,
           autoGainControl: false,
-          sampleRate: this.sampleRate
+          sampleRate: this.sampleRate,
+          channelCount: { ideal: 2 }
         }
       });
 
@@ -66,10 +68,13 @@ export default class RecorderDevice {
 
         process(inputs, outputs) {
           if (this.isRecording && inputs[0] && inputs[0][0]) {
-            // Send audio data to main thread
+            const left = inputs[0][0];
+            const right = inputs[0][1] || inputs[0][0]; // duplicate mono sources to both channels
+            // Send both channels to the main thread
             this.port.postMessage({
               type: "audiodata",
-              audioData: inputs[0][0].slice() // Copy the audio data
+              audioDataL: left.slice(),
+              audioDataR: right.slice()
             });
           }
           return true;
@@ -87,10 +92,11 @@ export default class RecorderDevice {
 
     this.recordingNode.port.onmessage = (event) => {
       if (event.data.type === "audiodata") {
-        this.recordingData.push(new Float32Array(event.data.audioData));
+        this.recordingDataL.push(new Float32Array(event.data.audioDataL));
+        this.recordingDataR.push(new Float32Array(event.data.audioDataR));
 
         // Prevent memory overflow
-        if (this.recordingData.length > this.maxRecordingLength * this.sampleRate / 128) {
+        if (this.recordingDataL.length > this.maxRecordingLength * this.sampleRate / 128) {
           console.warn("Maximum recording length reached");
           this.stop();
         }
@@ -101,15 +107,19 @@ export default class RecorderDevice {
   private setupScriptProcessorRecording(): void {
     // Fallback to ScriptProcessorNode (deprecated but widely supported)
     const bufferSize = 4096;
-    const scriptNode = this.audioContext.createScriptProcessor(bufferSize, 1, 1);
+    const scriptNode = this.audioContext.createScriptProcessor(bufferSize, 2, 2);
 
     scriptNode.onaudioprocess = (event) => {
       if (this.state === State.RECORDING) {
-        const inputData = event.inputBuffer.getChannelData(0);
-        this.recordingData.push(new Float32Array(inputData));
+        const left = event.inputBuffer.getChannelData(0);
+        const right = event.inputBuffer.numberOfChannels > 1
+          ? event.inputBuffer.getChannelData(1)
+          : left; // duplicate mono sources to both channels
+        this.recordingDataL.push(new Float32Array(left));
+        this.recordingDataR.push(new Float32Array(right));
 
         // Prevent memory overflow
-        if (this.recordingData.length > this.maxRecordingLength * this.sampleRate / bufferSize) {
+        if (this.recordingDataL.length > this.maxRecordingLength * this.sampleRate / bufferSize) {
           console.warn("Maximum recording length reached");
           this.stop();
         }
@@ -127,7 +137,8 @@ export default class RecorderDevice {
 
     try {
       // Clear previous recording
-      this.recordingData = [];
+      this.recordingDataL = [];
+      this.recordingDataR = [];
 
       // Connect the audio graph
       if (this.sourceNode && this.recordingNode) {
@@ -178,23 +189,26 @@ export default class RecorderDevice {
   }
 
   private processRecordedData(): void {
-    if (this.recordingData.length === 0) {
+    if (this.recordingDataL.length === 0) {
       console.warn("No audio data recorded");
       return;
     }
 
     // Calculate total length
-    const totalLength = this.recordingData.reduce((sum, chunk) => sum + chunk.length, 0);
+    const totalLength = this.recordingDataL.reduce((sum, chunk) => sum + chunk.length, 0);
 
-    // Create AudioBuffer
-    this.recordedBuffer = this.audioContext.createBuffer(1, totalLength, this.sampleRate);
-    const channelData = this.recordedBuffer.getChannelData(0);
+    // Create a stereo AudioBuffer (mono sources were already duplicated to
+    // both channels upstream, so this is always safe)
+    this.recordedBuffer = this.audioContext.createBuffer(2, totalLength, this.sampleRate);
+    const left = this.recordedBuffer.getChannelData(0);
+    const right = this.recordedBuffer.getChannelData(1);
 
     // Copy data into buffer
     let offset = 0;
-    for (const chunk of this.recordingData) {
-      channelData.set(chunk, offset);
-      offset += chunk.length;
+    for (let i = 0; i < this.recordingDataL.length; i++) {
+      left.set(this.recordingDataL[i], offset);
+      right.set(this.recordingDataR[i], offset);
+      offset += this.recordingDataL[i].length;
     }
   }
 
