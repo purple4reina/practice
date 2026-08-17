@@ -27,6 +27,73 @@ export interface VisualizerOptions {
   maxZoomDuration?: number; // Maximum zoom duration in ms
 }
 
+const CHROMATIC_NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const hPrime = (h % 360) / 60;
+  const x = c * (1 - Math.abs((hPrime % 2) - 1));
+  const m = l - c / 2;
+
+  let r = 0, g = 0, b = 0;
+  if (hPrime < 1) [r, g, b] = [c, x, 0];
+  else if (hPrime < 2) [r, g, b] = [x, c, 0];
+  else if (hPrime < 3) [r, g, b] = [0, c, x];
+  else if (hPrime < 4) [r, g, b] = [0, x, c];
+  else if (hPrime < 5) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+
+  return [r + m, g + m, b + m];
+}
+
+// WCAG relative luminance - weights green far higher than red or blue, which is exactly
+// why pure yellow-green hues (around E/F/F#/G) look far brighter than red or blue hues
+// at the same HSL lightness.
+function relativeLuminance(r: number, g: number, b: number): number {
+  const linearize = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
+}
+
+// Binary search the HSL lightness that makes a given hue hit a target relative luminance.
+// Luminance increases monotonically with lightness for a fixed hue/saturation (l=0 is
+// always black, l=1 is always white), so bisection is safe.
+function lightnessForLuminance(hue: number, saturation: number, targetLuminance: number): number {
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    const [r, g, b] = hslToRgb(hue, saturation, mid);
+    if (relativeLuminance(r, g, b) < targetLuminance) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  const toByte = (c: number) => {
+    const hex = Math.round(Math.min(1, Math.max(0, c)) * 255).toString(16);
+    return hex.length === 1 ? `0${hex}` : hex;
+  };
+  return `#${toByte(r)}${toByte(g)}${toByte(b)}`;
+}
+
+const CHROMA_SATURATION = 0.75;
+const CHROMA_TARGET_LUMINANCE = 0.3;
+
+// Equal-luminance chromatic palette: every note gets the same saturation and the same
+// WCAG relative luminance, varying only hue (evenly spaced around the wheel in note order).
+// This replaces a hand-picked ROYGBIV hex palette where yellow-green notes (E/F/F#/G) were
+// several times brighter than red/blue notes at the same opacity, making them wash out
+// against the light canvas background.
+function buildChromaticColors(): { [key: string]: string } {
+  const colors: { [key: string]: string } = {};
+  CHROMATIC_NOTE_NAMES.forEach((name, i) => {
+    const hue = i * 30;
+    const l = lightnessForLuminance(hue, CHROMA_SATURATION, CHROMA_TARGET_LUMINANCE);
+    const [r, g, b] = hslToRgb(hue, CHROMA_SATURATION, l);
+    colors[name] = rgbToHex(r, g, b);
+  });
+  return colors;
+}
+
 export default class Visualizer {
   private canvas = document.getElementById('waveform-canvas') as HTMLCanvasElement;
   private ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -571,21 +638,7 @@ export default class Visualizer {
     return ((timestamp - this.viewStartTime) / this.viewDuration) * this.options.width;
   }
 
-  // Chromatic scale colors: C=red → B=purple in ROYGBIV order
-  private static readonly CHROMATIC_COLORS: { [key: string]: string } = {
-    'C': '#FF0000',   // Red
-    'C#': '#FF4500',  // Red-Orange
-    'D': '#FF8C00',   // Orange
-    'D#': '#FFD700',  // Yellow-Orange
-    'E': '#FFFF00',   // Yellow
-    'F': '#7FFF00',   // Yellow-Green
-    'F#': '#00FF00',  // Green
-    'G': '#00FFFF',   // Cyan (Blue-Green)
-    'G#': '#0080FF',  // Light Blue
-    'A': '#0000FF',   // Blue
-    'A#': '#8000FF',  // Indigo
-    'B': '#FF00FF',   // Purple/Violet
-  };
+  private static readonly CHROMATIC_COLORS: { [key: string]: string } = buildChromaticColors();
   private static readonly PITCH_BG_LOUDNESS_THRESHOLD = 0.015; // RMS below this = no background color
 
   private getWaveformColors(visibleData: LoudnessData[]): (string | null)[] {
