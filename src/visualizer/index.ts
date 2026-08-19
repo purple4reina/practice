@@ -640,6 +640,23 @@ export default class Visualizer {
 
   private static readonly CHROMATIC_COLORS: { [key: string]: string } = buildChromaticColors();
   private static readonly PITCH_BG_LOUDNESS_THRESHOLD = 0.015; // RMS below this = no background color
+  private static readonly PITCH_ONSET_MARKER_WIDTH = 1; // px, darker sliver marking where each new pitch color begins
+  // Scaling rgb channels down (shading toward black) muddies saturated hues like pink toward grey/maroon
+  // rather than reading as a darker version of the same color, so keep this mild.
+  private static readonly PITCH_ONSET_DARKEN_FACTOR = 0.9;
+
+  // Segment alpha can be as low as ~0.1, and at that opacity any color gets diluted almost entirely
+  // by the near-white canvas background and reads as grey rather than its hue - so the marker is
+  // always drawn fully opaque, reading as the note's own vivid hue instead of a tint of it.
+  private darkenColor(rgbaColor: string, factor: number): string {
+    const match = rgbaColor.match(/rgba\((\d+), (\d+), (\d+)/);
+    if (!match) return rgbaColor;
+    const [, r, g, b] = match;
+    const dr = Math.round(parseInt(r) * factor);
+    const dg = Math.round(parseInt(g) * factor);
+    const db = Math.round(parseInt(b) * factor);
+    return `rgb(${dr}, ${dg}, ${db})`;
+  }
 
   private getWaveformColors(visibleData: LoudnessData[]): (string | null)[] {
     if (!this.intonationData || this.intonationData.points.length === 0) {
@@ -717,9 +734,15 @@ export default class Visualizer {
           ? this.timeToX(visibleData[segEnd].timestamp)
           : this.timeToX(visibleData[segEnd - 1].timestamp) + 1;
 
+        // Darker onset marker at the start of the segment, so the moment a new pitch
+        // begins is visible even though the pitch wash itself is pastel/translucent.
+        const markerEnd = Math.min(x2, x1 + Visualizer.PITCH_ONSET_MARKER_WIDTH);
+        this.ctx.fillStyle = this.darkenColor(color, Visualizer.PITCH_ONSET_DARKEN_FACTOR);
+        this.ctx.fillRect(x1, 0, markerEnd - x1, height);
+
         // Color already includes opacity from getWaveformColors
         this.ctx.fillStyle = color;
-        this.ctx.fillRect(x1, 0, x2 - x1, height);
+        this.ctx.fillRect(markerEnd, 0, x2 - markerEnd, height);
       }
 
       segStart = segEnd;
