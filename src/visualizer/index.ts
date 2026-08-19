@@ -640,14 +640,17 @@ export default class Visualizer {
 
   private static readonly CHROMATIC_COLORS: { [key: string]: string } = buildChromaticColors();
   private static readonly PITCH_BG_LOUDNESS_THRESHOLD = 0.015; // RMS below this = no background color
-  private static readonly PITCH_ONSET_MARKER_WIDTH = 1; // px, darker sliver marking where each new pitch color begins
+  private static readonly PITCH_ONSET_STEP_WIDTH = 1; // px per onset gradient step
+  // Onset fade: pixel 1 is the fully vivid "100" color, fading step by step back down to
+  // the segment's own pastel "0" wash color, instead of a hard 1px cutoff between the two.
+  private static readonly PITCH_ONSET_GRADIENT = [1, 0.3, 0.2, 0.1];
   // Scaling rgb channels down (shading toward black) muddies saturated hues like pink toward grey/maroon
   // rather than reading as a darker version of the same color, so keep this mild.
   private static readonly PITCH_ONSET_DARKEN_FACTOR = 0.9;
 
   // Segment alpha can be as low as ~0.1, and at that opacity any color gets diluted almost entirely
-  // by the near-white canvas background and reads as grey rather than its hue - so the marker is
-  // always drawn fully opaque, reading as the note's own vivid hue instead of a tint of it.
+  // by the near-white canvas background and reads as grey rather than its hue - so the "100" color is
+  // always fully opaque, reading as the note's own vivid hue instead of a tint of it.
   private darkenColor(rgbaColor: string, factor: number): string {
     const match = rgbaColor.match(/rgba\((\d+), (\d+), (\d+)/);
     if (!match) return rgbaColor;
@@ -656,6 +659,24 @@ export default class Visualizer {
     const dg = Math.round(parseInt(g) * factor);
     const db = Math.round(parseInt(b) * factor);
     return `rgb(${dr}, ${dg}, ${db})`;
+  }
+
+  // Linearly blends from the segment's "0" color toward its "100" color; t=0 returns
+  // baseColor, t=1 returns targetColor.
+  private interpolateColor(baseColor: string, targetColor: string, t: number): string {
+    const parse = (c: string): [number, number, number, number] => {
+      const match = c.match(/rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/);
+      if (!match) return [0, 0, 0, 1];
+      const [, r, g, b, a] = match;
+      return [parseInt(r), parseInt(g), parseInt(b), a === undefined ? 1 : parseFloat(a)];
+    };
+    const [r0, g0, b0, a0] = parse(baseColor);
+    const [r1, g1, b1, a1] = parse(targetColor);
+    const r = Math.round(r0 + (r1 - r0) * t);
+    const g = Math.round(g0 + (g1 - g0) * t);
+    const b = Math.round(b0 + (b1 - b0) * t);
+    const a = a0 + (a1 - a0) * t;
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
   }
 
   private getWaveformColors(visibleData: LoudnessData[]): (string | null)[] {
@@ -734,15 +755,21 @@ export default class Visualizer {
           ? this.timeToX(visibleData[segEnd].timestamp)
           : this.timeToX(visibleData[segEnd - 1].timestamp) + 1;
 
-        // Darker onset marker at the start of the segment, so the moment a new pitch
-        // begins is visible even though the pitch wash itself is pastel/translucent.
-        const markerEnd = Math.min(x2, x1 + Visualizer.PITCH_ONSET_MARKER_WIDTH);
-        this.ctx.fillStyle = this.darkenColor(color, Visualizer.PITCH_ONSET_DARKEN_FACTOR);
-        this.ctx.fillRect(x1, 0, markerEnd - x1, height);
+        // Onset fade at the start of the segment, so the moment a new pitch begins is
+        // visible even though the pitch wash itself is pastel/translucent.
+        const onsetColor = this.darkenColor(color, Visualizer.PITCH_ONSET_DARKEN_FACTOR);
+        let x = x1;
+        for (const intensity of Visualizer.PITCH_ONSET_GRADIENT) {
+          if (x >= x2) break;
+          const stepEnd = Math.min(x2, x + Visualizer.PITCH_ONSET_STEP_WIDTH);
+          this.ctx.fillStyle = this.interpolateColor(color, onsetColor, intensity);
+          this.ctx.fillRect(x, 0, stepEnd - x, height);
+          x = stepEnd;
+        }
 
         // Color already includes opacity from getWaveformColors
         this.ctx.fillStyle = color;
-        this.ctx.fillRect(markerEnd, 0, x2 - markerEnd, height);
+        this.ctx.fillRect(x, 0, x2 - x, height);
       }
 
       segStart = segEnd;
