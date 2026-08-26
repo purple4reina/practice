@@ -129,6 +129,59 @@ export abstract class Block implements IBlock {
     rightControls.classList.add("col-1");
     rightControls.classList.add("right-controls");
 
+    if (opts.gearMenu) {
+      const gear = document.createElement("i");
+      rightControls.appendChild(gear);
+      gear.classList.add("bi");
+      gear.classList.add("bi-gear");
+      gear.classList.add("bi-tiny");
+      gear.classList.add("block-control");
+      gear.style.display = "inline-block";
+      gear.setAttribute("hover-color", "cornflowerblue");
+
+      const modal = document.createElement("div");
+      rightControls.appendChild(modal);
+      modal.classList.add("block-element");
+      modal.classList.add("block-modal");
+      modal.hidden = true;
+
+      const title = document.createElement("div");
+      modal.appendChild(title);
+      title.classList.add("block-modal-title");
+      title.innerText = opts.gearMenu.title;
+
+      const body = document.createElement("div");
+      modal.appendChild(body);
+
+      const openMenu = () => {
+        opts.gearMenu.render(body);
+        modal.hidden = false;
+      };
+      const closeMenu = () => {
+        if (modal.hidden) return;
+        opts.gearMenu.onClose?.();
+        modal.hidden = true;
+      };
+
+      gear.addEventListener("click", () => {
+        if (modal.hidden) {
+          openMenu();
+        } else {
+          closeMenu();
+        }
+      });
+      document.addEventListener("click", (e) => {
+        if (!modal.hidden && e.target !== gear && !modal.contains(e.target as Node)) {
+          closeMenu();
+        }
+      });
+      document.addEventListener("keydown", (e) => {
+        if (!modal.hidden && e.key === "Escape") {
+          closeMenu();
+        }
+      });
+    }
+
     if (this.removable) {
       const trash = document.createElement("i");
       rightControls.appendChild(trash);

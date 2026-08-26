@@ -14,6 +14,23 @@ const BASE_NOTES: { [key: string]: number } = {
   c: 60, d: 62, e: 64, f: 65, g: 67, a: 69, b: 71,
 };
 
+// Semitone offset from written pitch to concert (sounding) pitch for common
+// transposing-instrument keys, e.g. a Bb clarinet sounds a major 2nd below
+// what's written, so Bb is -2.
+export const TRANSPOSE_KEYS: { value: string; label: string; semitones: number }[] = [
+  { value: "C", label: "C (Concert)", semitones: 0 },
+  { value: "D", label: "D", semitones: 2 },
+  { value: "Eb", label: "Eb", semitones: 3 },
+  { value: "F", label: "F", semitones: -7 },
+  { value: "G", label: "G", semitones: -5 },
+  { value: "A", label: "A", semitones: -3 },
+  { value: "Bb", label: "Bb", semitones: -2 },
+];
+
+export function transposeFrequency(frequency: number, semitones: number): number {
+  return frequency * Math.pow(2, semitones / 12);
+}
+
 // Regex: note-or-rest, octave modifiers, optional duration number, optional dots
 const NOTE_REGEX = /^(r|es|[a-g](?:es|is)?)([',]*)(\d+)?(\.*)$/;
 

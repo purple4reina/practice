@@ -1,6 +1,6 @@
 import { Block } from "./block";
 import { ClickState } from "./clicks";
-import { parseLilypond, MidiSequencer } from "../midi";
+import { parseLilypond, MidiSequencer, TRANSPOSE_KEYS, transposeFrequency } from "../midi";
 
 const TIME_SIGNATURES = [
   { label: "2/2", bottom: 2 },
@@ -15,6 +15,7 @@ export default class MidiBlock extends Block {
   private notation: () => string;
   private recEnable: () => boolean;
   private playEnable: () => boolean;
+  private transpose: () => string;
 
   constructor(parent: HTMLElement, opts: any) {
     super();
@@ -65,6 +66,10 @@ export default class MidiBlock extends Block {
               </div>
             </div>
           </div>`,
+      gearMenu: {
+        title: "Transpose",
+        render: this.renderTransposeMenu.bind(this),
+      },
     });
 
     const timeSigSelect = document.getElementById(`${this.id}-timesig`) as HTMLSelectElement;
@@ -76,6 +81,7 @@ export default class MidiBlock extends Block {
     this.notation = () => notationInput.value;
     this.recEnable = () => recEnableCheckbox.checked;
     this.playEnable = () => playEnableCheckbox.checked;
+    this.transpose = () => opts.transpose || "C";
 
     const validate = () => {
       const text = notationInput.value.trim();
@@ -103,6 +109,18 @@ export default class MidiBlock extends Block {
     });
   }
 
+  private renderTransposeMenu(body: HTMLElement) {
+    const current = this.transpose();
+    body.innerHTML = `
+      <select class="form-select" id="${this.id}-transpose">
+        ${TRANSPOSE_KEYS.map(k =>
+          `<option value="${k.value}"${k.value === current ? ' selected' : ''}>${k.label}</option>`
+        ).join('')}
+      </select>`;
+    const select = document.getElementById(`${this.id}-transpose`) as HTMLSelectElement;
+    this.transpose = () => select.value;
+  }
+
   *clickIntervalGen(phase: "record" | "play", state: ClickState) {
     const enabled = phase === 'record' ? this.recEnable() : this.playEnable();
     if (!enabled) return;
@@ -110,7 +128,13 @@ export default class MidiBlock extends Block {
     const notes = parseLilypond(this.notation(), this.timeSig());
     if (notes === null || notes.length === 0) return;
 
-    state.midiSequencers.push(new MidiSequencer(notes));
+    const semitones = TRANSPOSE_KEYS.find(k => k.value === this.transpose())?.semitones || 0;
+    const transposedNotes = semitones === 0 ? notes : notes.map(note => ({
+      ...note,
+      frequency: note.frequency === null ? null : transposeFrequency(note.frequency, semitones),
+    }));
+
+    state.midiSequencers.push(new MidiSequencer(transposedNotes));
   }
 
   getOpts(): any {
@@ -119,6 +143,7 @@ export default class MidiBlock extends Block {
       notation: this.notation(),
       recEnable: this.recEnable(),
       playEnable: this.playEnable(),
+      transpose: this.transpose(),
     };
   }
 
@@ -128,6 +153,7 @@ export default class MidiBlock extends Block {
       `notation:${this.notation().replace(/ /g, '+')}`,
       `recEnable:${this.recEnable()}`,
       `playEnable:${this.playEnable()}`,
+      `transpose:${this.transpose()}`,
     ].join(' ');
   }
 }
