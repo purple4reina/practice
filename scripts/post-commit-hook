@@ -6,6 +6,7 @@ CURRENT_BRANCH=$(git branch --show-current)
 MAIN_BRANCH=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
 if [[ "$CURRENT_BRANCH" == "$MAIN_BRANCH" ]]; then
     git tag "$VITE_PRACTICE_VERSION"
+    git push origin "$VITE_PRACTICE_VERSION"
 else
     echo "skipping git tag from branch $CURRENT_BRANCH"
 fi
