@@ -117,6 +117,9 @@ class WebAudioRecorderController {
       }
     });
 
+    this.setupTunerToggle("tuner-enabled");
+    this.setupTunerToggle("pitch-detection-enabled");
+
     const unlockAudio = () => {
       this.audioContext.resume();
       document.removeEventListener('touchstart', unlockAudio);
@@ -183,6 +186,25 @@ class WebAudioRecorderController {
     if (persist) {
       QueryParams.set("video-expanded", expanded.toString());
     }
+  }
+
+  private setupTunerToggle(toggleId: string): void {
+    const toggle = document.getElementById(toggleId) as HTMLInputElement | null;
+    if (!toggle) return;
+    toggle.addEventListener("click", () => {
+      // Defer so the checkbox's own toggle animation isn't blocked by pitch analysis,
+      // which can take noticeable time on an uncached clip/offset.
+      setTimeout(() => {
+        if (!this.clip) return;
+        try {
+          this.visualizer.refreshIntonation(this.clip, this.silenceOffsetMs());
+        } catch (err) {
+          console.error(`Failed to refresh tuner visualization for ${toggleId}:`, err);
+          toggle.checked = !toggle.checked;
+          toggle.dispatchEvent(new Event("click"));
+        }
+      }, 0);
+    });
   }
 
   private silenceOffsetMs(): number {

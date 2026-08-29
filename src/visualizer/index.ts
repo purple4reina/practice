@@ -105,6 +105,7 @@ export default class Visualizer {
   private options: Required<VisualizerOptions>;
   private loudnessData: LoudnessData[] = [];
   private intonationData: IntonationData | null = null;
+  private intonationCache: { clip: Clip; offsetSamples: number; data: IntonationData } | null = null;
   private clicks: Click[] = [];
   private recordSpeed: number = 1;
   private latency: number = 0;
@@ -425,12 +426,36 @@ export default class Visualizer {
   drawVisualization(clip: Clip, offsetMs: number = 0) {
     const offsetSamples = Math.floor((offsetMs / 1000) * clip.audioBuffer.sampleRate);
     this.loudnessData = this.loudnessAnalyzer.calculateLoudnessFromBuffer(clip.audioBuffer, undefined, offsetSamples);
-    this.intonationData = this.tuner.analyze(clip.audioBuffer, offsetSamples);
+    this.intonationData = this.computeIntonationData(clip, offsetSamples);
     this.clicks = clip.playClicks;
     this.recordSpeed = clip.recordSpeed;
     this.latency = clip.latency - offsetMs;
     this.updateScrollingState();
     this.draw();
+  }
+
+  // Re-runs pitch analysis (reusing a cached result when available) and repaints,
+  // without resetting loudness/scroll/viewport state, so it's safe to call from a
+  // toggle handler while playback is active.
+  refreshIntonation(clip: Clip, offsetMs: number = 0): void {
+    const offsetSamples = Math.floor((offsetMs / 1000) * clip.audioBuffer.sampleRate);
+    this.intonationData = this.computeIntonationData(clip, offsetSamples);
+    this.draw();
+  }
+
+  // The YIN sliding-window analysis is expensive, so once it's been run for a given
+  // clip/offset (with the tuner or pitch-detection toggle on), cache the result. This
+  // lets toggling the tuner off and back on reuse the data instead of re-deriving it.
+  private computeIntonationData(clip: Clip, offsetSamples: number): IntonationData {
+    if (this.intonationCache?.clip === clip && this.intonationCache.offsetSamples === offsetSamples) {
+      return this.intonationCache.data;
+    }
+
+    const data = this.tuner.analyze(clip.audioBuffer, offsetSamples);
+    if (this.tuner.tunerEnabled() || this.tuner.detectionEnabled()) {
+      this.intonationCache = { clip, offsetSamples, data };
+    }
+    return data;
   }
 
   isPlaying(): boolean {
@@ -495,6 +520,7 @@ export default class Visualizer {
   clear(): void {
     this.loudnessData = [];
     this.intonationData = null;
+    this.intonationCache = null;
     this.clicks = [];
     this.totalDuration = 0;
     this.isScrollingEnabled = false;
