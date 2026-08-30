@@ -26,7 +26,7 @@ export default class MidiBlock extends Block {
     const initPlayEnable = opts.playEnable === "true";
 
     this.newBlockDiv(parent, opts.index, {
-      title: "Midi",
+      title: "MIDI",
       col_1: `
         <div class="container">
           <div class="row-col input-group">
