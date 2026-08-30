@@ -83,6 +83,8 @@ export default class MidiBlock extends Block {
     this.playEnable = () => playEnableCheckbox.checked;
     this.transpose = () => opts.transpose || "C";
 
+    playEnableCheckbox.addEventListener("click", () => this.notifyPlaybackChanged());
+
     const validate = () => {
       const text = notationInput.value.trim();
       if (text === '') {

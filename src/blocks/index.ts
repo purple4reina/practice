@@ -20,6 +20,8 @@ export default class BlockManager {
   private blocks: IBlock[] = [];
   private initialized = false;
 
+  public onPlaybackChanged: (() => void) | null = null;
+
   private addButton = document.getElementById("add-block") as HTMLElement;
   private blockDiv = document.getElementById("blocks") as HTMLElement;
 
@@ -154,6 +156,7 @@ export default class BlockManager {
     block.remove = this.removeBlock.bind(this);
     block.moveUp = this.moveBlockUp.bind(this);
     block.moveDown = this.moveBlockDown.bind(this);
+    block.notifyPlaybackChanged = this.notifyPlaybackChanged.bind(this);
     this.blocks.push(block);
   }
 
@@ -206,6 +209,10 @@ export default class BlockManager {
 
   public playClicks(): Click[] {
     return this.clickIntervalGen("play");
+  }
+
+  private notifyPlaybackChanged(): void {
+    this.onPlaybackChanged?.();
   }
 
   private clickIntervalGen(phase: "record" | "play"): Click[] {

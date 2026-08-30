@@ -7,6 +7,7 @@ export interface IBlock {
   remove(block: IBlock): void;
   moveUp(block: IBlock): void;
   moveDown(block: IBlock): void;
+  notifyPlaybackChanged(): void;
   clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;
   highlight(): void;
   getOpts(): any;
@@ -21,6 +22,7 @@ export abstract class Block implements IBlock {
   public remove: (block: IBlock) => void;
   public moveUp: (block: IBlock) => void;
   public moveDown: (block: IBlock) => void;
+  public notifyPlaybackChanged = () => {};
   public highlight = () => {};
 
   abstract clickIntervalGen(phase: "record" | "play", state: ClickState): Generator<Click>;

@@ -120,6 +120,8 @@ class WebAudioRecorderController {
     this.setupTunerToggle("tuner-enabled");
     this.setupTunerToggle("pitch-detection-enabled");
 
+    this.blockManager.onPlaybackChanged = () => this.refreshPlayClicks();
+
     const unlockAudio = () => {
       this.audioContext.resume();
       document.removeEventListener('touchstart', unlockAudio);
@@ -209,6 +211,11 @@ class WebAudioRecorderController {
 
   private silenceOffsetMs(): number {
     return (this.clip && this.skipSilence()) ? this.clip.silenceOffsetMs : 0;
+  }
+
+  private refreshPlayClicks(): void {
+    if (!this.clip) return;
+    this.clip.playClicks = this.blockManager.playClicks();
   }
 
   private getClipSettings(): ClipSettings {
