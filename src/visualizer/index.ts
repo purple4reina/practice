@@ -78,6 +78,15 @@ function rgbToHex(r: number, g: number, b: number): string {
 const CHROMA_SATURATION = 0.75;
 const CHROMA_TARGET_LUMINANCE = 0.3;
 
+// Ctrl+wheel (trackpad pinch) zoom step, applied as WHEEL_ZOOM_SENSITIVITY ** deltaY per
+// event. deltaY is clamped to WHEEL_ZOOM_MAX_DELTA first so no single anomalous/large event
+// can jump the zoom to an extreme in one step.
+const WHEEL_ZOOM_SENSITIVITY = 1.01;
+const WHEEL_ZOOM_MAX_DELTA = 60;
+// Largest single-event zoom step allowed, shared with touch-pinch so a distance-tracking
+// glitch (currentDistance briefly reading near zero) can't jump the zoom to an extreme either.
+const MAX_SINGLE_STEP_ZOOM_FACTOR = Math.pow(WHEEL_ZOOM_SENSITIVITY, WHEEL_ZOOM_MAX_DELTA);
+
 // Equal-luminance chromatic palette: every note gets the same saturation and the same
 // WCAG relative luminance, varying only hue (evenly spaced around the wheel in note order).
 // This replaces a hand-picked ROYGBIV hex palette where yellow-green notes (E/F/F#/G) were
@@ -206,7 +215,8 @@ export default class Visualizer {
     this.canvas.addEventListener('wheel', (e) => {
       if (e.ctrlKey && !this.isPlaybackActive && this.totalDuration > 0) {
         e.preventDefault();
-        const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
+        const clampedDeltaY = Math.max(-WHEEL_ZOOM_MAX_DELTA, Math.min(WHEEL_ZOOM_MAX_DELTA, e.deltaY));
+        const zoomFactor = Math.pow(WHEEL_ZOOM_SENSITIVITY, clampedDeltaY);
         this.zoom(zoomFactor, e.offsetX);
       }
     }, { passive: false });
@@ -330,7 +340,8 @@ export default class Visualizer {
       );
 
       if (this.lastPinchDistance > 0) {
-        const zoomFactor = this.lastPinchDistance / currentDistance;
+        const rawFactor = this.lastPinchDistance / currentDistance;
+        const zoomFactor = Math.max(1 / MAX_SINGLE_STEP_ZOOM_FACTOR, Math.min(MAX_SINGLE_STEP_ZOOM_FACTOR, rawFactor));
         this.zoom(zoomFactor, this.pinchCenterX);
       }
 
@@ -380,7 +391,7 @@ export default class Visualizer {
     newViewDuration = Math.min(this.options.maxZoomDuration, newViewDuration);
     newViewDuration = Math.min(newViewDuration, this.totalDuration);
 
-    if (Math.abs(newViewDuration - this.viewDuration) < 10) return; // Prevent tiny changes
+    if (Math.abs(newViewDuration - this.viewDuration) < this.viewDuration * 0.001) return; // Prevent tiny changes
 
     // Calculate new view start time to keep the center point stable
     const centerRatio = centerX / this.options.width;
