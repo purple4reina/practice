@@ -67,6 +67,7 @@ export class Clip {
   public videoLatencyMs: number = 0;
   public videoFileExtension: string = "webm";
   public silenceOffsetMs: number = 0;
+  public scheduledDurationMs: number;
 
   constructor(settings: ClipSettings, audioBuffer: AudioBuffer) {
     this.audioBuffer = audioBuffer;
@@ -74,6 +75,7 @@ export class Clip {
     this.recordSpeed = settings.recordSpeed;
     this.latency = settings.latency;
     this.videoLatencyMs = settings.videoLatencyMs;
+    this.scheduledDurationMs = settings.stopRecordingDelay - settings.startRecordingDelay;
   }
 
   public download() {

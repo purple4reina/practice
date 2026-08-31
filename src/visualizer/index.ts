@@ -137,7 +137,8 @@ export default class Visualizer {
   private isZooming: boolean = false;
   private lastPinchDistance: number = 0;
   private pinchCenterX: number = 0;
-  private savedZoomPercent: number = 100; // 100% = default zoom level
+  private scheduledDurationMs: number = 0; // "total time" denominator for the current clip
+  private savedZoomFraction: number | null = null; // fraction of scheduledDurationMs visible; null = never manually zoomed
 
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
@@ -393,7 +394,10 @@ export default class Visualizer {
     if (newViewStartTime >= 0 && newViewStartTime + newViewDuration <= this.totalDuration + 1) {
       this.viewDuration = newViewDuration;
       this.viewStartTime = newViewStartTime;
-      this.savedZoomPercent = (this.options.viewportDuration / this.viewDuration) * 100;
+      const denominator = this.scheduledDurationMs > 0 ? this.scheduledDurationMs : this.totalDuration;
+      if (denominator > 0) {
+        this.savedZoomFraction = this.viewDuration / denominator;
+      }
 
       // Update scrolling state
       this.isScrollingEnabled = this.viewDuration < this.totalDuration;
@@ -419,7 +423,7 @@ export default class Visualizer {
       : this.totalDuration;
 
     this.updateScrollingState();
-    this.savedZoomPercent = 100;
+    this.savedZoomFraction = null;
     this.draw();
   }
 
@@ -430,6 +434,7 @@ export default class Visualizer {
     this.clicks = clip.playClicks;
     this.recordSpeed = clip.recordSpeed;
     this.latency = clip.latency - offsetMs;
+    this.scheduledDurationMs = clip.scheduledDurationMs;
     this.updateScrollingState();
     this.draw();
   }
@@ -471,15 +476,19 @@ export default class Visualizer {
     }
 
     this.totalDuration = this.loudnessData[this.loudnessData.length - 1].timestamp;
-    this.isScrollingEnabled = this.totalDuration > this.options.scrollThreshold;
 
     // Always reset to beginning
     this.viewStartTime = 0;
 
-    if (!this.isScrollingEnabled) {
-      this.viewDuration = this.totalDuration;
+    if (this.savedZoomFraction === null) {
+      // Never manually zoomed: fall back to the fixed default viewport for long
+      // recordings, or show the whole clip for short ones.
+      this.isScrollingEnabled = this.totalDuration > this.options.scrollThreshold;
+      this.viewDuration = this.isScrollingEnabled ? this.options.viewportDuration : this.totalDuration;
     } else {
-      const desiredViewDuration = this.options.viewportDuration * (100 / this.savedZoomPercent);
+      // A saved zoom fraction applies regardless of clip length, so it sticks
+      // across recordings even when a take is shorter than scrollThreshold.
+      const desiredViewDuration = this.savedZoomFraction * this.scheduledDurationMs;
       const clampedDuration = Math.max(
         this.options.minZoomDuration,
         Math.min(this.options.maxZoomDuration, desiredViewDuration)
