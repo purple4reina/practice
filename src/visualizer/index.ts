@@ -537,7 +537,37 @@ export default class Visualizer {
     this.draw(); // Redraw without playback line
   }
 
+  // Replicates drawMetronomeBeats()'s accumulation to get each recording click's absolute
+  // timestamp, in the same coordinate space as viewStartTime/viewDuration.
+  private recordingClickTimestamps(): number[] {
+    const timestamps: number[] = [];
+    let currentTime = this.latency;
+    for (const click of this.clicks) {
+      if (!click.recording) continue;
+      timestamps.push(currentTime);
+      currentTime += click.delay / this.recordSpeed;
+    }
+    return timestamps;
+  }
+
+  // If the previous clip's first and last recording clicks are both already visible in the
+  // current viewport, the saved zoom isn't a meaningful "zoom" worth protecting, so drop it.
+  private clearZoomIfFullyVisible(): void {
+    if (this.savedZoomFraction === null || this.clicks.length === 0) return;
+    const timestamps = this.recordingClickTimestamps();
+    if (timestamps.length === 0) return;
+    const firstClick = timestamps[0];
+    const lastClick = timestamps[timestamps.length - 1];
+    const viewEnd = this.viewStartTime + this.viewDuration;
+    const bothVisible = firstClick >= this.viewStartTime && firstClick <= viewEnd
+      && lastClick >= this.viewStartTime && lastClick <= viewEnd;
+    if (bothVisible) {
+      this.savedZoomFraction = null;
+    }
+  }
+
   clear(): void {
+    this.clearZoomIfFullyVisible();
     this.loudnessData = [];
     this.intonationData = null;
     this.intonationCache = null;
