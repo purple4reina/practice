@@ -210,6 +210,9 @@ body.video-expanded {
 
 .right-controls {
   position: relative;
+  width: 37.5px;
+  text-align: right;
+  padding-right: 7.5px;
 }
 
 .block-modal {
