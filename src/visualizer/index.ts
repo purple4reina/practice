@@ -29,6 +29,13 @@ export interface VisualizerOptions {
 
 const CHROMATIC_NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
+// A visible loudness point's pitch wash: the rgba fill plus the note name (with
+// octave, e.g. "C4") it came from, so repeated-note onsets can be detected.
+interface WaveformPitch {
+  color: string;
+  note: string;
+}
+
 function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   const c = (1 - Math.abs(2 * l - 1)) * s;
   const hPrime = (h % 360) / 60;
@@ -734,7 +741,7 @@ export default class Visualizer {
     return `rgb(${dr}, ${dg}, ${db})`;
   }
 
-  private getWaveformColors(visibleData: LoudnessData[]): (string | null)[] {
+  private getWaveformColors(visibleData: LoudnessData[]): (WaveformPitch | null)[] {
     if (!this.intonationData || this.intonationData.points.length === 0) {
       return visibleData.map(() => null);
     }
@@ -778,7 +785,7 @@ export default class Visualizer {
         const g = parseInt(baseColor.slice(3, 5), 16);
         const b = parseInt(baseColor.slice(5, 7), 16);
 
-        return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        return { color: `rgba(${r}, ${g}, ${b}, ${opacity})`, note: intonationPoint.name };
       }
       return null;
     });
@@ -796,15 +803,17 @@ export default class Visualizer {
 
     // Build segments of consecutive same-colored points
     let segStart = 0;
+    let prevNote: string | null = null;
     while (segStart < visibleData.length) {
-      const color = colors[segStart];
+      const seg = colors[segStart];
+      const color = seg?.color ?? null;
       let segEnd = segStart;
-      while (segEnd < visibleData.length && colors[segEnd] === color) {
+      while (segEnd < visibleData.length && (colors[segEnd]?.color ?? null) === color) {
         segEnd++;
       }
 
       // Skip segments where no pitch was detected
-      if (color !== null) {
+      if (seg !== null && color !== null) {
         const x1 = Math.max(0, this.timeToX(visibleData[segStart].timestamp));
         const x2 = segEnd < visibleData.length
           ? this.timeToX(visibleData[segEnd].timestamp)
@@ -812,13 +821,23 @@ export default class Visualizer {
 
         // Darker onset marker at the start of the segment, so the moment a new pitch
         // begins is visible even though the pitch wash itself is pastel/translucent.
-        const markerEnd = Math.min(x2, x1 + Visualizer.PITCH_ONSET_MARKER_WIDTH);
-        this.ctx.fillStyle = this.darkenColor(color, Visualizer.PITCH_ONSET_DARKEN_FACTOR);
-        this.ctx.fillRect(x1, 0, markerEnd - x1, height);
+        // Skip it when this segment is the same pitch (note + octave) as the previous
+        // detected one - a repeated note shouldn't get a divider that reads like a
+        // note change, and it's easy to confuse with the metronome beat lines.
+        if (seg.note !== prevNote) {
+          const markerEnd = Math.min(x2, x1 + Visualizer.PITCH_ONSET_MARKER_WIDTH);
+          this.ctx.fillStyle = this.darkenColor(color, Visualizer.PITCH_ONSET_DARKEN_FACTOR);
+          this.ctx.fillRect(x1, 0, markerEnd - x1, height);
 
-        // Color already includes opacity from getWaveformColors
-        this.ctx.fillStyle = color;
-        this.ctx.fillRect(markerEnd, 0, x2 - markerEnd, height);
+          // Color already includes opacity from getWaveformColors
+          this.ctx.fillStyle = color;
+          this.ctx.fillRect(markerEnd, 0, x2 - markerEnd, height);
+        } else {
+          this.ctx.fillStyle = color;
+          this.ctx.fillRect(x1, 0, x2 - x1, height);
+        }
+
+        prevNote = seg.note;
       }
 
       segStart = segEnd;
