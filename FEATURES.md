@@ -73,7 +73,7 @@ Practice sequences are saved and can be shared as a URL — send your setup to a
 - **Intonation overlay** — after recording, a line appears on the waveform showing your pitch deviation (in cents) from equal temperament at every moment
 - **Live tuner** — a color-coded display shows the detected pitch and how sharp or flat you are in real time
 - **Note colors** — each note of the chromatic scale is assigned a distinct color, with shading by octave
-- **YIN algorithm** — pitch detection optimized for wind instruments
+- **YIN algorithm** — pitch detection tuned for wind instruments, with an adaptive large-window pass that resolves low fundamentals down to the bottom of the bass clarinet's range (concert ~52 Hz)
 
 ---
 

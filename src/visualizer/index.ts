@@ -770,9 +770,9 @@ export default class Visualizer {
         const octave = octaveMatch ? parseInt(octaveMatch[0]) : 4;
 
         // Map octave to opacity: lower octaves = less opaque, higher = more opaque
-        // Typical range for instruments is octave 2-7
-        // Map octave 2 -> 0.1 opacity, octave 7 -> 0.3 opacity (pastel effect)
-        const minOctave = 2;
+        // Range spans octave 1-7 (bass clarinet reaches concert octave 1)
+        // Map octave 1 -> 0.1 opacity, octave 7 -> 0.3 opacity (pastel effect)
+        const minOctave = 1;
         const maxOctave = 7;
         const minOpacity = 0.1;
         const maxOpacity = 0.3;
