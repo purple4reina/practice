@@ -6,11 +6,7 @@ export class ClipSettings {
   public playClicks: Click[];
 
   public recordSpeed: number;
-  // Dead air held at each end of the clip: `recordingPrelay` ms of lead-in
-  // before the first recorded click, and the same fixed amount of tail after the
-  // last one. Kept in real time (not divided by recordSpeed) so the tail stays
-  // constant no matter how far the record speed is slowed down.
-  public recordingPrelay = 100;
+  public recordingPrelay = 100;  // ms before first click
   public startRecordingDelay: number;
   public stopRecordingDelay: number;
   public stopDelay: number;
@@ -30,57 +26,34 @@ export class ClipSettings {
     this.playClicks = playClicks;
     this.recordSpeed = recordSpeed;
 
-    const { firstClickMs, lastClickMs, coolDownEndMs } = this.getRecordSpan();
-
-    // recorder.start() runs this long after the record button; the metronome's
-    // first click lands `recordingPrelay` later (see RecordingMetronome.start),
-    // so the clip opens with exactly `recordingPrelay` of lead-in.
-    this.startRecordingDelay = firstClickMs / this.recordSpeed;
-
-    // Stop the recorder `recordingPrelay` after the last recorded click, so the
-    // tail mirrors the lead-in instead of running on for whatever delay the
-    // final block happened to carry (÷ record speed) plus the synthetic marker.
-    this.stopRecordingDelay =
-      lastClickMs / this.recordSpeed + this.recordingPrelay * 2;
-
-    // Finalize (draw + optional autoplay) just after the recorder stops, but not
-    // before any un-recorded cool-down clicks have finished playing.
-    this.stopDelay = Math.max(
-      this.stopRecordingDelay + this.recordingPrelay,
-      coolDownEndMs / this.recordSpeed + this.recordingPrelay * 2,
-    );
+    const { startRecordingDelay, stopRecordingDelay, stopDelay } = this.getRecordDelays();
+    this.startRecordingDelay = startRecordingDelay / this.recordSpeed;
+    this.stopRecordingDelay = (stopRecordingDelay / this.recordSpeed) + (this.recordingPrelay * 4);
+    this.stopDelay = (stopDelay / this.recordSpeed) + (this.recordingPrelay * 2);
 
     this.latency = latency;
     this.videoEnabled = videoEnabled;
     this.videoLatencyMs = videoLatencyMs;
   }
 
-  // Timeline landmarks the record window is built from, in unscaled ms measured
-  // from the start of the click track:
-  //  - firstClickMs / lastClickMs: the first and last clicks that are actually
-  //    recorded (the synthetic tail marker from BlockManager is ignored).
-  //  - coolDownEndMs: the last un-recorded click that still plays after recording
-  //    stops (a "Stop Recording" block followed by more beats); falls back to
-  //    lastClickMs when there is no cool-down.
-  private getRecordSpan() {
-    let firstClickMs = 0;
-    let lastClickMs = 0;
-    let coolDownEndMs = 0;
-    let elapsed = 0;
-    let sawRecording = false;
+  private getRecordDelays() {
+    let startRecordingDelay = 0;
+    let stopRecordingDelay = 0;
+    let stopDelay = 0;
+    let started = false;
+    let stopped = false;
     for (const click of this.recordClicks) {
-      if (click.tail) continue;
-      if (click.recording) {
-        if (!sawRecording) firstClickMs = elapsed;
-        sawRecording = true;
-        lastClickMs = elapsed;
-        coolDownEndMs = elapsed;
-      } else if (sawRecording) {
-        coolDownEndMs = elapsed;
+      started = started || click.recording;
+      stopped = started && !click.recording;
+      stopDelay += click.delay;
+      if (!stopped) {
+        stopRecordingDelay += click.delay;
       }
-      elapsed += click.delay;
+      if (!click.recording && !started) {
+        startRecordingDelay += click.delay;
+      }
     }
-    return { firstClickMs, lastClickMs, coolDownEndMs };
+    return { startRecordingDelay, stopRecordingDelay, stopDelay };
   }
 }
 

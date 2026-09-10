@@ -84,5 +84,4 @@ export interface Click {
   recording: boolean,
   isBeat?: boolean,
   midiNotes?: MidiNote[],
-  tail?: boolean, // synthetic end-marker appended by BlockManager, not a real beat
 }

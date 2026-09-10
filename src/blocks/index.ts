@@ -228,7 +228,7 @@ export default class BlockManager {
         }
       }
     }
-    clicks.push({ delay: 350, level: state.getLevel(), started: true, recording: lastRecording, tail: true });
+    clicks.push({ delay: 350, level: state.getLevel(), started: true, recording: lastRecording });
     return clicks;
   }
 
