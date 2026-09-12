@@ -77,7 +77,7 @@ export default class Saves {
   }
 
   private loadSaves() {
-    this.savesDiv.innerText = "";
+    this.savesDiv.replaceChildren();
     this.addSave("Default", window.location.origin + window.location.pathname);
 
     const saves: Array<[string, string, boolean]> = [];

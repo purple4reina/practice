@@ -53,7 +53,8 @@ abstract class Metronome {
     if (this.enabled()) {
       // Show flash even if volume all the way down or click is silenced
       if (this.flash()) {
-        const delay = when - this.audioContext.currentTime;
+        // `when`/currentTime are Web Audio seconds; setTimeout wants ms.
+        const delay = (when - this.audioContext.currentTime) * 1000;
         setTimeout(() => this.flashBox.hidden = false, delay);
         setTimeout(() => this.flashBox.hidden = true, delay + 50);
       }

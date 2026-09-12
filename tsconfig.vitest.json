@@ -1,0 +1,18 @@
+{
+  // Type-checks test files (*.spec.ts, src/test-support) on their own, kept
+  // separate from tsconfig.json so vitest/jsdom/@types/node's ambient globals
+  // (e.g. Node's Timeout-returning setTimeout) never leak into the app build.
+  // Not run automatically by `npm test` (vitest transpiles without
+  // type-checking) or `npm run build` - this is for manually auditing test
+  // file types, e.g. `npx tsc -p tsconfig.vitest.json --noEmit`.
+  // Known residual: app files imported by specs (e.g. blocks/block.ts) get
+  // pulled into this program too, so they briefly see Node's ambient
+  // setTimeout override here even though they're DOM-only code - harmless
+  // (tsconfig.json, which actually gates the build, checks them cleanly).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vite/client", "node"]
+  },
+  "exclude": [],
+  "include": ["src/**/*.spec.ts", "src/test-support/**/*.ts"]
+}
