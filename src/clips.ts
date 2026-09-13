@@ -6,7 +6,9 @@ export class ClipSettings {
   public playClicks: Click[];
 
   public recordSpeed: number;
-  public recordingPrelay = 100;  // ms kept before the first click
+  // Dead air kept at each end of the clip - deliberately equal, so a take
+  // opens and closes with the same amount of silence.
+  public recordingPrelay = 350;  // ms kept before the first click
   public recordPostlay = 350;    // ms kept after the last click
   public startRecordingDelay: number;
   public stopRecordingDelay: number;
@@ -58,14 +60,13 @@ export class ClipSettings {
   // BlockManager appends a synthetic end-marker as the final click, so it's
   // dropped here.
   private getRecordDelays() {
-    const clicks = this.recordClicks.slice(0, -1);
-
     let firstClickMs = 0;
     let lastClickMs = 0;
     let recordingEndMs = 0; // elapsed time right after the last recorded click
     let elapsed = 0;
     let started = false;
-    for (const click of clicks) {
+    for (const click of this.recordClicks) {
+      if (click.tail) continue;
       if (click.recording) {
         if (!started) firstClickMs = elapsed;
         started = true;

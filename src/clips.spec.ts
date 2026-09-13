@@ -6,41 +6,50 @@ function click(delay: number, recording: boolean): Click {
   return { delay, level: 1, started: true, recording };
 }
 
+function tailClick(recording: boolean): Click {
+  return { delay: 350, level: 1, started: true, recording, tail: true };
+}
+
 describe("ClipSettings delay calculations", () => {
   test("finds the first/last recording click and derives all delays from them", () => {
     const recordClicks: Click[] = [
       click(1000, false), click(1000, false), click(1000, false), click(1000, false), // 4 count-in
       click(1000, true), click(1000, true), click(1000, true), // 3 recorded beats
-      click(350, true), // synthetic end marker (dropped from the delay calculation)
+      tailClick(true), // synthetic end marker (dropped from the delay calculation)
     ];
     const settings = new ClipSettings(recordClicks, [], 1, 145);
 
     expect(settings.startRecordingDelay).toBe(4000); // ms elapsed before the first recording click
-    expect(settings.stopRecordingDelay).toBe(100 + 6000 + 350); // prelay + last click's elapsed + postlay
-    expect(settings.stopDelay).toBe(settings.stopRecordingDelay + 100);
+    expect(settings.stopRecordingDelay).toBe(350 + 6000 + 350); // prelay + last click's elapsed + postlay
+    expect(settings.stopDelay).toBe(settings.stopRecordingDelay + 350);
   });
 
   test("recordSpeed scales both start and stop delays", () => {
     const recordClicks: Click[] = [
       click(1000, false), click(1000, false), click(1000, false), click(1000, false),
       click(1000, true), click(1000, true), click(1000, true),
-      click(350, true),
+      tailClick(true),
     ];
     const settings = new ClipSettings(recordClicks, [], 0.5, 145);
 
     expect(settings.startRecordingDelay).toBe(4000 / 0.5);
-    expect(settings.stopRecordingDelay).toBe(100 + 6000 / 0.5 + 350);
+    expect(settings.stopRecordingDelay).toBe(350 + 6000 / 0.5 + 350);
   });
 
   test("with no recording clicks at all, delays fall back to the prelay/postlay only", () => {
     const recordClicks: Click[] = [
       click(1000, false), click(1000, false),
-      click(350, false), // end marker
+      tailClick(false), // end marker
     ];
     const settings = new ClipSettings(recordClicks, [], 1, 0);
 
     expect(settings.startRecordingDelay).toBe(0);
-    expect(settings.stopRecordingDelay).toBe(100 + 0 + 350);
+    expect(settings.stopRecordingDelay).toBe(350 + 0 + 350);
+  });
+
+  test("recordingPrelay and recordPostlay are equal, so a take opens and closes with the same amount of silence", () => {
+    const settings = new ClipSettings([tailClick(false)], [], 1, 0);
+    expect(settings.recordingPrelay).toBe(settings.recordPostlay);
   });
 
   test("blocks placed after the last recording click (e.g. between 'stop' and 'done') still get their full duration before stopDelay - they keep clicking audibly even though they aren't recorded", () => {
@@ -48,24 +57,24 @@ describe("ClipSettings delay calculations", () => {
       click(1000, false), click(1000, false), click(1000, false), click(1000, false),
       click(1000, true), click(1000, true), click(1000, true),
       click(1000, false), click(1000, false), // two trailing, non-recorded clicks
-      click(350, false), // synthetic end marker
+      tailClick(false), // synthetic end marker
     ];
     const settings = new ClipSettings(recordClicks, [], 1, 145);
 
-    // Without the trailing clicks, stopDelay would just be stopRecordingDelay + 100.
+    // Without the trailing clicks, stopDelay would just be stopRecordingDelay + recordingPrelay.
     // The two 1000ms trailing clicks must be given their own full duration too.
-    expect(settings.stopDelay).toBe(settings.stopRecordingDelay + 100 + 2000);
+    expect(settings.stopDelay).toBe(settings.stopRecordingDelay + settings.recordingPrelay + 2000);
   });
 
   test("trailing clicks are also scaled by recordSpeed", () => {
     const recordClicks: Click[] = [
       click(1000, true),
       click(1000, false), // one trailing click
-      click(350, false),
+      tailClick(false),
     ];
     const settings = new ClipSettings(recordClicks, [], 0.5, 0);
 
-    expect(settings.stopDelay).toBe(settings.stopRecordingDelay + 100 + 1000 / 0.5);
+    expect(settings.stopDelay).toBe(settings.stopRecordingDelay + settings.recordingPrelay + 1000 / 0.5);
   });
 
   test("stores latency, videoEnabled, and videoLatencyMs as given", () => {
@@ -174,3 +183,4 @@ describe("Clip", () => {
     });
   });
 });
+
