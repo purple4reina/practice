@@ -26,11 +26,9 @@ function fakeClip(overrides: Partial<Clip> = {}): Clip {
   } as Clip;
 }
 
-let ctx: any;
-
 beforeEach(() => {
   resetDom();
-  ctx = installFakeCanvasContext();
+  installFakeCanvasContext();
 });
 
 describe("Visualizer total duration (the tail-end-click visibility bug)", () => {
@@ -95,79 +93,5 @@ describe("Visualizer total duration (the tail-end-click visibility bug)", () => 
 
     expect((visualizer as any).totalDuration).toBeLessThanOrEqual(600);
     expect((visualizer as any).totalDuration).toBeGreaterThan(600 - 23.3);
-  });
-});
-
-describe("Visualizer post-record region marker ('barely gives me anything after that click')", () => {
-  test("tints the gap between the last recorded click and totalDuration, regardless of the audio's amplitude there", () => {
-    const clip = fakeClip({
-      audioBuffer: silentBuffer(1000), // silent throughout, incl. the "recorded" click's own moment
-      playClicks: [
-        { delay: 350, level: 1, started: true, recording: true }, // the recorded downbeat
-        { delay: 350, level: 1, started: true, recording: true, tail: true }, // synthetic marker
-      ],
-      latency: 100,
-    });
-    const visualizer = new Visualizer(new FakeAudioContext() as unknown as AudioContext);
-
-    visualizer.drawVisualization(clip, 0);
-
-    // clear + postlay tint = 2 fillRect calls (drawWaveform uses fill(), not fillRect)
-    expect(ctx.fillRect).toHaveBeenCalledTimes(2);
-    const [x1, y, w, h] = ctx.fillRect.mock.calls[1];
-    // Recorded content ends at latency(100) + its own 350ms delay = 450ms,
-    // mapped onto whatever totalDuration the (silent, ~1000ms) buffer produced.
-    const totalDuration = (visualizer as any).totalDuration;
-    expect(x1).toBeCloseTo((450 / totalDuration) * 800, 0);
-    expect(y).toBe(0);
-    expect(h).toBe(300);
-    expect(w).toBeGreaterThan(0);
-  });
-
-  test("draws a dashed boundary line at the start of the post-record region", () => {
-    const clip = fakeClip({
-      audioBuffer: silentBuffer(1000),
-      playClicks: [
-        { delay: 100, level: 1, started: true, recording: true },
-        { delay: 350, level: 1, started: true, recording: true, tail: true },
-      ],
-      latency: 0,
-    });
-    const visualizer = new Visualizer(new FakeAudioContext() as unknown as AudioContext);
-
-    visualizer.drawVisualization(clip, 0);
-
-    expect(ctx.setLineDash).toHaveBeenCalledWith(expect.arrayContaining([expect.any(Number)]));
-    expect(ctx.setLineDash).toHaveBeenLastCalledWith([]); // reset after drawing, so later strokes aren't dashed
-  });
-
-  test("draws nothing extra when there's no recorded content at all (no false 'gap')", () => {
-    const clip = fakeClip({ audioBuffer: silentBuffer(500), playClicks: [] });
-    const visualizer = new Visualizer(new FakeAudioContext() as unknown as AudioContext);
-
-    visualizer.drawVisualization(clip, 0);
-
-    expect(ctx.fillRect).toHaveBeenCalledTimes(1); // just the canvas clear
-  });
-
-  test("draws nothing when the recorded content already extends through totalDuration", () => {
-    const clip = fakeClip({
-      audioBuffer: silentBuffer(500),
-      playClicks: [{ delay: 10000, level: 1, started: true, recording: true, tail: true }],
-      latency: 0,
-    });
-    const visualizer = new Visualizer(new FakeAudioContext() as unknown as AudioContext);
-
-    visualizer.drawVisualization(clip, 0);
-
-    // the only "click" is the tail marker itself, so recordedContentEndMs() is
-    // null (nothing real was ever recorded) - same as the empty-playClicks case
-    expect(ctx.fillRect).toHaveBeenCalledTimes(1);
-  });
-
-  test("recordingPrelay and recordPostlay stay equal (the fix for the reported asymmetry)", async () => {
-    const { ClipSettings } = await import("../clips");
-    const settings = new ClipSettings([{ delay: 350, level: 1, started: true, recording: false, tail: true }], [], 1, 0);
-    expect(settings.recordingPrelay).toBe(settings.recordPostlay);
   });
 });

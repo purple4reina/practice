@@ -571,21 +571,6 @@ export default class Visualizer {
     return timestamps;
   }
 
-  // Buffer-relative position where the last real recorded click's own slot ends
-  // (i.e. where the post-record pad begins) - excludes BlockManager's synthetic
-  // tail marker, which has no real duration of its own to draw.
-  private recordedContentEndMs(): number | null {
-    let currentTime = this.latency;
-    let end: number | null = null;
-    for (const click of this.clicks) {
-      if (!click.recording) continue;
-      const clickEnd = currentTime + click.delay / this.recordSpeed;
-      if (!click.tail) end = clickEnd;
-      currentTime = clickEnd;
-    }
-    return end;
-  }
-
   // If the previous clip's first and last recording clicks are both already visible in the
   // current viewport, the saved zoom isn't a meaningful "zoom" worth protecting, so drop it.
   private clearZoomIfFullyVisible(): void {
@@ -660,12 +645,6 @@ export default class Visualizer {
     }
 
     this.drawWaveform(this.loudnessData);
-
-    // Post-record pad is often near-silent (or literally silent), so mark it
-    // with an explicit tint - otherwise it's indistinguishable from "no data
-    // rendered here at all" regardless of how correct the underlying duration
-    // math is.
-    this.drawPostRecordRegion();
 
     // Draw grid on top of waveform fill so lines remain visible
     if (showGrid) {
@@ -978,32 +957,6 @@ export default class Visualizer {
       }
     }
     this.ctx.stroke();
-  }
-
-  // Explicitly shades the post-record pad (from the true end of recorded
-  // musical content through totalDuration) with a fixed, always-visible tint
-  // and a dashed boundary line - independent of how loud/quiet that stretch
-  // of audio actually is, so it never reads as "nothing was captured here."
-  private drawPostRecordRegion(): void {
-    const end = this.recordedContentEndMs();
-    if (end === null || end >= this.totalDuration) return;
-
-    const { height } = this.options;
-    const x1 = Math.max(0, Math.min(this.options.width, this.timeToX(end)));
-    const x2 = Math.max(0, Math.min(this.options.width, this.timeToX(this.totalDuration)));
-    if (x2 <= x1) return;
-
-    this.ctx.fillStyle = 'rgba(165, 93, 252, 0.12)';
-    this.ctx.fillRect(x1, 0, x2 - x1, height);
-
-    this.ctx.strokeStyle = 'rgba(165, 93, 252, 0.6)';
-    this.ctx.lineWidth = 1;
-    this.ctx.setLineDash([4, 3]);
-    this.ctx.beginPath();
-    this.ctx.moveTo(x1, 0);
-    this.ctx.lineTo(x1, height);
-    this.ctx.stroke();
-    this.ctx.setLineDash([]);
   }
 
   private drawMetronomeBeats(): void {
