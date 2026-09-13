@@ -37,6 +37,15 @@ describe("BlockManager default construction (no ?record= in the URL)", () => {
     expect(playClicks).toHaveLength(17);
     expect(playClicks.every(c => c.recording)).toBe(true);
   });
+
+  test("tags the synthetic end marker with tail:true (and only the end marker) in both click lists", () => {
+    const manager = new BlockManager();
+
+    for (const clicks of [manager.recordClicks(), manager.playClicks()]) {
+      expect(clicks.slice(0, -1).every(c => !c.tail)).toBe(true);
+      expect(clicks.at(-1)).toMatchObject({ delay: 350, tail: true });
+    }
+  });
 });
 
 describe("BlockManager query-param driven construction (?record=...)", () => {

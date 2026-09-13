@@ -77,6 +77,106 @@ describe("ClipSettings delay calculations", () => {
     expect(settings.stopDelay).toBe(settings.stopRecordingDelay + settings.recordingPrelay + 1000 / 0.5);
   });
 
+  describe("prelay/postlay invariants", () => {
+    // Buffer-relative position of the first recorded click: real time of that
+    // click (recordingPrelay + firstClickMs/speed) minus buffer t=0
+    // (startRecordingDelay = firstClickMs/speed).
+    function bufferRelativeFirstClickMs(s: ClipSettings, firstClickMs: number, speed: number): number {
+      return (s.recordingPrelay + firstClickMs / speed) - s.startRecordingDelay;
+    }
+
+    test("the gap before the first recorded click is always exactly recordingPrelay, regardless of record speed or how much count-in precedes it", () => {
+      for (const speed of [1, 0.5, 0.2, 2]) {
+        for (const countIn of [0, 1, 10]) {
+          const recordClicks: Click[] = [
+            ...Array.from({ length: countIn }, () => click(1000, false)),
+            click(1000, true), click(1000, true),
+            tailClick(true),
+          ];
+          const settings = new ClipSettings(recordClicks, [], speed, 0);
+          const firstClickMs = countIn * 1000;
+
+          expect(bufferRelativeFirstClickMs(settings, firstClickMs, speed))
+            .toBeCloseTo(settings.recordingPrelay, 6);
+        }
+      }
+    });
+
+    test("the gap after the last recorded click's own onset is always exactly recordPostlay, regardless of record speed, how many beats preceded it, or that click's own (irrelevant) delay", () => {
+      // A "click" is an instantaneous tick; its `delay` is the wait until the
+      // *next* event, not part of the click itself - so postlay is measured
+      // from the last recorded click's onset, independent of its own delay.
+      for (const speed of [1, 0.5, 0.2, 2]) {
+        for (const recordedBeatCount of [1, 2, 8]) {
+          for (const lastBeatDelay of [250, 1000, 4000]) {
+            const recordClicks: Click[] = [
+              ...Array.from({ length: recordedBeatCount - 1 }, () => click(1000, true)),
+              click(lastBeatDelay, true),
+              tailClick(true),
+            ];
+            const lastClickMs = (recordedBeatCount - 1) * 1000; // onset of the last recorded click
+            const settings = new ClipSettings(recordClicks, [], speed, 0);
+
+            const lastClickOnsetInBuffer =
+              (settings.recordingPrelay + lastClickMs / speed) - settings.startRecordingDelay;
+            const bufferDurationMs = settings.stopRecordingDelay - settings.startRecordingDelay;
+
+            expect(bufferDurationMs - lastClickOnsetInBuffer).toBeCloseTo(settings.recordPostlay, 6);
+          }
+        }
+      }
+    });
+
+    test("trailing (post-stop) blocks affect only stopDelay, never startRecordingDelay/stopRecordingDelay/the audio capture window", () => {
+      const base: Click[] = [
+        click(1000, false), click(1000, true), click(1000, true),
+      ];
+      const withoutTrailing = new ClipSettings([...base, tailClick(false)], [], 1, 0);
+      const withTrailing = new ClipSettings(
+        [...base, click(1000, false), click(2000, false), tailClick(false)],
+        [], 1, 0,
+      );
+
+      expect(withTrailing.startRecordingDelay).toBe(withoutTrailing.startRecordingDelay);
+      expect(withTrailing.stopRecordingDelay).toBe(withoutTrailing.stopRecordingDelay);
+      // Only stopDelay (metronome teardown) should grow, to give the trailing
+      // blocks time to actually finish clicking.
+      expect(withTrailing.stopDelay).toBeGreaterThan(withoutTrailing.stopDelay);
+    });
+
+    test("the tail marker is excluded from the prelay/postlay calculation even if it's (incorrectly) marked recording: true", () => {
+      const withCorrectFlag = new ClipSettings(
+        [click(1000, true), { delay: 9999, level: 1, started: true, recording: true, tail: true }],
+        [], 1, 0,
+      );
+      // Same track, but the marker also carries recording: true - the `tail`
+      // flag alone must be what excludes it, not its recording value.
+      expect(withCorrectFlag.stopRecordingDelay).toBe(
+        withCorrectFlag.recordingPrelay + 0 / 1 + withCorrectFlag.recordPostlay,
+      );
+    });
+
+    test("multiple record/stop segments: the first streak sets the prelay boundary, the last sets the postlay boundary", () => {
+      const recordClicks: Click[] = [
+        click(500, false),               // count-in
+        click(500, true), click(500, true),   // first recorded segment (punch-in #1)
+        click(500, false), click(500, false),  // punched out in between
+        click(500, true), click(500, true),   // second recorded segment (punch-in #2)
+        click(500, false),               // trailing cool-down
+        tailClick(false),
+      ];
+      const settings = new ClipSettings(recordClicks, [], 1, 0);
+
+      // firstClickMs = elapsed before the *first* recording:true click (index 1) = 500
+      expect(settings.startRecordingDelay).toBe(500);
+      // lastClickMs = elapsed before the *last* recording:true click (index 6) = 500*6 = 3000
+      // recordingEndMs = elapsed right after it = 3500
+      expect(settings.stopRecordingDelay).toBe(settings.recordingPrelay + 3000 + settings.recordPostlay);
+      // trailingClicksMs = elapsed(4000) - recordingEndMs(3500) = 500
+      expect(settings.stopDelay).toBe(settings.stopRecordingDelay + settings.recordingPrelay + 500);
+    });
+  });
+
   test("stores latency, videoEnabled, and videoLatencyMs as given", () => {
     const settings = new ClipSettings([click(350, false)], [], 1, 145, true, 20);
     expect(settings.latency).toBe(145);
