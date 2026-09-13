@@ -51,6 +51,55 @@ describe("LoudnessAnalyzer.findFirstSoundMs", () => {
   });
 });
 
+describe("LoudnessAnalyzer.calculateLoudnessFromBuffer tail coverage", () => {
+  test("the last data point reaches within one window of the buffer's true end", () => {
+    const sampleRate = 44100;
+    const windowSize = 1024;
+    // A length deliberately NOT a multiple of hopSize (512), so the main hop
+    // loop alone would stop well short of the real end.
+    const length = 50000;
+    const buffer = makeBuffer(new Float32Array(length), sampleRate);
+
+    const data = LoudnessAnalyzer.calculateLoudnessFromBuffer(buffer, windowSize);
+    const last = data[data.length - 1];
+
+    const trueEndMs = (length / sampleRate) * 1000;
+    const windowMs = (windowSize / sampleRate) * 1000;
+    expect(last.timestamp).toBeGreaterThan(trueEndMs - windowMs - 1e-6);
+    expect(last.timestamp).toBeLessThanOrEqual(trueEndMs - windowMs + 1e-6);
+  });
+
+  test("does not duplicate a point when the hop loop already lands exactly on the final window", () => {
+    const sampleRate = 44100;
+    const windowSize = 1024;
+    const hopSize = windowSize / 2;
+    // channelData.length - windowSize is itself a multiple of hopSize.
+    const length = windowSize + hopSize * 4;
+    const buffer = makeBuffer(new Float32Array(length), sampleRate);
+
+    const data = LoudnessAnalyzer.calculateLoudnessFromBuffer(buffer, windowSize);
+
+    const timestamps = data.map(d => d.timestamp);
+    expect(new Set(timestamps).size).toBe(timestamps.length); // no duplicate timestamp
+  });
+
+  test("the appended tail point reflects real audio in that window, not silence", () => {
+    const sampleRate = 44100;
+    const windowSize = 1024;
+    const length = 50000;
+    const samples = new Float32Array(length);
+    // Put a loud tone only in the very last window, which only the tail-point
+    // fix would ever analyze.
+    for (let i = length - windowSize; i < length; i++) {
+      samples[i] = 0.9 * Math.sin(i);
+    }
+    const buffer = makeBuffer(samples, sampleRate);
+
+    const data = LoudnessAnalyzer.calculateLoudnessFromBuffer(buffer, windowSize);
+    expect(data[data.length - 1].loudness).toBeGreaterThan(LoudnessAnalyzer.SILENCE_THRESHOLD);
+  });
+});
+
 describe("LoudnessAnalyzer.calculateLoudnessFromBuffer startSample", () => {
   test("produces zero-based timestamps from the given offset", () => {
     const sampleRate = 44100;

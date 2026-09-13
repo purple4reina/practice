@@ -27,7 +27,7 @@ export class ClipSettings {
     this.playClicks = playClicks;
     this.recordSpeed = recordSpeed;
 
-    const { firstClickMs, lastClickMs } = this.getRecordDelays();
+    const { firstClickMs, lastClickMs, trailingClicksMs } = this.getRecordDelays();
 
     // recorder.start() fires this long after the record button; the metronome's
     // first click follows `recordingPrelay` after that.
@@ -39,7 +39,13 @@ export class ClipSettings {
     // all divided by recordSpeed, so it ballooned at slow record speeds.
     this.stopRecordingDelay =
       this.recordingPrelay + lastClickMs / this.recordSpeed + this.recordPostlay;
-    this.stopDelay = this.stopRecordingDelay + this.recordingPrelay;
+
+    // The recording metronome keeps clicking through any blocks placed after
+    // "stop" (they just aren't captured into the audio) - give them their
+    // full duration before the whole sequence is torn down, instead of
+    // hard-cutting them ~immediately after the recorded material ends.
+    this.stopDelay =
+      this.stopRecordingDelay + this.recordingPrelay + trailingClicksMs / this.recordSpeed;
 
     this.latency = latency;
     this.videoEnabled = videoEnabled;
@@ -47,13 +53,16 @@ export class ClipSettings {
   }
 
   // Onset times (unscaled ms, from the start of the click track) of the first
-  // and last *recorded* clicks. BlockManager appends a synthetic end-marker as
-  // the final click, so it's dropped here.
+  // and last *recorded* clicks, plus how much click-track time follows the
+  // last recorded click (e.g. blocks placed after "stop" but before "done").
+  // BlockManager appends a synthetic end-marker as the final click, so it's
+  // dropped here.
   private getRecordDelays() {
     const clicks = this.recordClicks.slice(0, -1);
 
     let firstClickMs = 0;
     let lastClickMs = 0;
+    let recordingEndMs = 0; // elapsed time right after the last recorded click
     let elapsed = 0;
     let started = false;
     for (const click of clicks) {
@@ -63,8 +72,9 @@ export class ClipSettings {
         lastClickMs = elapsed;
       }
       elapsed += click.delay;
+      if (click.recording) recordingEndMs = elapsed;
     }
-    return { firstClickMs, lastClickMs };
+    return { firstClickMs, lastClickMs, trailingClicksMs: elapsed - recordingEndMs };
   }
 }
 

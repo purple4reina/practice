@@ -43,6 +43,31 @@ describe("ClipSettings delay calculations", () => {
     expect(settings.stopRecordingDelay).toBe(100 + 0 + 350);
   });
 
+  test("blocks placed after the last recording click (e.g. between 'stop' and 'done') still get their full duration before stopDelay - they keep clicking audibly even though they aren't recorded", () => {
+    const recordClicks: Click[] = [
+      click(1000, false), click(1000, false), click(1000, false), click(1000, false),
+      click(1000, true), click(1000, true), click(1000, true),
+      click(1000, false), click(1000, false), // two trailing, non-recorded clicks
+      click(350, false), // synthetic end marker
+    ];
+    const settings = new ClipSettings(recordClicks, [], 1, 145);
+
+    // Without the trailing clicks, stopDelay would just be stopRecordingDelay + 100.
+    // The two 1000ms trailing clicks must be given their own full duration too.
+    expect(settings.stopDelay).toBe(settings.stopRecordingDelay + 100 + 2000);
+  });
+
+  test("trailing clicks are also scaled by recordSpeed", () => {
+    const recordClicks: Click[] = [
+      click(1000, true),
+      click(1000, false), // one trailing click
+      click(350, false),
+    ];
+    const settings = new ClipSettings(recordClicks, [], 0.5, 0);
+
+    expect(settings.stopDelay).toBe(settings.stopRecordingDelay + 100 + 1000 / 0.5);
+  });
+
   test("stores latency, videoEnabled, and videoLatencyMs as given", () => {
     const settings = new ClipSettings([click(350, false)], [], 1, 145, true, 20);
     expect(settings.latency).toBe(145);
