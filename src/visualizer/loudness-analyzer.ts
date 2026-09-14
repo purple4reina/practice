@@ -19,22 +19,31 @@ export class LoudnessAnalyzer {
     const hopSize = windowSize / 2; // 50% overlap
     const loudnessData: LoudnessData[] = [];
 
-    for (let i = 0; i < channelData.length - windowSize; i += hopSize) {
-      // Calculate RMS for this window
+    const rmsAt = (start: number): number => {
       let sum = 0;
       for (let j = 0; j < windowSize; j++) {
-        const sample = channelData[i + j];
+        const sample = channelData[start + j];
         sum += sample * sample;
       }
-      const rms = Math.sqrt(sum / windowSize);
+      return Math.sqrt(sum / windowSize);
+    };
 
-      // Convert sample position to timestamp in milliseconds
-      const timestamp = (i / sampleRate) * 1000;
+    let lastWindowStart = -1;
+    for (let i = 0; i < channelData.length - windowSize; i += hopSize) {
+      loudnessData.push({ timestamp: (i / sampleRate) * 1000, loudness: rmsAt(i) });
+      lastWindowStart = i;
+    }
 
-      loudnessData.push({
-        timestamp,
-        loudness: rms
-      });
+    // The loop above never lands a window on the buffer's final `windowSize`
+    // samples (no full window fits past that point), so on its own the curve
+    // always falls short of the recording's true end - by design up to a
+    // whole hop, and by bad luck up to a whole window. Add one more point for
+    // the last full window that *does* fit, so the analyzed range always
+    // reaches to within one window of the buffer's actual end, regardless of
+    // whether that end lines up on a hop boundary.
+    const finalWindowStart = channelData.length - windowSize;
+    if (finalWindowStart > lastWindowStart && finalWindowStart >= 0) {
+      loudnessData.push({ timestamp: (finalWindowStart / sampleRate) * 1000, loudness: rmsAt(finalWindowStart) });
     }
 
     return loudnessData;

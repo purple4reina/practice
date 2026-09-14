@@ -6,7 +6,8 @@ export class ClipSettings {
   public playClicks: Click[];
 
   public recordSpeed: number;
-  public recordingPrelay = 100;  // ms before first click
+  public recordingPrelay = 100;  // ms kept before the first click
+  public recordPostlay = 350;    // ms kept after the last click
   public startRecordingDelay: number;
   public stopRecordingDelay: number;
   public stopDelay: number;
@@ -26,34 +27,44 @@ export class ClipSettings {
     this.playClicks = playClicks;
     this.recordSpeed = recordSpeed;
 
-    const { startRecordingDelay, stopRecordingDelay, stopDelay } = this.getRecordDelays();
-    this.startRecordingDelay = startRecordingDelay / this.recordSpeed;
-    this.stopRecordingDelay = (stopRecordingDelay / this.recordSpeed) + (this.recordingPrelay * 4);
-    this.stopDelay = (stopDelay / this.recordSpeed) + (this.recordingPrelay * 2);
+    const { firstClickMs, lastClickMs } = this.getRecordDelays();
+
+    // recorder.start() fires this long after the record button; the metronome's
+    // first click follows `recordingPrelay` after that.
+    this.startRecordingDelay = firstClickMs / this.recordSpeed;
+
+    // Stop the recorder a fixed `recordPostlay` after the last click, measured
+    // from the same origin as the metronome (T0 + recordingPrelay). Previously
+    // the tail was the final beat's own delay plus the synthetic end-marker,
+    // all divided by recordSpeed, so it ballooned at slow record speeds.
+    this.stopRecordingDelay =
+      this.recordingPrelay + lastClickMs / this.recordSpeed + this.recordPostlay;
+    this.stopDelay = this.stopRecordingDelay + this.recordingPrelay;
 
     this.latency = latency;
     this.videoEnabled = videoEnabled;
     this.videoLatencyMs = videoLatencyMs;
   }
 
+  // Onset times (unscaled ms, from the start of the click track) of the first
+  // and last *recorded* clicks. BlockManager appends a synthetic end-marker as
+  // the final click, so it's dropped here.
   private getRecordDelays() {
-    let startRecordingDelay = 0;
-    let stopRecordingDelay = 0;
-    let stopDelay = 0;
+    const clicks = this.recordClicks.slice(0, -1);
+
+    let firstClickMs = 0;
+    let lastClickMs = 0;
+    let elapsed = 0;
     let started = false;
-    let stopped = false;
-    for (const click of this.recordClicks) {
-      started = started || click.recording;
-      stopped = started && !click.recording;
-      stopDelay += click.delay;
-      if (!stopped) {
-        stopRecordingDelay += click.delay;
+    for (const click of clicks) {
+      if (click.recording) {
+        if (!started) firstClickMs = elapsed;
+        started = true;
+        lastClickMs = elapsed;
       }
-      if (!click.recording && !started) {
-        startRecordingDelay += click.delay;
-      }
+      elapsed += click.delay;
     }
-    return { startRecordingDelay, stopRecordingDelay, stopDelay };
+    return { firstClickMs, lastClickMs };
   }
 }
 

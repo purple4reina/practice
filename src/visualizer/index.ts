@@ -154,6 +154,7 @@ export default class Visualizer {
   private lastPinchDistance: number = 0;
   private pinchCenterX: number = 0;
   private scheduledDurationMs: number = 0; // "total time" denominator for the current clip
+  private audioBufferDurationMs: number = 0; // actual recorded buffer length (offset-adjusted) - ground truth for totalDuration
   private savedZoomFraction: number | null = null; // fraction of scheduledDurationMs visible; null = never manually zoomed
 
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
@@ -453,6 +454,8 @@ export default class Visualizer {
     this.recordSpeed = clip.recordSpeed;
     this.latency = clip.latency - offsetMs;
     this.scheduledDurationMs = clip.scheduledDurationMs;
+    this.audioBufferDurationMs =
+      ((clip.audioBuffer.length - offsetSamples) / clip.audioBuffer.sampleRate) * 1000;
     this.updateScrollingState();
     this.draw();
   }
@@ -493,7 +496,18 @@ export default class Visualizer {
       return;
     }
 
-    this.totalDuration = this.loudnessData[this.loudnessData.length - 1].timestamp;
+    // The loudness sliding window can still land shy of the buffer's true end
+    // (whenever the tail doesn't fall on a hop boundary), so the last
+    // recorded click could land just past this and never render. Floor at
+    // audioBufferDurationMs - the recording's *actual* length - never at
+    // scheduledDurationMs (only a timer-scheduled estimate): if the real
+    // capture ever comes up short of what was scheduled, flooring at the
+    // estimate would extend the viewport into space with no audio at all,
+    // not just unanalyzed audio.
+    this.totalDuration = Math.max(
+      this.loudnessData[this.loudnessData.length - 1].timestamp,
+      this.audioBufferDurationMs,
+    );
 
     // Always reset to beginning
     this.viewStartTime = 0;

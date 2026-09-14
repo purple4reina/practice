@@ -111,5 +111,11 @@
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
-  }
+  },
+  // Test files pull in vitest/jsdom, whose types transitively reference
+  // @types/node - which augments global setTimeout/clearInterval/etc. to
+  // return Node's Timeout type instead of DOM's number, breaking the app
+  // code's own (correct, browser-facing) use of those globals if it's in
+  // the same program. Keep the production build's type-check on app code only.
+  "exclude": ["**/*.spec.ts", "src/test-support", "vitest.config.ts"]
 }
