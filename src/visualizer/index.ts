@@ -12,6 +12,7 @@ import {
   Tuner,
   IntonationData,
 } from './tuner';
+import { noteDisplayName } from './pitch-track';
 
 export interface VisualizerOptions {
   width?: number;
@@ -160,6 +161,13 @@ export default class Visualizer {
   private enabled = boolSwitchControls('visualization-enabled', { initial: true });
   private statsDiv = document.getElementById('visualization-stats') as HTMLElement;
 
+  // Hover tooltip naming the detected note under the cursor
+  private tooltipEl = document.getElementById('pitch-tooltip') as HTMLElement;
+  private tooltipTimer: number | null = null; // pending "arm" timeout; null once armed or idle
+  private tooltipArmed: boolean = false; // delay has elapsed - track the cursor with no further delay
+  private lastMouseX: number = 0; // canvas-space (offsetX), not CSS pixels
+  private lastMouseY: number = 0;
+
   constructor(audioContext: AudioContext) {
     this.options = {
       width: 800,
@@ -179,6 +187,7 @@ export default class Visualizer {
     this.viewDuration = this.options.viewportDuration;
     this.setupCanvas();
     this.setupMouseEvents();
+    this.setupTooltip();
   }
 
   private setupCanvas(): void {
@@ -197,6 +206,9 @@ export default class Visualizer {
 
     this.canvas.addEventListener('mouseleave', () => {
       this.endDrag();
+      this.clearTooltipTimer();
+      this.tooltipArmed = false;
+      this.hideTooltip();
     });
 
     // Mouse events for dragging
@@ -258,6 +270,117 @@ export default class Visualizer {
     } else {
       this.canvas.style.cursor = 'default';
     }
+  }
+
+  private static readonly TOOLTIP_DELAY_MS = 1000;
+  private static readonly TOOLTIP_CURSOR_OFFSET = 4; // px, up-and-right of the cursor - close enough to read as pointing at it
+
+  // Hover-only feature; touch has no hover state to arm it from. Skipped the same
+  // way src/blocks/block.ts skips its hover listeners in touch mode - matters because
+  // `touch-mode` is runtime-detected (CLAUDE.md Layer B) from `matchMedia('(hover:
+  // hover) and (pointer: fine)')`, so a Bluetooth mouse on an iPad reports hover
+  // capability and still gets this listener attached.
+  private setupTooltip(): void {
+    if (document.body.classList.contains('touch-mode')) return;
+
+    this.canvas.addEventListener('mouseenter', (e) => {
+      this.lastMouseX = e.offsetX;
+      this.lastMouseY = e.offsetY;
+      this.armTooltipTimer();
+    });
+
+    this.canvas.addEventListener('mousemove', (e) => {
+      this.lastMouseX = e.offsetX;
+      this.lastMouseY = e.offsetY;
+
+      if (this.isDragging) {
+        // Scrubbing shouldn't drag a stale readout along with it.
+        this.clearTooltipTimer();
+        this.tooltipArmed = false;
+        this.hideTooltip();
+        return;
+      }
+
+      if (this.tooltipArmed) {
+        this.updateTooltip();
+      }
+    });
+  }
+
+  private armTooltipTimer(): void {
+    this.clearTooltipTimer();
+    this.tooltipTimer = window.setTimeout(() => {
+      this.tooltipTimer = null;
+      this.tooltipArmed = true;
+      this.updateTooltip();
+    }, Visualizer.TOOLTIP_DELAY_MS);
+  }
+
+  private clearTooltipTimer(): void {
+    if (this.tooltipTimer !== null) {
+      clearTimeout(this.tooltipTimer);
+      this.tooltipTimer = null;
+    }
+  }
+
+  // Re-derives the tooltip's content (and, when shown, position) from the last known
+  // cursor position. Called on mousemove once armed, and again at the end of every
+  // draw() so autoscroll during playback can't leave a stale note under a still cursor.
+  private updateTooltip(): void {
+    const note = this.detectedNoteAt(this.lastMouseX);
+    if (!note) {
+      this.hideTooltip();
+      return;
+    }
+    this.tooltipEl.textContent = note;
+    this.tooltipEl.hidden = false;
+    this.positionTooltip();
+  }
+
+  private hideTooltip(): void {
+    this.tooltipEl.hidden = true;
+  }
+
+  // canvasOffsetX is in canvas-backing-pixel space (e.offsetX, or e.offsetX scaled -
+  // see setupMouseEvents/handleTouchMove for the same offsetX-is-not-CSS-space caveat
+  // that applies throughout this class).
+  private detectedNoteAt(canvasOffsetX: number): string | null {
+    if (!this.tuner.detectionEnabled() || !this.intonationData || this.intonationData.points.length === 0) {
+      return null;
+    }
+
+    const cssWidth = this.canvas.clientWidth || this.options.width;
+    const canvasX = canvasOffsetX * (this.options.width / cssWidth);
+    const time = this.xToTime(canvasX);
+
+    const toneIntervalMs = (60 / this.intonationData.sampleRate) * 1000;
+    const index = Math.round(time / toneIntervalMs);
+    const points = this.intonationData.points;
+    if (index < 0 || index >= points.length) {
+      return null;
+    }
+
+    const point = points[index];
+    return point ? noteDisplayName(point.name) : null;
+  }
+
+  private positionTooltip(): void {
+    const offset = Visualizer.TOOLTIP_CURSOR_OFFSET;
+    const tooltipWidth = this.tooltipEl.offsetWidth;
+    const tooltipHeight = this.tooltipEl.offsetHeight;
+
+    const parent = this.canvas.parentElement;
+    const boundsWidth = parent?.clientWidth || this.canvas.clientWidth || this.options.width;
+    const boundsHeight = parent?.clientHeight || this.canvas.clientHeight || this.options.height;
+
+    let left = this.canvas.offsetLeft + this.lastMouseX + offset;
+    let top = this.canvas.offsetTop + this.lastMouseY - offset - tooltipHeight;
+
+    left = Math.max(0, Math.min(left, boundsWidth - tooltipWidth));
+    top = Math.max(0, Math.min(top, boundsHeight - tooltipHeight));
+
+    this.tooltipEl.style.left = `${left}px`;
+    this.tooltipEl.style.top = `${top}px`;
   }
 
   private startDrag(e: MouseEvent): void {
@@ -626,6 +749,13 @@ export default class Visualizer {
   private draw(): void {
     const { width, height, backgroundColor, waveformColor, gridColor, showGrid } = this.options;
 
+    // Re-derive the tooltip from the last known cursor position (not just on
+    // mousemove) - autoscroll during playback moves viewStartTime under a
+    // stationary cursor, which would otherwise leave a stale note showing.
+    if (this.tooltipArmed) {
+      this.updateTooltip();
+    }
+
     // Clear canvas
     this.ctx.fillStyle = backgroundColor;
     this.ctx.fillRect(0, 0, width, height);
@@ -733,6 +863,10 @@ export default class Visualizer {
 
   private timeToX(timestamp: number): number {
     return ((timestamp - this.viewStartTime) / this.viewDuration) * this.options.width;
+  }
+
+  private xToTime(canvasX: number): number {
+    return this.viewStartTime + (canvasX / this.options.width) * this.viewDuration;
   }
 
   private static readonly CHROMATIC_COLORS: { [key: string]: string } = buildChromaticColors();

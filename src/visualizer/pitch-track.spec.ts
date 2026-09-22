@@ -2,6 +2,7 @@ import { expect, describe, test } from "vitest";
 import {
   detectPitchTrack,
   frequencyToIntonationPoint,
+  noteDisplayName,
   IntonationPoint,
 } from "./pitch-track";
 
@@ -159,5 +160,26 @@ describe("frequencyToIntonationPoint", () => {
     const sharp = frequencyToIntonationPoint(452)!; // ~47 cents sharp of A4
     expect(sharp.name).toBe("A4");
     expect(sharp.cents).toBeGreaterThan(40);
+  });
+});
+
+describe("noteDisplayName", () => {
+  test("adds the flat spelling alongside a sharp black-key name", () => {
+    expect(noteDisplayName("D#4")).toBe("D#4/Eb4");
+    expect(noteDisplayName("C#3")).toBe("C#3/Db3");
+    expect(noteDisplayName("F#0")).toBe("F#0/Gb0");
+    expect(noteDisplayName("G#5")).toBe("G#5/Ab5");
+    expect(noteDisplayName("A#1")).toBe("A#1/Bb1");
+  });
+
+  test("leaves natural notes unchanged", () => {
+    expect(noteDisplayName("B2")).toBe("B2");
+    expect(noteDisplayName("A1")).toBe("A1");
+    expect(noteDisplayName("C0")).toBe("C0");
+  });
+
+  test("passes through anything that doesn't parse as a note name", () => {
+    expect(noteDisplayName("")).toBe("");
+    expect(noteDisplayName("garbage")).toBe("garbage");
   });
 });

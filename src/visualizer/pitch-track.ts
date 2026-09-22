@@ -119,6 +119,33 @@ export function frequencyToIntonationPoint(
   };
 }
 
+// Sharp -> flat spelling for the five black keys. frequencyToIntonationPoint's
+// `name` is always sharps-only (it's the key into the waveform's color palette
+// and drives onset-marker suppression), but a hover readout is easier to read
+// with both enharmonic spellings shown.
+const FLAT_EQUIVALENT: { [sharp: string]: string } = {
+  "C#": "Db",
+  "D#": "Eb",
+  "F#": "Gb",
+  "G#": "Ab",
+  "A#": "Bb",
+};
+
+/**
+ * Render an IntonationPoint.name (e.g. "D#4") for display, showing both
+ * enharmonic spellings for a black key ("D#4/Eb4"). Natural notes ("B2") and
+ * anything that doesn't parse as `<letter>[#]<octave>` are returned unchanged.
+ */
+export function noteDisplayName(name: string): string {
+  const match = name.match(/^([A-G]#?)(-?\d+)$/);
+  if (!match) {
+    return name;
+  }
+  const [, letter, octave] = match;
+  const flat = FLAT_EQUIVALENT[letter];
+  return flat ? `${letter}${octave}/${flat}${octave}` : name;
+}
+
 export interface DetectPitchTrackOptions {
   sampleRate: number;
   // Detectors are injectable so the Tuner can build them once and reuse them,
