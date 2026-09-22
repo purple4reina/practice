@@ -254,7 +254,10 @@ class WebAudioRecorderController {
       }
     }, this.clipSettings.startRecordingDelay);
     this.stopRecordingTimeout = setTimeout(() => {
-      this.recorder.stop();
+      // Deliberately not awaited so the recorder's flush can't delay the video
+      // stop; stopRecording() awaits this same in-flight stop before it reads
+      // the buffer.
+      void this.recorder.stop();
       if (this.clipSettings.videoEnabled && !this.videoStopPromise) {
         this.videoStopPromise = this.videoRecorder.stop();
       }
@@ -268,7 +271,7 @@ class WebAudioRecorderController {
     clearTimeout(this.stopRecordingTimeout);
     clearTimeout(this.stopTimeout);
     // ensure recorder is stopped, when space bar hit before stop recorder detay
-    this.recorder.stop();
+    await this.recorder.stop();
     this.stopMetronomes();
     this.playRecordControls.markStopped();
 
