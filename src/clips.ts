@@ -27,18 +27,25 @@ export class ClipSettings {
     this.playClicks = playClicks;
     this.recordSpeed = recordSpeed;
 
-    const { firstClickMs, lastClickMs } = this.getRecordDelays();
+    const { firstClickMs, lastClickEndMs } = this.getRecordDelays();
 
     // recorder.start() fires this long after the record button; the metronome's
     // first click follows `recordingPrelay` after that.
     this.startRecordingDelay = firstClickMs / this.recordSpeed;
 
-    // Stop the recorder a fixed `recordPostlay` after the last click, measured
-    // from the same origin as the metronome (T0 + recordingPrelay). Previously
-    // the tail was the final beat's own delay plus the synthetic end-marker,
-    // all divided by recordSpeed, so it ballooned at slow record speeds.
+    // Stop the recorder a fixed `recordPostlay` after the *end* of the last
+    // recorded click's own interval (its onset plus its own delay), measured
+    // from the same origin as the metronome (T0 + recordingPrelay). A click's
+    // `delay` is the gap before the *next* pulse - for every click except the
+    // last one that gap belongs to the next click's lead-in, but for the very
+    // last recorded click it's still time that beat/subdivision is meant to be
+    // playing. Measuring the postlay from the onset alone (as a previous
+    // version of this did) chops off up to a full subdivision's worth of the
+    // final recorded beat whenever subdivisions > 1 - e.g. 4 subdivisions with
+    // only 1 beat recorded stops 3/4 of a beat early, well before the note
+    // even finishes its nominal duration, let alone decays.
     this.stopRecordingDelay =
-      this.recordingPrelay + lastClickMs / this.recordSpeed + this.recordPostlay;
+      this.recordingPrelay + lastClickEndMs / this.recordSpeed + this.recordPostlay;
     this.stopDelay = this.stopRecordingDelay + this.recordingPrelay;
 
     this.latency = latency;
@@ -46,25 +53,26 @@ export class ClipSettings {
     this.videoLatencyMs = videoLatencyMs;
   }
 
-  // Onset times (unscaled ms, from the start of the click track) of the first
-  // and last *recorded* clicks. BlockManager appends a synthetic end-marker as
-  // the final click, so it's dropped here.
+  // Onset (unscaled ms, from the start of the click track) of the first
+  // *recorded* click, and the point where the last recorded click's own
+  // interval ends (its onset + its own delay). BlockManager appends a
+  // synthetic end-marker as the final click, so it's dropped here.
   private getRecordDelays() {
     const clicks = this.recordClicks.slice(0, -1);
 
     let firstClickMs = 0;
-    let lastClickMs = 0;
+    let lastClickEndMs = 0;
     let elapsed = 0;
     let started = false;
     for (const click of clicks) {
       if (click.recording) {
         if (!started) firstClickMs = elapsed;
         started = true;
-        lastClickMs = elapsed;
+        lastClickEndMs = elapsed + click.delay;
       }
       elapsed += click.delay;
     }
-    return { firstClickMs, lastClickMs };
+    return { firstClickMs, lastClickEndMs };
   }
 }
 

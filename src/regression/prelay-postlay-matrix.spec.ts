@@ -9,19 +9,24 @@
 //
 //   1. The first recorded click always lands exactly `recordingPrelay` ms
 //      into the buffer.
-//   2. The buffer always ends exactly `recordPostlay` ms after the *onset* of
-//      the last recorded click.
+//   2. The buffer always ends exactly `recordPostlay` ms after the *end* of
+//      the last recorded click's own interval (its onset plus its own delay
+//      - the rest of that beat/subdivision is still time the recording is
+//      meant to cover, not just the click's onset instant).
 //
 // Both pads are fixed real-time values - never scaled by recordSpeed, never
 // affected by what's recorded in between, and never affected by content
 // placed after "stop" or by the user's hardware-latency-compensation setting.
 import { expect, describe, test } from "vitest";
 import Visualizer from "../visualizer";
+import type BlockManager from "../blocks";
+import type { ClipSettings } from "../clips";
 import { installFakeCanvasContext } from "../test-support/fake-canvas";
 import {
   FakeAudioContext,
   buildScenario,
   groundTruthBufferPositions,
+  groundTruthLastRecordedClickEndMs,
   START,
   RECORD,
   STOP,
@@ -147,13 +152,14 @@ function expectPrelayInvariant(truth: number[], settings: { recordingPrelay: num
 }
 
 function expectPostlayInvariant(
-  truth: number[],
-  settings: { recordPostlay: number; startRecordingDelay: number; stopRecordingDelay: number },
+  recordClicks: ReturnType<BlockManager["recordClicks"]>,
+  settings: ClipSettings,
 ) {
   expect(settings.recordPostlay).toBe(EXPECTED_POSTLAY_MS);
   const bufferDurationMs = settings.stopRecordingDelay - settings.startRecordingDelay;
-  const lastOnset = truth[truth.length - 1];
-  expect(bufferDurationMs - lastOnset).toBeCloseTo(EXPECTED_POSTLAY_MS, 6);
+  const lastClickEnd = groundTruthLastRecordedClickEndMs(recordClicks, settings);
+  expect(lastClickEnd).not.toBeNull();
+  expect(bufferDurationMs - (lastClickEnd as number)).toBeCloseTo(EXPECTED_POSTLAY_MS, 6);
 }
 
 // --- The settings sweep ------------------------------------------------------
@@ -178,14 +184,14 @@ describe("prelay/postlay invariants across block-config templates and settings",
         const { recordClicks, settings } = buildScenario(simple(bpm, recSub, playSub, 0, 1), recordSpeed, latency);
         const truth = groundTruthBufferPositions(recordClicks, settings);
         expectPrelayInvariant(truth, settings);
-        expectPostlayInvariant(truth, settings);
+        expectPostlayInvariant(recordClicks, settings);
       });
 
       test("simple record/stop, with count-in, several beats", () => {
         const { recordClicks, settings } = buildScenario(simple(bpm, recSub, playSub, 3, 5), recordSpeed, latency);
         const truth = groundTruthBufferPositions(recordClicks, settings);
         expectPrelayInvariant(truth, settings);
-        expectPostlayInvariant(truth, settings);
+        expectPostlayInvariant(recordClicks, settings);
       });
 
       test("content placed after stop", () => {
@@ -196,7 +202,7 @@ describe("prelay/postlay invariants across block-config templates and settings",
         );
         const truth = groundTruthBufferPositions(recordClicks, settings);
         expectPrelayInvariant(truth, settings);
-        expectPostlayInvariant(truth, settings);
+        expectPostlayInvariant(recordClicks, settings);
       });
 
       test("recording paused and resumed with a gap", () => {
@@ -207,14 +213,14 @@ describe("prelay/postlay invariants across block-config templates and settings",
         );
         const truth = groundTruthBufferPositions(recordClicks, settings);
         expectPrelayInvariant(truth, settings);
-        expectPostlayInvariant(truth, settings);
+        expectPostlayInvariant(recordClicks, settings);
       });
 
       test("pattern + subdivision changes + disabled midi blocks interleaved", () => {
         const { recordClicks, settings } = buildScenario(withPatternAndMidi(bpm, recSub, playSub), recordSpeed, latency);
         const truth = groundTruthBufferPositions(recordClicks, settings);
         expectPrelayInvariant(truth, settings);
-        expectPostlayInvariant(truth, settings);
+        expectPostlayInvariant(recordClicks, settings);
       });
 
       test("accelerando during the recorded segment", () => {
@@ -225,7 +231,7 @@ describe("prelay/postlay invariants across block-config templates and settings",
         );
         const truth = groundTruthBufferPositions(recordClicks, settings);
         expectPrelayInvariant(truth, settings);
-        expectPostlayInvariant(truth, settings);
+        expectPostlayInvariant(recordClicks, settings);
       });
 
       test("zero recorded beats falls back to prelay+postlay only, and clip.latency passes straight through", () => {
@@ -259,7 +265,7 @@ describe("content after stop never changes the postlay", () => {
     const truth = groundTruthBufferPositions(recordClicks, settings);
 
     expectPrelayInvariant(truth, settings);
-    expectPostlayInvariant(truth, settings);
+    expectPostlayInvariant(recordClicks, settings);
     expect(settings.stopRecordingDelay).toBeCloseTo(baseline, 6);
   });
 });
@@ -281,7 +287,7 @@ describe("hardware latency compensation never affects prelay/postlay math", () =
     const truth = groundTruthBufferPositions(recordClicks, settings);
 
     expectPrelayInvariant(truth, settings);
-    expectPostlayInvariant(truth, settings);
+    expectPostlayInvariant(recordClicks, settings);
     expect(clip.latency).toBe(latency);
     // and the buffer geometry itself must be identical regardless of latency
     expect(settings.startRecordingDelay).toBeCloseTo(baselineStart, 6);

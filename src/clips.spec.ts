@@ -56,14 +56,20 @@ describe("ClipSettings prelay/postlay", () => {
     const settings = new ClipSettings(recordClicks, [], 1, 145);
 
     expect(settings.startRecordingDelay).toBe(4000); // ms elapsed before the first recording click
-    expect(settings.stopRecordingDelay).toBe(100 + 6000 + 350); // prelay + last click's onset + postlay
+    // prelay + (last click's onset [6000] + its own delay [1000]) + postlay
+    expect(settings.stopRecordingDelay).toBe(100 + 7000 + 350);
     expect(settings.stopDelay).toBe(settings.stopRecordingDelay + 100);
   });
 
-  test("the gap after the last recorded click's onset is always exactly recordPostlay, regardless of record speed, how many beats preceded it, or that click's own (irrelevant) delay", () => {
-    // A "click" is an instantaneous tick; its `delay` is the wait until the
-    // *next* event, not part of the click itself - so postlay is measured
-    // from the last recorded click's onset, independent of its own delay.
+  test("the gap after the *end* of the last recorded click's own interval is always exactly recordPostlay, regardless of record speed, how many beats preceded it, or that click's own delay", () => {
+    // A click's `delay` is the wait until the *next* pulse. For every click
+    // except the last recorded one, that time belongs to the following click.
+    // But for the *last* recorded click, that same interval is still time the
+    // recording is meant to cover (the rest of that beat/subdivision) - so
+    // postlay must be measured from the end of that interval (onset + its own
+    // delay), not from the onset alone. Otherwise a high subdivision count
+    // with few recorded beats chops off part of the final beat itself, before
+    // recordPostlay even starts.
     for (const speed of [1, 0.5, 0.2, 2]) {
       for (const recordedBeatCount of [1, 2, 8]) {
         for (const lastBeatDelay of [250, 1000, 4000]) {
@@ -72,14 +78,15 @@ describe("ClipSettings prelay/postlay", () => {
             click(lastBeatDelay, true),
             click(350, true), // synthetic end marker
           ];
-          const lastClickMs = (recordedBeatCount - 1) * 1000; // onset of the last recorded click
+          const lastClickOnsetMs = (recordedBeatCount - 1) * 1000; // onset of the last recorded click
+          const lastClickEndMs = lastClickOnsetMs + lastBeatDelay; // onset + its own delay
           const settings = new ClipSettings(recordClicks, [], speed, 0);
 
-          const lastClickOnsetInBuffer =
-            (settings.recordingPrelay + lastClickMs / speed) - settings.startRecordingDelay;
+          const lastClickEndInBuffer =
+            (settings.recordingPrelay + lastClickEndMs / speed) - settings.startRecordingDelay;
           const bufferDurationMs = settings.stopRecordingDelay - settings.startRecordingDelay;
 
-          expect(bufferDurationMs - lastClickOnsetInBuffer).toBeCloseTo(settings.recordPostlay, 6);
+          expect(bufferDurationMs - lastClickEndInBuffer).toBeCloseTo(settings.recordPostlay, 6);
         }
       }
     }
@@ -94,7 +101,29 @@ describe("ClipSettings prelay/postlay", () => {
     const settings = new ClipSettings(recordClicks, [], 0.5, 145);
 
     expect(settings.startRecordingDelay).toBe(4000 / 0.5);
-    expect(settings.stopRecordingDelay).toBe(100 + 6000 / 0.5 + 350);
+    expect(settings.stopRecordingDelay).toBe(100 + 7000 / 0.5 + 350);
+  });
+
+  test("with subdivisions, the postlay pad starts after the last subdivision click's own interval, not its onset (the user's exact repro: 4-beat count-in, 1 beat recorded, 4 subdivisions)", () => {
+    const beatMs = 1000; // 60bpm
+    const subdivisions = 4;
+    const subMs = beatMs / subdivisions;
+    const recordClicks: Click[] = [
+      // 4 count-in beats x 4 subdivisions each, not recording
+      ...Array.from({ length: 4 * subdivisions }, () => click(subMs, false)),
+      // 1 recorded beat x 4 subdivisions
+      ...Array.from({ length: subdivisions }, () => click(subMs, true)),
+      click(350, true), // synthetic end marker
+    ];
+    const settings = new ClipSettings(recordClicks, [], 1, 0);
+
+    // The last recorded (4th) subdivision click's own interval ends exactly
+    // one full beat after the first recorded click - i.e. the recorded beat's
+    // own nominal duration must be fully covered before recordPostlay even
+    // starts, regardless of how many subdivisions it was split into.
+    // scheduledDurationMs = recordingPrelay + (full beat) + recordPostlay.
+    const scheduledDurationMs = settings.stopRecordingDelay - settings.startRecordingDelay;
+    expect(scheduledDurationMs).toBeCloseTo(settings.recordingPrelay + beatMs + settings.recordPostlay, 6);
   });
 
   test("with no recording clicks at all, delays fall back to the prelay/postlay only", () => {

@@ -63,6 +63,29 @@ export function groundTruthBufferPositions(
   return positions;
 }
 
+// Buffer-relative time (ms from startRecordingDelay) at which the *last*
+// recorded click's own interval ends - its onset plus its own (scaled) delay
+// - matching what ClipSettings.getRecordDelays() measures the postlay pad
+// from. A click's `delay` is the gap before the *next* pulse; for the last
+// recorded click that gap is still time the recording is meant to cover, so
+// it must count toward the buffer, not just the click's onset instant.
+// Returns null when nothing was recorded.
+export function groundTruthLastRecordedClickEndMs(
+  recordClicks: ReturnType<BlockManager["recordClicks"]>,
+  settings: ClipSettings,
+): number | null {
+  const clicks = recordClicks.slice(0, -1);
+
+  let nextClickTimeMs = settings.recordingPrelay;
+  let lastEndMs: number | null = null;
+  for (const click of clicks) {
+    const scaledDelay = click.delay / settings.recordSpeed;
+    if (click.recording) lastEndMs = (nextClickTimeMs + scaledDelay) - settings.startRecordingDelay;
+    nextClickTimeMs += scaledDelay;
+  }
+  return lastEndMs;
+}
+
 // --- Block-config query-param builders, matching each block's own
 // queryString() encoding (see src/blocks/*.ts). Kept intentionally minimal -
 // only what the pre/postlay matrix needs. ---
