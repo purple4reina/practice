@@ -262,17 +262,25 @@ class WebAudioRecorderController {
         this.videoStopPromise = this.videoRecorder.stop();
       }
     }, this.clipSettings.stopRecordingDelay);
-    this.stopTimeout = setTimeout(() => this.stopRecording(), this.clipSettings.stopDelay);
+    this.stopTimeout = setTimeout(() => this.endRecording(true), this.clipSettings.stopDelay);
     this.playRecordControls.markRecording();
   }
 
-  async stopRecording() {
+  // User-initiated stop. Bound straight to click/keyboard listeners, so it takes no
+  // arguments (a stray event object must never read as `natural`).
+  async stopRecording(): Promise<void> {
+    await this.endRecording(false);
+  }
+
+  // `natural`: the scheduled end of a take rather than the user cutting it short, so
+  // a MIDI note still sounding (the one on the closing downbeat) is left to finish.
+  private async endRecording(natural: boolean): Promise<void> {
     clearTimeout(this.startRecordingTimeout);
     clearTimeout(this.stopRecordingTimeout);
     clearTimeout(this.stopTimeout);
     // ensure recorder is stopped, when space bar hit before stop recorder detay
     await this.recorder.stop();
-    this.stopMetronomes();
+    this.stopMetronomes(natural);
     this.playRecordControls.markStopped();
 
     if (this.clipSettings.videoEnabled && !this.videoStopPromise) {
@@ -312,7 +320,7 @@ class WebAudioRecorderController {
     const playbackSpeed = this.playbackSpeed();
     const offsetMs = this.silenceOffsetMs();
     const startTime = this.player.play(this.clip.audioBuffer, playbackSpeed, () => {
-      this.stopPlaying();
+      this.endPlaying(true);
     }, offsetMs / 1000);
 
     this.playbackMetronome.start(startTime, this.clip, playbackSpeed, offsetMs);
@@ -333,17 +341,30 @@ class WebAudioRecorderController {
     this.playRecordControls.markPlaying();
   }
 
+  // User-initiated stop; see stopRecording() for why this takes no arguments.
   stopPlaying(): void {
+    this.endPlaying(false);
+  }
+
+  // `natural`: the buffer played out on its own, so a MIDI note still sounding (the
+  // one on the closing downbeat, which lands within `latency` of the buffer's end)
+  // is left to finish rather than being zeroed.
+  private endPlaying(natural: boolean): void {
     this.player.stop();
     this.videoPlayer.stop();
-    this.stopMetronomes();
+    this.stopMetronomes(natural);
     this.visualizer.stopPlayback();
     this.playRecordControls.markStopped();
   }
 
-  private stopMetronomes() {
-    this.recordingMetronome.stop();
-    this.playbackMetronome.stop();
+  private stopMetronomes(natural: boolean = false) {
+    if (natural) {
+      this.recordingMetronome.finish();
+      this.playbackMetronome.finish();
+    } else {
+      this.recordingMetronome.stop();
+      this.playbackMetronome.stop();
+    }
   }
 }
 

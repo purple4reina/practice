@@ -16,6 +16,11 @@ import { Block, IBlock } from "./block";
 import { ClickState, Click } from "./clicks";
 import { sleep } from "../utils";
 
+// BlockManager closes every click list with one synthetic final downbeat. It is
+// always this long, whatever the tempo, and it is audible - so a MIDI note that
+// lands on it sounds for exactly this long, whatever its written value.
+const END_MARKER_MS = 350;
+
 export default class BlockManager {
   private blocks: IBlock[] = [];
   private initialized = false;
@@ -228,7 +233,16 @@ export default class BlockManager {
         }
       }
     }
-    clicks.push({ delay: 350, level: state.getLevel(), started: true, recording: lastRecording });
+    // The end marker is a beat like any other, so it takes the next note of any MIDI
+    // notation that has one more note than the blocks gave it beats.
+    const [finalNote] = state.getMidiNotesForBeat(END_MARKER_MS);
+    clicks.push({
+      delay: END_MARKER_MS,
+      level: state.getLevel(),
+      started: true,
+      recording: lastRecording,
+      midiNotes: finalNote ? [{ ...finalNote, offsetMs: 0, durationMs: END_MARKER_MS }] : undefined,
+    });
     return clicks;
   }
 

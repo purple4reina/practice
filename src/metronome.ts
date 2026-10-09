@@ -121,6 +121,13 @@ abstract class Metronome {
     this.scheduler();
   }
 
+  // Natural end of a session: stop scheduling, but let MIDI notes already in
+  // flight (e.g. the one on the closing downbeat) sound out their own duration.
+  finish(): void {
+    this.isPlaying = false;
+  }
+
+  // Hard stop: silences everything immediately.
   stop(): void {
     this.isPlaying = false;
     const now = this.audioContext.currentTime;
