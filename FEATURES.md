@@ -108,6 +108,7 @@ Practice sequences are saved and can be shared as a URL — send your setup to a
 
 - **Named saves** — save your entire practice setup (all blocks, BPM, speeds, patterns) under a custom name
 - **Reload anytime** — saves are stored in the browser and persist across sessions
+- **Sync across devices** — sign in with Google and your saves are merged between every device you use: each device ends up with the union of all of them, and deleting a save on one device removes it from the others
 - **Shareable URL** — every practice configuration is encoded into the URL; paste it anywhere to share your exact setup
 
 ---

@@ -296,6 +296,22 @@
               <button class="btn" id="video-latency-compensator-plus" type="button" tabindex="-1">+</button>
             </div>
           </div>
+          <!-- cloud sync -->
+          <div class="row info-row" id="saves-sync" hidden>
+            <div class="col-5">
+              Cloud Sync:
+              <i class="bi bi-info-circle bi-tiny info-icon" id="saves-sync-info" tabindex="0"
+                 data-bs-toggle="tooltip" data-bs-placement="right"
+                 title="Sign in to sync saves across devices.">
+              </i>
+            </div>
+            <div class="col d-flex justify-content-center">
+              <div id="saves-signin"></div>
+              <button class="btn btn-outline-secondary" id="saves-sync-signout" type="button" hidden>
+                Sign out
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       </div>

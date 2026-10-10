@@ -8,8 +8,9 @@ import Tapper from "./tapper";
 import VideoPlayerDevice from "./video-player";
 import VideoRecorderDevice from "./video-recorder";
 import Visualizer from "./visualizer";
-import googleLogin from "./login";
+import googleLogin, { googleSignOut } from "./login";
 import QueryParams from "./query-params";
+import { syncEnabled } from "./firebase-config";
 import {
   ClipSettings,
   Clip,
@@ -36,9 +37,13 @@ import { LoudnessAnalyzer } from "./visualizer/loudness-analyzer";
 
 declare const bootstrap: any;
 
-if (window.location.hostname === "purple4reina.github.io" || import.meta.env.VITE_ENABLE_MONITORING === 'true') {
+const monitoringEnabled =
+  window.location.hostname === "purple4reina.github.io" || import.meta.env.VITE_ENABLE_MONITORING === 'true';
+if (monitoringEnabled) {
   initializeMonitoring();
-  googleLogin();
+}
+if (monitoringEnabled || syncEnabled) {
+  googleLogin({ monitoring: monitoringEnabled, sync: syncEnabled });
 }
 
 if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
@@ -374,4 +379,13 @@ let saves: Saves;
 window.addEventListener("load", () => {
   webAudioController = new WebAudioRecorderController();
   saves = new Saves();
+  if (syncEnabled) {
+    import("./cloud").then(cloud => {
+      saves.enableSync(() => {
+        cloud.signOut();
+        googleSignOut();
+      });
+      cloud.onAuthChange(session => saves.setSession(session));
+    }).catch(e => console.warn("cloud sync unavailable", e));
+  }
 })

@@ -52,7 +52,11 @@ src/
 ├── video-recorder.ts        # Video capture via MediaRecorder
 ├── video-player.ts          # Video playback synchronized with audio
 ├── latency.ts               # Latency compensator (audio + video)
-├── saves.ts                 # Session persistence (localStorage + URL sharing)
+├── saves.ts                 # Saves UI (list / new / delete) + cloud-sync status
+├── saves-merge.ts           # SaveRecord type, pure mergeSaves() union + tombstones, syncSaves()
+├── saves-store.ts           # LocalStorageSavesStore (+ legacy name,url / cookie upgrade)
+├── cloud.ts                 # Firebase Auth + Firestore (lazy-loaded; web builds only)
+├── firebase-config.ts       # Public Firebase web config + syncEnabled flag
 ├── query-params.ts          # URL query parameter parsing for session sharing
 ├── login.ts                 # Google Sign-In integration
 ├── monitoring.ts            # Datadog RUM initialization
@@ -133,11 +137,15 @@ Sessions (block configurations) can be serialized to URL query params for sharin
 
 ### Session Persistence
 
-`saves.ts` stores sessions to `localStorage`. Sessions can also be shared via URL: block configuration is LZ-compressed and base64-encoded into a `?record=` query parameter.
+`saves.ts` stores saves through `LocalStorageSavesStore` (`saves-store.ts`). Each save is a `SaveRecord` `{id, name, query, createdAt, deleted?, deletedAt?}` holding only the query string, not the full URL, so it works from any origin. Deleting writes a tombstone (`deleted: true`) rather than removing the record. Sessions can also be shared via URL: block configuration is LZ-compressed and base64-encoded into a `?record=` query parameter.
+
+### Cross-device Sync
+
+When `syncEnabled` (`firebase-config.ts`: web build and a Firebase `apiKey` set), signing in with Google also signs in to Firebase (`cloud.ts`, lazy-loaded). On sign-in and on every session start with a restored session, `syncSaves()` reads local and remote records, `mergeSaves()` computes the union (a tombstone on either side wins over a live copy), and each side is sent whatever it was missing. Saves are immutable, so there are no field-level conflicts. Mid-session adds/deletes write to localStorage immediately and to Firestore best-effort; a failed remote write is reconciled by the next session's merge. Remote data lives at `users/{uid}/saves/{saveId}`. Latency offsets are deliberately not synced (they are per-machine hardware).
 
 ### Monitoring Gate
 
-`main.ts` lines 36-39: Datadog RUM and Google Sign-In only activate when `window.location.hostname === "purple4reina.github.io"`. This is intentional — they are disabled in local development.
+`main.ts`: Datadog RUM (and the user reporting to it) only activates when `window.location.hostname === "purple4reina.github.io"` or `VITE_ENABLE_MONITORING === 'true'`. This is intentional — it is disabled in local development. Google Sign-In runs when monitoring is on *or* cloud sync is enabled (`syncEnabled`), so local dev can sign in once a Firebase config is present.
 
 ---
 
@@ -166,10 +174,11 @@ Sessions (block configurations) can be serialized to URL query params for sharin
 | Video recording + sync | Complete | WebM only (iOS fix needed) |
 | Practice blocks (13 types) | Complete | Composable sequences |
 | Session save/load | Complete | localStorage + URL sharing |
+| Cross-device saves sync | Conditional | Firebase Auth + Firestore; web builds, inactive until `firebase-config.ts` is filled in |
 | WAV download | Complete | audiobuffer-to-wav |
 | MIDI playback | Complete | Software synthesis, not Web MIDI API |
 | Drone tone | Complete | Sustained oscillator |
 | Tap tempo | Complete | |
 | Latency compensation | Complete | Configurable audio + video offsets |
 | Analytics | Conditional | Datadog RUM, GitHub Pages only |
-| Google Sign-In | Conditional | GitHub Pages only |
+| Google Sign-In | Conditional | Monitoring builds (GitHub Pages) and sync-enabled web builds |

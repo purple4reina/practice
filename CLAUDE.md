@@ -24,6 +24,7 @@ For platform-level feature toggles only — NOT for interaction style:
 - Base URL `/` vs `/practice/`
 - `VITE_ENABLE_MONITORING` — disables Datadog in iOS builds
 - Google Sign-In — disabled in iOS builds
+- Cloud saves sync (Firebase) — web builds only; `syncEnabled` in `src/firebase-config.ts` is false under `--mode ios`
 
 **Key rule**: Use build-time flags for features that must be compiled out. Use runtime detection for interaction style, because a Bluetooth keyboard on an iPad should get keyboard behavior even in an iOS build.
 

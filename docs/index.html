@@ -6,7 +6,7 @@
     <title>Practice Recorder</title>
 
     <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
-    <script type="module" crossorigin src="/practice/assets/index-D1rYWFi-.js"></script>
+    <script type="module" crossorigin src="/practice/assets/index-C7K9Y7uN.js"></script>
     <link rel="stylesheet" crossorigin href="/practice/assets/index-Djmzep_f.css">
   </head>
   <body>
@@ -295,6 +295,22 @@
               <button class="btn" id="video-latency-compensator-minus" type="button" tabindex="-1">-</button>
               <input type="text" class="form-control" id="video-latency-compensator-val" value="0" pattern="-?[0-9]*" tabindex="9">
               <button class="btn" id="video-latency-compensator-plus" type="button" tabindex="-1">+</button>
+            </div>
+          </div>
+          <!-- cloud sync -->
+          <div class="row info-row" id="saves-sync" hidden>
+            <div class="col-5">
+              Cloud Sync:
+              <i class="bi bi-info-circle bi-tiny info-icon" id="saves-sync-info" tabindex="0"
+                 data-bs-toggle="tooltip" data-bs-placement="right"
+                 title="Sign in to sync saves across devices.">
+              </i>
+            </div>
+            <div class="col d-flex justify-content-center">
+              <div id="saves-signin"></div>
+              <button class="btn btn-outline-secondary" id="saves-sync-signout" type="button" hidden>
+                Sign out
+              </button>
             </div>
           </div>
         </div>
