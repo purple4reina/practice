@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 import { collection, doc, getDocs, initializeFirestore, setDoc } from "firebase/firestore";
 import type { Firestore } from "firebase/firestore";
-import { firebaseConfig } from "./firebase-config";
+import { firebaseConfig, savesCollectionFor } from "./firebase-config";
 import type { RemoteSavesStore, SaveRecord } from "./saves-merge";
 import type { CloudSession } from "./saves-store";
 
@@ -24,13 +24,14 @@ function isSaveFields(data: Record<string, unknown>): boolean {
     && typeof data.createdAt === "number";
 }
 
-// users/{uid}/saves/{saveId}; Firestore security rules limit each user to
-// their own subtree.
+// users/{uid}/<collectionName>/{saveId}; Firestore security rules limit each
+// user to their own subtree. The collection name depends on the host (see
+// savesCollectionFor) so test hosts never share storage with production.
 class CloudSavesStore implements RemoteSavesStore {
-  constructor(private db: Firestore, private uid: string) {}
+  constructor(private db: Firestore, private uid: string, private collectionName: string) {}
 
   private saves() {
-    return collection(this.db, "users", this.uid, "saves");
+    return collection(this.db, "users", this.uid, this.collectionName);
   }
 
   async list(): Promise<SaveRecord[]> {
@@ -58,7 +59,10 @@ export function signOut(): Promise<void> {
 export function onAuthChange(callback: (session: CloudSession | null) => void): () => void {
   return onAuthStateChanged(auth, user => {
     callback(user
-      ? { email: user.email || "your account", remote: new CloudSavesStore(db, user.uid) }
+      ? {
+        email: user.email || "your account",
+        remote: new CloudSavesStore(db, user.uid, savesCollectionFor(window.location.hostname)),
+      }
       : null);
   });
 }
