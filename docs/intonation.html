@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Intonation Training</title>
+
+    <link rel="icon" href="/practice/assets/favicon-e0Td6Q3m.ico" />
+    <script type="module" crossorigin src="/practice/assets/intonation-C8wYVhe0.js"></script>
+    <link rel="modulepreload" crossorigin href="/practice/assets/pitch-track-CGi9kHGF.js">
+    <link rel="stylesheet" crossorigin href="/practice/assets/pitch-track-BE3JQLmk.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col">
+          <h1>Intonation Training</h1>
+        </div>
+      </div>
+    <div class="container text-center" id="main">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="./">Practice Recorder</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Intonation Training</li>
+        </ol>
+      </nav>
+
+      <div class="btn-group flex-wrap" role="group" aria-label="Interval type" id="interval-types"></div>
+      <p class="text-secondary mt-2">
+        Bb clarinet. Headphones recommended. Tune your note to the tone you hear, using just intonation.
+      </p>
+
+      <div id="quiz" hidden>
+        <h5 id="round-label"></h5>
+        <div id="staff"></div>
+        <p id="hint" class="text-secondary"></p>
+        <div class="progress mx-auto mb-3" style="max-width: 280px; height: 8px" id="progress-wrap" hidden>
+          <div class="progress-bar" id="progress" style="width: 0%"></div>
+        </div>
+        <div id="result" class="fs-4"></div>
+      </div>
+
+      <div id="summary" hidden></div>
+
+      <div class="mt-3">
+        <button class="btn btn-outline-secondary" id="retry" type="button" hidden>Retry</button>
+        <button class="btn btn-outline-secondary" id="action" type="button">Start</button> <span class="text-secondary small">or press space</span>
+      </div>
+      <div class="text-danger mt-2" id="error"></div>
+    </div>
+    </div>
+
+  </body>
+</html>

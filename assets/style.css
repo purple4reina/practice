@@ -468,3 +468,10 @@ body.video-expanded {
     display: none !important;
   }
 }
+
+/* Selected interval type: solid primary, like the Drone button when it is on */
+#interval-types .btn-check:checked + .btn-outline-secondary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: #fff;
+}
